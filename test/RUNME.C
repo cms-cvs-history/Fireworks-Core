@@ -4,13 +4,28 @@
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
 class FWDisplayEvent;
-void RUNME() {
-   //TFile geomF("cmsGeom20.root");
-  
-   // TFile f("/data/dmytro/samples/RelVal-RelVal151Higgs-ZZ-4Mu-1183228327-0000-860585E7-5227-DC11-8227-000423D662EE.root");
-  //   TFile f("/data/dmytro/samples/RelVal-RelVal151TTbar-1183231184-0000-0CC1FC7F-A127-DC11-88B4-001617C3B6D2.root");
-   TFile f("ttbar.root");
-   fwlite::Event ev(&f);
+void RUNME(const char* datafile = "data.root") {
+   
+   // get geometry files if they are missing
+   TFile* ff = TFile::Open("cmsGeom10.root");
+   if (! ff ) 
+     gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
+   else
+     ff->Close();
+   ff = TFile::Open("tracker.root");
+   if (! ff ) 
+     gSystem->Exec("wget -O tracker.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=tracker.root");
+   else
+     ff->Close();
+   
+   // load data file
+   ff = TFile::Open(datafile);
+   if ( ! ff ) {
+      cout << "Please provide data file to display: RUNME(\"myfile.root\")" <<endl;
+      return;
+   }
+	
+   fwlite::Event ev(ff);
    
    FWDisplayEvent ed;
 
