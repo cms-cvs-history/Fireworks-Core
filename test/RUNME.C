@@ -34,6 +34,7 @@ void RUNME(const char* datafile = "data.root") {
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
@@ -49,6 +50,12 @@ void RUNME(const char* datafile = "data.root") {
 		    FWDisplayProperties(kRed),
 		    "towerMaker");
    ed.registerEventItem(hcal);
+
+   FWEventItem jets("Jets",
+		    TClass::GetClass("reco::CaloJetCollection"),
+		    FWDisplayProperties(kYellow),
+		    "iterativeCone5CaloJets");
+   ed.registerEventItem(jets);
 
    FWEventItem tracks("Tracks",
 		      TClass::GetClass("reco::TrackCollection"),
