@@ -19,7 +19,9 @@ void RUNME(const char* datafile = "data.root") {
      ff->Close();
    
    // load data file
+   gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
    ff = TFile::Open(datafile);
+   gErrorIgnoreLevel = -1;
    if ( ! ff ) {
       cout << "Please provide data file to display: RUNME(\"myfile.root\")" <<endl;
       return;
