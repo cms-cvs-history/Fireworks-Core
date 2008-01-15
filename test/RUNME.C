@@ -39,35 +39,35 @@ void RUNME(const char* datafile = "data.root") {
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
-   FWEventItem ecal("ECal",
+   FWPhysicsObjectDesc ecal("ECal",
 		    TClass::GetClass("CaloTowerCollection"),
 		    FWDisplayProperties(kBlue),
 		    "towerMaker");
-   ed.registerEventItem(ecal);
+   ed.registerPhysicsObject(ecal);
 
-   FWEventItem hcal("HCal",
+   FWPhysicsObjectDesc hcal("HCal",
 		    TClass::GetClass("CaloTowerCollection"),
 		    FWDisplayProperties(kRed),
 		    "towerMaker");
-   ed.registerEventItem(hcal);
+   ed.registerPhysicsObject(hcal);
 
-   FWEventItem jets("Jets",
+   FWPhysicsObjectDesc jets("Jets",
 		    TClass::GetClass("reco::CaloJetCollection"),
 		    FWDisplayProperties(kYellow),
 		    "iterativeCone5CaloJets");
-   ed.registerEventItem(jets);
+   ed.registerPhysicsObject(jets);
 
-   FWEventItem tracks("Tracks",
+   FWPhysicsObjectDesc tracks("Tracks",
 		      TClass::GetClass("reco::TrackCollection"),
 		      FWDisplayProperties(kGreen),
 		      "ctfWithMaterialTracks");
-   ed.registerEventItem(tracks);
+   ed.registerPhysicsObject(tracks);
 
-   FWEventItem muons("Muons",
+   FWPhysicsObjectDesc muons("Muons",
 		     TClass::GetClass("reco::MuonCollection"),
 		     FWDisplayProperties(kRed),
 		     "trackerMuons");
-   ed.registerEventItem(muons);
+   ed.registerPhysicsObject(muons);
    //Finished configuration
    
    for( unsigned int i = 0; i < ev.size(); ) {
