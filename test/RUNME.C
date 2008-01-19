@@ -4,7 +4,7 @@
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
 class FWDisplayEvent;
-void RUNME(const char* datafile = "data.root") {
+void RUNME(const char* datafile = 0) {
    
    // get geometry files if they are missing
    TFile* ff = TFile::Open("cmsGeom10.root");
@@ -20,13 +20,21 @@ void RUNME(const char* datafile = "data.root") {
    
    // load data file
    gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
-   ff = TFile::Open(datafile);
+   if ( datafile )
+     ff = TFile::Open(datafile);
+   else
+     ff = TFile::Open("data.root");
    gErrorIgnoreLevel = -1;
+   if ( ! ff && ! datafile ) {
+      gSystem->Exec("wget -O data.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=data.root");
+      ff = TFile::Open("data.root");
+   }
+   
    if ( ! ff ) {
-      cout << "Please provide data file to display: RUNME(\"myfile.root\")" <<endl;
+      cout << "Failed to load data file" <<endl;
       return;
    }
-	
+   
    fwlite::Event ev(ff);
    
    FWDisplayEvent ed;
