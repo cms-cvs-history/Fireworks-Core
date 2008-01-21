@@ -1,0 +1,8 @@
+<use name=boost>
+<use name=Fireworks/Core>
+<use name=root>
+<use name=rootcintex>
+<use name=DataFormats/TrackReco>
+<bin name=TestFireworksCore file=unittest_main.cc,unittest_changemanager.cc,unittest_fwmodelid.cc,unittest_selectionmanager.cc>
+  <lib name=boost_unit_test_framework-gcc-mt>
+</bin>
