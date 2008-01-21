@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id$
+// $Id: unittest_selectionmanager.cc,v 1.1 2008/01/21 01:17:50 chrjones Exp $
 //
 
 // system include files
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( selectionmanager )
    TClass* cls=TClass::GetClass("reco::TrackCollection");
    assert(0!=cls);
    
-   FWEventItem item(&cm, &sm,"Tracks", cls);
+   FWEventItem item(&cm, &sm,0,"Tracks", cls);
    //cheat
    item.setData(&fVector);
 
