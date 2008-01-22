@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_selectionmanager.cc,v 1.1 2008/01/21 01:17:50 chrjones Exp $
+// $Id: unittest_selectionmanager.cc,v 1.2 2008/01/21 16:10:08 chrjones Exp $
 //
 
 // system include files
@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE( selectionmanager )
    //cheat
    item.setData(&fVector);
 
+   cm.newItemSlot(&item);
    BOOST_CHECK(listener.nHeard_ ==0 );
    BOOST_CHECK(listener.nMessages_==0);
    BOOST_CHECK(sm.selected().empty());
