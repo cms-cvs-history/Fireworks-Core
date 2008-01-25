@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_changemanager.cc,v 1.1 2008/01/21 01:17:54 chrjones Exp $
+// $Id: unittest_changemanager.cc,v 1.2 2008/01/22 16:34:09 chrjones Exp $
 //
 
 // system include files
@@ -37,6 +37,15 @@ namespace {
          nHeard_  += iIds.size();
       }
    };
+   
+   struct ItemListener {
+      ItemListener(): nHeard_(0){}
+      int nHeard_;
+      
+      void listen(const FWEventItem* iItem) {
+         ++nHeard_;
+      }
+   };
 }
 
 BOOST_AUTO_TEST_CASE( changemanager )
@@ -59,14 +68,18 @@ BOOST_AUTO_TEST_CASE( changemanager )
    
    
    Listener listener;
+   ItemListener iListener;
    //NOTE: have to pass a pointer to the listener else the bind will
    // create a copy of the listener and the original one will never
    // 'hear' any signal
    item.changed_.connect(boost::bind(&Listener::listen,&listener,_1));
+   item.itemChanged_.connect(boost::bind(&ItemListener::listen,&iListener,_1));
    
    BOOST_CHECK(listener.nHeard_ ==0 );
+   BOOST_CHECK(iListener.nHeard_ ==0 );
    cm.changed(FWModelId(&item,0));
    BOOST_CHECK(listener.nHeard_ ==1 );
+   BOOST_CHECK(iListener.nHeard_ ==0 );
 
    listener.nHeard_ =0;
    cm.beginChanges();
@@ -101,4 +114,16 @@ BOOST_AUTO_TEST_CASE( changemanager )
       BOOST_CHECK(listener.nHeard_ ==0 );
    }
    BOOST_CHECK(listener.nHeard_ ==1 );
+   
+   BOOST_CHECK(iListener.nHeard_ ==0 );
+   item.setEvent(0);
+   BOOST_CHECK(iListener.nHeard_ ==1 );
+
+   iListener.nHeard_=0;
+   {
+      FWChangeSentry sentry(cm);
+      item.setEvent(0);
+      BOOST_CHECK(iListener.nHeard_ ==0 );
+   }
+   BOOST_CHECK(iListener.nHeard_ ==1 );
 }

@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_selectionmanager.cc,v 1.2 2008/01/21 16:10:08 chrjones Exp $
+// $Id: unittest_selectionmanager.cc,v 1.3 2008/01/22 16:34:09 chrjones Exp $
 //
 
 // system include files
@@ -131,4 +131,11 @@ BOOST_AUTO_TEST_CASE( selectionmanager )
    BOOST_CHECK(not item.modelInfo(0).m_isSelected);
    BOOST_CHECK(item.modelInfo(1).m_isSelected);
    BOOST_CHECK(item.modelInfo(2).m_isSelected);
+   
+   sm.clearSelection();
+   item.select(1);
+   item.select(2);
+   BOOST_CHECK(sm.selected().size()==2);
+   item.setEvent(0);
+   BOOST_CHECK(sm.selected().size()==0);
 }
