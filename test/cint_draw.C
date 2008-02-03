@@ -1,5 +1,5 @@
 #include "DataFormats/FWLite/interface/Handle.h"
-
+#include "TEveManager.h"
 void cint_draw() {
   //TFile geomF("cmsGeom20.root");
   
@@ -15,7 +15,7 @@ void cint_draw() {
 					  node);
   re->UseNodeTrans();
   gEve->AddGlobalElement(re,gL);
-
+/*
   TFile f("h_zz_4mu.root");
   fwlite::Event ev(&f);
 
@@ -69,4 +69,5 @@ void cint_draw() {
     gEve->EnableRedraw();
     gEve->Redraw3D();
   }
+ */
 }
