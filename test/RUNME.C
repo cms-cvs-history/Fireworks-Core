@@ -46,7 +46,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
-   // ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
+   ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
