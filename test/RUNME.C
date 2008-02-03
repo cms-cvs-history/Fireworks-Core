@@ -41,10 +41,12 @@ void RUNME(const char* datafile = 0) {
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
+   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
+   ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
-   ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
+   // ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
