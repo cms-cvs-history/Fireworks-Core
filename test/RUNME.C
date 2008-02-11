@@ -84,7 +84,7 @@ void RUNME(const char* datafile = 0) {
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
 				 FWDisplayProperties(kYellow),
-				 "randompixelMatchGsfElectrons");
+				 "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electrons);
 
    FWPhysicsObjectDesc electronTracks("ElectronTracks",
