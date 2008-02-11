@@ -47,17 +47,19 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
+   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
+   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
 		    TClass::GetClass("CaloTowerCollection"),
-		    FWDisplayProperties(kBlue),
+		    FWDisplayProperties(kRed),
 		    "towerMaker");
    ed.registerPhysicsObject(ecal);
 
    FWPhysicsObjectDesc hcal("HCal",
 		    TClass::GetClass("CaloTowerCollection"),
-		    FWDisplayProperties(kRed),
+		    FWDisplayProperties(kBlue),
 		    "towerMaker");
    ed.registerPhysicsObject(hcal);
 
@@ -78,6 +80,24 @@ void RUNME(const char* datafile = 0) {
 		     FWDisplayProperties(kRed),
 		     "trackerMuons");
    ed.registerPhysicsObject(muons);
+
+   FWPhysicsObjectDesc electrons("Electrons",
+				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+				 FWDisplayProperties(kYellow),
+				 "randompixelMatchGsfElectrons");
+   ed.registerPhysicsObject(electrons);
+
+   FWPhysicsObjectDesc electronTracks("ElectronTracks",
+				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+				      FWDisplayProperties(kYellow),
+				      "pixelMatchGsfElectrons");
+   ed.registerPhysicsObject(electronTracks);
+
+//    FWPhysicsObjectDesc hybridSuperclusters("BasicClusterShapeAssociation",
+//  					   TClass::GetClass("reco::BasicClusterShapeAssociationCollection"),
+//  					   FWDisplayProperties(kYellow),
+//  					   "hybridSuperClusters");
+//    ed.registerPhysicsObject(hybridSuperclusters);
    //Finished configuration
    
    for( unsigned int i = 0; i < ev.size(); ) {
