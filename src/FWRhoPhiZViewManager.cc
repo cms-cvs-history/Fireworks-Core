@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sat Jan  5 14:08:51 EST 2008
-// $Id: FWRhoPhiZViewManager.cc,v 1.13 2008/01/29 12:18:46 chrjones Exp $
+// $Id: FWRhoPhiZViewManager.cc,v 1.14 2008/02/03 02:49:40 dmytro Exp $
 //
 
 // system include files
@@ -53,7 +53,8 @@
 static
 const char* const kBuilderPrefixes[] = {
    "Proxy3DBuilder",
-   "ProxyRhoPhiZ2DBuilder"
+   "ProxyRhoPhiZ2DBuilder",
+   "ProxySCBuilder",
 };
 //
 // static data member definitions
@@ -89,6 +90,16 @@ FWRhoPhiZViewManager::FWRhoPhiZViewManager():
    m_rhoZProjMgr->SetProjection(TEveProjection::kPT_RhoZ);
    gEve->AddToListTree(m_rhoZProjMgr,kTRUE);
    gEve->AddElement(m_rhoZProjMgr,ns);
+
+   nv = gEve->SpawnNewViewer("Electron view");
+   nv->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   ns = gEve->SpawnNewScene("Electron view");
+   nv->AddScene(ns);
+   
+   m_electronProjMgr = new TEveProjectionManager;
+   m_electronProjMgr->SetProjection(TEveProjection::kPT_RhoZ);
+   gEve->AddToListTree(m_electronProjMgr,kTRUE);
+   gEve->AddElement(m_electronProjMgr,ns);
    
 
   //kTRUE tells it to reset the camera so we see everything 
@@ -149,6 +160,11 @@ FWRhoPhiZViewManager::rerunBuilders()
 	   element != m_rhoZGeom.end(); ++element )
        m_rhoZProjMgr->AddElement(*element);
      
+//      m_electronProjMgr->DestroyElements();
+//      for ( std::vector<TEveElement*>::iterator element = m_electronGeom.begin(); 
+// 	   element != m_electronGeom.end(); ++element )
+//        m_electronProjMgr->AddElement(*element);
+     
      // FIXME - standard way of loading geomtry failed
      // ----------- from here 
      setupGeometry();
@@ -186,17 +202,22 @@ void FWRhoPhiZViewManager::addElements()
    //keep track of the last element added
    TEveElement::List_i itLastRPElement = m_rhoPhiProjMgr->BeginChildren();
    TEveElement::List_i itLastRZElement = m_rhoZProjMgr->BeginChildren();
+   TEveElement::List_i itLastElElement = m_electronProjMgr->BeginChildren();
    bool rpHasMoreChildren = m_rhoPhiProjMgr->GetNChildren();
    bool rzHasMoreChildren = m_rhoZProjMgr->GetNChildren();
+   bool elHasMoreChildren = m_electronProjMgr->GetNChildren();
    int index = 0;
    while(++index < m_rhoPhiProjMgr->GetNChildren()) {++itLastRPElement;}
    index =0;
    while(++index < m_rhoZProjMgr->GetNChildren()) {++itLastRZElement;}
+   index =0;
+   while(++index < m_electronProjMgr->GetNChildren()) {++itLastElElement;}
    
    for ( std::vector<boost::shared_ptr<FWRPZModelProxyBase> >::iterator proxy = m_modelProxies.begin();
 	 proxy != m_modelProxies.end(); ++proxy )  {
       m_rhoPhiProjMgr->ImportElements((*proxy)->getRhoPhiProduct());
       m_rhoZProjMgr->ImportElements((*proxy)->getRhoZProduct());
+      m_electronProjMgr->ImportElements((*proxy)->getRhoZProduct());
       if(proxy == m_modelProxies.begin()) {
          if(rpHasMoreChildren) {
             ++itLastRPElement;
@@ -204,9 +225,13 @@ void FWRhoPhiZViewManager::addElements()
          if(rzHasMoreChildren) {
             ++itLastRZElement;
          }
+         if(elHasMoreChildren) {
+	      ++itLastElElement;
+         }
       } else {
          ++itLastRPElement;
          ++itLastRZElement;
+         ++itLastElElement;
       }
       (*proxy)->setRhoPhiProj(*itLastRPElement);
       (*proxy)->setRhoZProj(*itLastRZElement);
@@ -218,6 +243,7 @@ void FWRhoPhiZViewManager::addElements()
 void 
 FWRhoPhiZViewManager::newItem(const FWEventItem* iItem)
 {
+     printf("FWRhoPhiZViewManager::newItem: %s\n", iItem->name().c_str());
   TypeToBuilder::iterator itFind = m_typeToBuilder.find(iItem->name());
   if(itFind != m_typeToBuilder.end()) {
      if(itFind->second.second) {
@@ -257,6 +283,9 @@ FWRhoPhiZViewManager::registerProxyBuilder(const std::string& iType,
 {
    bool is3dType = true;
    if(iBuilder.find(kBuilderPrefixes[1]) != std::string::npos) {
+      is3dType = false;
+   }
+   if(iBuilder.find(kBuilderPrefixes[2]) != std::string::npos) {
       is3dType = false;
    }
    m_typeToBuilder[iType]=make_pair(iBuilder,is3dType);

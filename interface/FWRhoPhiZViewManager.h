@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sat Jan  5 11:27:34 EST 2008
-// $Id: FWRhoPhiZViewManager.h,v 1.7 2008/01/28 14:04:12 chrjones Exp $
+// $Id: FWRhoPhiZViewManager.h,v 1.8 2008/01/29 12:18:45 chrjones Exp $
 //
 
 // system include files
@@ -143,8 +143,10 @@ class FWRhoPhiZViewManager : public FWViewManagerBase
       TEveElement* m_geom;
       TEveProjectionManager* m_rhoPhiProjMgr;
       TEveProjectionManager* m_rhoZProjMgr;
+      TEveProjectionManager* m_electronProjMgr;
       std::vector<TEveElement*> m_rhoPhiGeom;
       std::vector<TEveElement*> m_rhoZGeom;
+      std::vector<TEveElement*> m_electronGeom;
    
       bool m_itemChanged;
 };
