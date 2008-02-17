@@ -143,10 +143,8 @@ class FWRhoPhiZViewManager : public FWViewManagerBase
       TEveElement* m_geom;
       TEveProjectionManager* m_rhoPhiProjMgr;
       TEveProjectionManager* m_rhoZProjMgr;
-      TEveProjectionManager* m_electronProjMgr;
       std::vector<TEveElement*> m_rhoPhiGeom;
       std::vector<TEveElement*> m_rhoZGeom;
-      std::vector<TEveElement*> m_electronGeom;
    
       bool m_itemChanged;
 };
