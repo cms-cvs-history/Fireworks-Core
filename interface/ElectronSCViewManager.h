@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: ElectronSCViewManager.h,v 1.3 2008/01/22 16:34:09 chrjones Exp $
+// $Id: ElectronSCViewManager.h,v 1.1.2.1 2008/02/17 13:54:29 jmuelmen Exp $
 //
 
 // system include files
@@ -31,6 +31,7 @@
 
 // forward declarations
 class FWEventItem;
+class TEveProjectionManager;
 
 struct ElectronSCModelProxy {
      boost::shared_ptr<ElectronsProxySCBuilder>   builder;
@@ -56,7 +57,7 @@ public:
      virtual void newItem(const FWEventItem*);
      void registerProxyBuilder(const std::string&, 
 			       const std::string&);
-
+     void addElements ();
 
 protected:
      virtual void modelChangesComing();
@@ -69,8 +70,9 @@ private:
      // ---------- member data --------------------------------
      typedef  std::map<std::string,std::string> TypeToBuilder;
      TypeToBuilder m_typeToBuilder;
-
      std::vector<ElectronSCModelProxy> m_modelProxies;
+     TEveProjectionManager* m_projMgr;
+     TEveScene *ns;
 };
 
 

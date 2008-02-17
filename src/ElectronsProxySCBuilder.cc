@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.1 2008/02/15 21:48:18 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.1 2008/02/17 13:54:23 jmuelmen Exp $
 //
 
 // system include files
@@ -129,7 +129,6 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
      for (EcalRecHitCollection::const_iterator i = hits->begin();
 	  i != hits->end(); ++i) {
 	  TEveGeoShapeExtract* extract = m_item->getGeom()->getExtract(i->id().rawId() );
-	  printf("extract is 0x%x\n", extract);
 	  if(0!=extract) {
 	       TEveTrans t = extract->GetTrans();
 	       t.MoveLF(3, -i->energy() / 2);
@@ -168,6 +167,6 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       gEve->AddElement(shape);
 	       tList->AddElement(shape);
 #endif
-	  }
+	  } else printf("extract is 0x%x\n", extract);
      }
 }
