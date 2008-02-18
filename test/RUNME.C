@@ -94,17 +94,17 @@ void RUNME(const char* datafile = 0) {
 				      "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electronTracks);
 
-   FWPhysicsObjectDesc electronSCRecHits("ElectronSC",
-  					 TClass::GetClass("EcalRecHitCollection"),
-  					 FWDisplayProperties(kYellow),
-  					 "ecalRecHit",
-  					 "EcalRecHitsEB");
-   ed.registerPhysicsObject(electronSCRecHits);
-//    FWPhysicsObjectDesc electronSCGSF("ElectronSC",
-//  				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-//  				     FWDisplayProperties(kYellow),
-//  				     "pixelMatchGsfElectrons");
-//    ed.registerPhysicsObject(electronSCGSF);
+//    FWPhysicsObjectDesc electronSCRecHits("ElectronSC",
+//   					 TClass::GetClass("EcalRecHitCollection"),
+//   					 FWDisplayProperties(kYellow),
+//   					 "ecalRecHit",
+//   					 "EcalRecHitsEB");
+//    ed.registerPhysicsObject(electronSCRecHits);
+   FWPhysicsObjectDesc electronSCGSF("ElectronSC",
+ 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+ 				     FWDisplayProperties(kYellow),
+ 				     "pixelMatchGsfElectrons");
+   ed.registerPhysicsObject(electronSCGSF);
    
 //    FWPhysicsObjectDesc hybridSuperclusters("BasicClusterShapeAssociation",
 //  					   TClass::GetClass("reco::BasicClusterShapeAssociationCollection"),

@@ -8,10 +8,11 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.1 2008/02/17 13:54:23 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.2 2008/02/17 22:33:52 jmuelmen Exp $
 //
 
 // system include files
+#include "TClass.h"
 #include "TEveGeoNode.h"
 #include "TEveGeoShapeExtract.h"
 #include "TGeoBBox.h"
@@ -29,6 +30,8 @@
 #include "Fireworks/Core/interface/ElectronsProxySCBuilder.h"
 #include "Fireworks/Core/interface/FWEventItem.h"
 #include "Fireworks/Core/interface/DetIdToMatrix.h"
+#include "DataFormats/FWLite/interface/Event.h"
+#include "DataFormats/FWLite/interface/Handle.h"
 #include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectron.h"
 #include "DataFormats/EgammaReco/interface/BasicClusterShapeAssociation.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
@@ -73,7 +76,6 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  tList->DestroyElements();
      }
      // get electrons
-#if 0
      using reco::PixelMatchGsfElectronCollection;
      const PixelMatchGsfElectronCollection *electrons = 0;
      printf("getting electrons\n");
@@ -83,24 +85,42 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  std::cout <<"failed to get GSF electrons" << std::endl;
 	  return;
      }
-     using reco::PixelMatchGsfElectronCollection;
-     const PixelMatchGsfElectronCollection *electrons = 
-	  ElectronsProxy3DBuilder::electrons;
      printf("%d GSF electrons\n", electrons->size());
-#endif
      // get rechits
+#if 0
      const EcalRecHitCollection *hits = 0;
+     const TClass *m_type  = TClass::GetClass("EcalRecHitCollection");
+     ROOT::Reflex::Type dataType( ROOT::Reflex::Type::ByTypeInfo(*(m_type->GetTypeInfo())));
+     assert(dataType != ROOT::Reflex::Type() );
+     std::string wrapperName = std::string("edm::Wrapper<")+dataType.Name(ROOT::Reflex::SCOPED)+" >";
+     //std::cout <<wrapperName<<std::endl;
+     ROOT::Reflex::Type m_wrapperType = ROOT::Reflex::Type::ByName(wrapperName);
+
+     void *tmp = 0;
      printf("getting rechits\n");
-     m_item->get(hits);
+     const fwlite::Event *ev = m_item->getEvent();
+     ev->getByLabel(m_wrapperType.TypeInfo(),
+		    "ecalRecHit", "EcalRecHitsEB", 0, (void *)&tmp);
      printf("got rechits\n");
+     hits = static_cast<const EcalRecHitCollection *>(tmp);
      if (hits == 0) {
 	  std::cout <<"failed to get Ecal RecHits" << std::endl;
 	  return;
      }
-#if 0
+#endif
+     printf("getting rechits\n");
+     const fwlite::Event *ev = m_item->getEvent();
+     fwlite::Handle<EcalRecHitCollection> h_hits;
+     h_hits.getByLabel(*ev, "ecalRecHit", "EcalRecHitsEB");
+     const EcalRecHitCollection *hits = h_hits.ptr();
+     if (hits == 0) {
+	  std::cout <<"failed to get Ecal RecHits" << std::endl;
+	  return;
+     }
+#if 1
      TEveTrackPropagator *propagator = new TEveTrackPropagator();
      propagator->SetMagField( -4.0);
-     propagator->SetMaxR( 120 );
+     propagator->SetMaxR( 150 );
      propagator->SetMaxZ( 300 );
      int index=0;
      TEveRecTrack t;
@@ -117,18 +137,24 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  t.fSign = i->gsfTrack()->charge();
 	  TEveTrack* trk = new TEveTrack(&t, propagator);
 	  trk->SetMainColor(m_item->defaultDisplayProperties().color());
+	  trk->MakeTrack();
 	  tList->AddElement(trk);
 	  //cout << it->px()<<" "
 	  //   <<it->py()<<" "
 	  //   <<it->pz()<<endl;
 	  //cout <<" *";
 	  assert(i->superCluster().isNonnull());
+	  printf("track postion at vertex: %e, %e, %e\n", 
+		 i->TrackPositionAtVtx().rho(),
+		 i->TrackPositionAtVtx().eta(),
+		 i->TrackPositionAtVtx().phi());
      }
 #endif
      printf("%d RecHits\n", hits->size());
      for (EcalRecHitCollection::const_iterator i = hits->begin();
 	  i != hits->end(); ++i) {
 	  TEveGeoShapeExtract* extract = m_item->getGeom()->getExtract(i->id().rawId() );
+	  assert(extract != 0);
 	  if(0!=extract) {
 	       TEveTrans t = extract->GetTrans();
 	       t.MoveLF(3, -i->energy() / 2);
