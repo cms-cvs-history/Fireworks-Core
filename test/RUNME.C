@@ -48,7 +48,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
-//    ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
+   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
@@ -82,11 +82,11 @@ void RUNME(const char* datafile = 0) {
 		     "trackerMuons");
    ed.registerPhysicsObject(muons);
 
-//    FWPhysicsObjectDesc electrons("Electrons",
-// 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-// 				 FWDisplayProperties(kYellow),
-// 				 "pixelMatchGsfElectrons");
-//    ed.registerPhysicsObject(electrons);
+   FWPhysicsObjectDesc electrons("Electrons",
+				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+				 FWDisplayProperties(kYellow),
+				 "pixelMatchGsfElectrons");
+   ed.registerPhysicsObject(electrons);
 
    FWPhysicsObjectDesc electronTracks("ElectronTracks",
 				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),

@@ -117,10 +117,9 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  std::cout <<"failed to get Ecal RecHits" << std::endl;
 	  return;
      }
-#if 1
      TEveTrackPropagator *propagator = new TEveTrackPropagator();
      propagator->SetMagField( -4.0);
-     propagator->SetMaxR( 150 );
+     propagator->SetMaxR( 300 );
      propagator->SetMaxZ( 300 );
      int index=0;
      TEveRecTrack t;
@@ -144,18 +143,15 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  //   <<it->pz()<<endl;
 	  //cout <<" *";
 	  assert(i->superCluster().isNonnull());
-	  printf("track postion at vertex: %e, %e, %e\n", 
-		 i->TrackPositionAtVtx().rho(),
-		 i->TrackPositionAtVtx().eta(),
-		 i->TrackPositionAtVtx().phi());
-     }
-#endif
-     printf("%d RecHits\n", hits->size());
-     for (EcalRecHitCollection::const_iterator i = hits->begin();
-	  i != hits->end(); ++i) {
-	  TEveGeoShapeExtract* extract = m_item->getGeom()->getExtract(i->id().rawId() );
-	  assert(extract != 0);
-	  if(0!=extract) {
+	  std::vector<DetId> detids = i->superCluster()->getHitsByDetId();
+	  for (std::vector<DetId>::const_iterator k = detids.begin();
+	       k != detids.end(); ++k) {
+	       EcalRecHitCollection::const_iterator i = hits->find(*k);
+	       if (i == hits->end())
+		    continue;
+	       TEveGeoShapeExtract* extract = m_item->getGeom()->
+		    getExtract(i->id().rawId() );
+	       assert(extract != 0);
 	       TEveTrans t = extract->GetTrans();
 	       t.MoveLF(3, -i->energy() / 2);
 	       TGeoBBox *sc_box = new TGeoBBox(1.1, 1.1, i->energy() / 2, 0);
@@ -193,6 +189,12 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       gEve->AddElement(shape);
 	       tList->AddElement(shape);
 #endif
-	  } else printf("extract is 0x%x\n", extract);
+	  }
+	  TEvePointSet *intersection = new TEvePointSet("sc intersection", 1);
+	  intersection->SetNextPoint(i->TrackPositionAtCalo().x(),
+				     i->TrackPositionAtCalo().y(),
+				     i->TrackPositionAtCalo().z());
+	  intersection->SetMarkerStyle(28);
+	  tList->AddElement(intersection);
      }
 }
