@@ -45,6 +45,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
@@ -83,13 +84,13 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-				 FWDisplayProperties(kYellow),
+				 FWDisplayProperties(kPink),
 				 "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electrons);
 
    FWPhysicsObjectDesc electronTracks("ElectronTracks",
 				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-				      FWDisplayProperties(kYellow),
+				      FWDisplayProperties(kPink),
 				      "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electronTracks);
 
