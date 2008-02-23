@@ -16,10 +16,12 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:42:33 EST 2008
-// $Id: ElectronsProxySCBuilder.h,v 1.1.2.1 2008/02/15 21:48:18 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.h,v 1.1.2.1 2008/02/17 13:54:25 jmuelmen Exp $
 //
 
 // system include files
+
+#include "Rtypes.h"
 
 // user include files
 
@@ -47,7 +49,13 @@ public:
 // 			    TEveElementList** product);
      void setItem (const FWEventItem *iItem) { m_item = iItem; }
      void build (TEveElementList **product);
-
+     void getCenter( Double_t* vars )
+     {
+	vars[0] = rotation_center[0];
+	vars[1] = rotation_center[1];
+	vars[2] = rotation_center[2];
+     }
+   
 private:
      ElectronsProxySCBuilder(const ElectronsProxySCBuilder&); // stop default
      
@@ -55,6 +63,13 @@ private:
      
      // ---------- member data --------------------------------
      const FWEventItem* m_item;
+     void resetCenter() { 
+	rotation_center[0] = 0;
+	rotation_center[1] = 0;
+	rotation_center[2] = 0;
+     }
+	
+     Double_t rotation_center[3];
 };
 
 

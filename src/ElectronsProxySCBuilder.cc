@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.2 2008/02/17 22:33:52 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.4 2008/02/18 07:48:06 jmuelmen Exp $
 //
 
 // system include files
@@ -24,6 +24,9 @@
 #include "TROOT.h"
 #include "TEveTrack.h"
 #include "TEveTrackPropagator.h"
+#include "TEveSceneInfo.h"
+#include "TEveViewer.h"
+#include "TGLViewer.h"
 
 // user include files
 #include "Fireworks/Electrons/interface/ElectronsProxy3DBuilder.h"
@@ -36,6 +39,7 @@
 #include "DataFormats/EgammaReco/interface/BasicClusterShapeAssociation.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "Fireworks/Core/interface/TEveElementIter.h"
 //
 // constants, enums and typedefs
 //
@@ -58,6 +62,7 @@ ElectronsProxySCBuilder::ElectronsProxySCBuilder()
 
 ElectronsProxySCBuilder::~ElectronsProxySCBuilder()
 {
+   resetCenter();
 }
 
 //
@@ -76,6 +81,7 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  tList->DestroyElements();
      }
      // get electrons
+     resetCenter();
      using reco::PixelMatchGsfElectronCollection;
      const PixelMatchGsfElectronCollection *electrons = 0;
      printf("getting electrons\n");
@@ -87,7 +93,7 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
      }
      printf("%d GSF electrons\n", electrons->size());
      // get rechits
-#if 0
+/*
      const EcalRecHitCollection *hits = 0;
      const TClass *m_type  = TClass::GetClass("EcalRecHitCollection");
      ROOT::Reflex::Type dataType( ROOT::Reflex::Type::ByTypeInfo(*(m_type->GetTypeInfo())));
@@ -107,20 +113,24 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  std::cout <<"failed to get Ecal RecHits" << std::endl;
 	  return;
      }
-#endif
+*/
      printf("getting rechits\n");
      const fwlite::Event *ev = m_item->getEvent();
      fwlite::Handle<EcalRecHitCollection> h_hits;
-     h_hits.getByLabel(*ev, "ecalRecHit", "EcalRecHitsEB");
-     const EcalRecHitCollection *hits = h_hits.ptr();
-     if (hits == 0) {
-	  std::cout <<"failed to get Ecal RecHits" << std::endl;
-	  return;
+     const EcalRecHitCollection* hits(0);
+     try {
+	h_hits.getByLabel(*ev, "ecalRecHit", "EcalRecHitsEB");
+	hits = h_hits.ptr();
      }
+     catch (...) 
+     {
+	std::cout <<"no hits are ECAL rechits are available, show only crystal location" << std::endl;
+     }
+    
      TEveTrackPropagator *propagator = new TEveTrackPropagator();
      propagator->SetMagField( -4.0);
-     propagator->SetMaxR( 300 );
-     propagator->SetMaxZ( 300 );
+     propagator->SetMaxR( 180 );
+     propagator->SetMaxZ( 430 );
      int index=0;
      TEveRecTrack t;
 //      t.fBeta = 1.;
@@ -138,25 +148,39 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	  trk->SetMainColor(m_item->defaultDisplayProperties().color());
 	  trk->MakeTrack();
 	  tList->AddElement(trk);
-	  //cout << it->px()<<" "
-	  //   <<it->py()<<" "
-	  //   <<it->pz()<<endl;
-	  //cout <<" *";
 	  assert(i->superCluster().isNonnull());
 	  std::vector<DetId> detids = i->superCluster()->getHitsByDetId();
 	  for (std::vector<DetId>::const_iterator k = detids.begin();
 	       k != detids.end(); ++k) {
-	       EcalRecHitCollection::const_iterator i = hits->find(*k);
-	       if (i == hits->end())
-		    continue;
-	       TEveGeoShapeExtract* extract = m_item->getGeom()->
-		    getExtract(i->id().rawId() );
+	       double size = 0.001; // default size
+	       bool found_hit = false;
+	       if ( hits ){
+		  EcalRecHitCollection::const_iterator hit = hits->find(*k);
+		  if (hit != hits->end()) {
+		     size = hit->energy();
+		     found_hit = true;
+		  }
+	       }
+	       TEveGeoShapeExtract* extract = m_item->getGeom()->getExtract(k->rawId() );
 	       assert(extract != 0);
 	       TEveTrans t = extract->GetTrans();
-	       t.MoveLF(3, -i->energy() / 2);
-	       TGeoBBox *sc_box = new TGeoBBox(1.1, 1.1, i->energy() / 2, 0);
-	       TEveGeoShapeExtract *extract2 = new 
-		    TEveGeoShapeExtract("SC");
+	       t.MoveLF(3, - size / 2);
+	       // TGeoBBox *sc_box = new TGeoBBox(1.1, 1.1, size / 2, 0);
+	       TGeoShape* crystal_shape = 0;
+	       if ( const TGeoTrap* shape = dynamic_cast<const TGeoTrap*>(extract->GetShape()) ) {
+		  double scale = size/2/shape->GetDz();
+		  crystal_shape = new TGeoTrap( size/2,
+						shape->GetTheta(), shape->GetPhi(),
+						shape->GetH1()*scale + shape->GetH2()*(1-scale),
+						shape->GetBl1()*scale + shape->GetBl2()*(1-scale),
+						shape->GetTl1()*scale + shape->GetTl2()*(1-scale),
+						shape->GetAlpha1(),
+						shape->GetH2(), shape->GetBl2(), shape->GetTl2(),
+						shape->GetAlpha2()
+						);
+	       }
+	       if ( ! crystal_shape ) crystal_shape = new TGeoBBox(1.1, 1.1, size / 2, 0);
+	       TEveGeoShapeExtract *extract2 = new TEveGeoShapeExtract("SC");
 	       extract2->SetTrans(t.Array());
 	       TColor* c = gROOT->GetColor(tList->GetMainColor());
 	       Float_t rgba[4] = { 1, 0, 0, 1 };
@@ -168,9 +192,9 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       extract2->SetRGBA(rgba);
 	       extract2->SetRnrSelf(true);
 	       extract2->SetRnrElements(true);
-	       extract2->SetShape(sc_box);
+	       extract2->SetShape(crystal_shape);
 	       tList->AddElement(TEveGeoShape::ImportShapeExtract(extract2,0));
-#if 0
+/*
 	       TGeoTrap *crystal = dynamic_cast<TGeoTrap *>(extract->GetShape());
 	       assert(crystal != 0);
 // 	       printf("%d\n", (char *)(&crystal->fH1) - (char *)crystal);
@@ -188,13 +212,17 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       shape->SetMainColor(Color_t(kBlack + (int)floor(i->energy() + 10))); // tList->GetMainColor());
 	       gEve->AddElement(shape);
 	       tList->AddElement(shape);
-#endif
+*/
 	  }
 	  TEvePointSet *intersection = new TEvePointSet("sc intersection", 1);
 	  intersection->SetNextPoint(i->TrackPositionAtCalo().x(),
 				     i->TrackPositionAtCalo().y(),
 				     i->TrackPositionAtCalo().z());
 	  intersection->SetMarkerStyle(28);
+	  intersection->SetMarkerColor(tList->GetMainColor());
 	  tList->AddElement(intersection);
+	rotation_center[0] = i->TrackPositionAtCalo().x();
+	rotation_center[1] = i->TrackPositionAtCalo().y();
+	rotation_center[2] = i->TrackPositionAtCalo().z();
      }
 }
