@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: ElectronSCViewManager.h,v 1.1.2.1 2008/02/17 13:54:29 jmuelmen Exp $
+// $Id: ElectronSCViewManager.h,v 1.1.2.2 2008/02/17 22:33:52 jmuelmen Exp $
 //
 
 // system include files
@@ -73,6 +73,7 @@ private:
      std::vector<ElectronSCModelProxy> m_modelProxies;
      TEveProjectionManager* m_projMgr;
      TEveScene *ns;
+     TEveViewer* nv;
 };
 
 

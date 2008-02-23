@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: ElectronSCViewManager.cc,v 1.1.2.1 2008/02/17 13:54:23 jmuelmen Exp $
+// $Id: ElectronSCViewManager.cc,v 1.1.2.2 2008/02/17 22:33:52 jmuelmen Exp $
 //
 
 // system include files
@@ -47,8 +47,12 @@ ElectronSCViewManager::ElectronSCViewManager():
      FWViewManagerBase("ProxySCBuilder")
 {
      //setup projection
-     TEveViewer* nv = gEve->SpawnNewViewer("Electron");
-     nv->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+     nv = gEve->SpawnNewViewer("Electron");
+     nv->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
+     // nv->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+     nv->GetGLViewer()->SetStyle(TGLRnrCtx::kOutline);
+     nv->GetGLViewer()->SetClearColor(kBlack);
+     
      ns = gEve->SpawnNewScene("Electron");
      nv->AddScene(ns);
 //      m_projMgr = new TEveProjectionManager;
@@ -87,12 +91,26 @@ ElectronSCViewManager::~ElectronSCViewManager()
 void 
 ElectronSCViewManager::newEventAvailable()
 {
-     for (std::vector<ElectronSCModelProxy>::iterator proxy = 
+   Double_t rotation_center[3] = { 0, 0, 0 };
+
+   for (std::vector<ElectronSCModelProxy>::iterator proxy = 
 	       m_modelProxies.begin();
 	  proxy != m_modelProxies.end(); ++proxy ) {
 	  proxy->builder->build( &(proxy->product) );
+          proxy->builder->getCenter( rotation_center );
      }
-     addElements();
+   
+   // set default view
+   TGLViewer* viewer = nv->GetGLViewer();
+   if ( viewer ) {
+      // viewer->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 5, 0, rotation_center, 0.5, 0 );
+      viewer->SetPerspectiveCamera(TGLViewer::kCameraPerspXOY, 5, 0, rotation_center, 0.5, 0 );
+      viewer->CurrentCamera().Reset();
+      // viewer->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 5, 0, rotation_center, 0.5, 0 );
+      viewer->SetPerspectiveCamera(TGLViewer::kCameraPerspXOY, 5, 0, rotation_center, 0.5, 0 );
+   } else printf("cannot get GLViewer\n");
+   
+   addElements();
 }
 
 void 
