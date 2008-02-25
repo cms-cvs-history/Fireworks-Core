@@ -3,6 +3,6 @@
 <use name=root>
 <use name=rootcintex>
 <use name=DataFormats/TrackReco>
-<bin name=TestFireworksCore file=unittest_main.cc,unittest_changemanager.cc,unittest_fwmodelid.cc,unittest_selectionmanager.cc,unittest_modelexpressionselector.cc>
+<bin name=TestFireworksCore file=*.cc>
   <lib name=boost_unit_test_framework-gcc-mt>
 </bin>
