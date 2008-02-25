@@ -1,10 +1,14 @@
+#ifndef __CINT__
 #include "TClass.h"
 #include "TError.h"
+#include "TEventList.h"
 #include "TFile.h"
 #include "TSystem.h"
+#include "TTree.h"
 #include "DataFormats/FWLite/interface/Event.h"
-// #include "Fireworks/Core/interface/FWDisplayEvent.h"
-// #include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
+#include "Fireworks/Core/interface/FWDisplayEvent.h"
+#include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
+#endif
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
@@ -100,11 +104,11 @@ void RUNME(const char* datafile = 0) {
    ed.registerPhysicsObject(electronTracks);
 
 
-//   FWPhysicsObjectDesc electronSCGSF("ElectronSC",
-// 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-// 				     FWDisplayProperties(kYellow),
-// 				     "pixelMatchGsfElectrons");
-//   ed.registerPhysicsObject(electronSCGSF);
+   FWPhysicsObjectDesc electronSC("ElectronSC",
+				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+				     FWDisplayProperties(kYellow),
+				     "pixelMatchGsfElectrons");
+   ed.registerPhysicsObject(electronSC);
    
    //Finished configuration
 
