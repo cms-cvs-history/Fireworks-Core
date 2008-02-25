@@ -8,7 +8,7 @@
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
-class FWDisplayEvent;
+
 void RUNME(const char* datafile = 0) {
    
    // get geometry files if they are missing
