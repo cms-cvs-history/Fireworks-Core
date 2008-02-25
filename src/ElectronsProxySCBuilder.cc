@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.4 2008/02/18 07:48:06 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.cc,v 1.1.2.5 2008/02/23 07:35:12 dmytro Exp $
 //
 
 // system include files
@@ -137,6 +137,29 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
      for(PixelMatchGsfElectronCollection::const_iterator i = electrons->begin();
 	 i != electrons->end(); ++i, ++index) {
 	  assert(i->gsfTrack().isNonnull());
+	  printf("GsfTrack contains %d inner states, %d outer states\n",
+		 i->gsfTrack()->gsfExtra()->innerStateLocalParameters().size(),
+		 i->gsfTrack()->gsfExtra()->outerStateLocalParameters().size());
+	  std::vector<reco::GsfTrackExtra::LocalParameterVector> v_in = 
+	       i->gsfTrack()->gsfExtra()->innerStateLocalParameters();
+	  std::vector<reco::GsfTrackExtra::LocalParameterVector> v_out = 
+	       i->gsfTrack()->gsfExtra()->outerStateLocalParameters();
+	  for (int j = 0; j < std::max(v_out.size(), v_in.size()); ++j) {
+	       if (j < v_in.size()) 
+		    printf("v_in[%d]: %e\t%e\t%e\t%e\t%e\t\n", j, 
+			   v_in[j][0],
+			   v_in[j][1],
+			   v_in[j][2],
+			   v_in[j][3],
+			   v_in[j][4]);
+	       if (j < v_out.size()) 
+		    printf("v_out[%d]: %e\t%e\t%e\t%e\t%e\t\n", j, 
+			   v_out[j][0],
+			   v_out[j][1],
+			   v_out[j][2],
+			   v_out[j][3],
+			   v_out[j][4]);
+	  }
 	  t.fP = TEveVector(i->gsfTrack()->px(),
 			    i->gsfTrack()->py(),
 			    i->gsfTrack()->pz());
@@ -145,11 +168,19 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 			    i->gsfTrack()->vz());
 	  t.fSign = i->gsfTrack()->charge();
 	  TEveTrack* trk = new TEveTrack(&t, propagator);
-	  trk->SetMainColor(m_item->defaultDisplayProperties().color());
+	  trk->SetMainColor(Color_t(kGreen));
+	  trk->SetLineWidth(2);
+	  TEvePathMark *mark = new TEvePathMark(TEvePathMark::kDaughter);
+	  mark->fV = TEveVector(i->TrackPositionAtCalo().x(),
+				i->TrackPositionAtCalo().y(),
+				i->TrackPositionAtCalo().z());
+	  trk->AddPathMark(mark);
 	  trk->MakeTrack();
 	  tList->AddElement(trk);
 	  assert(i->superCluster().isNonnull());
 	  std::vector<DetId> detids = i->superCluster()->getHitsByDetId();
+	  std::vector<DetId> seed_detids = i->superCluster()->seed()->
+	       getHitsByDetId();
 	  for (std::vector<DetId>::const_iterator k = detids.begin();
 	       k != detids.end(); ++k) {
 	       double size = 0.001; // default size
@@ -182,13 +213,16 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       if ( ! crystal_shape ) crystal_shape = new TGeoBBox(1.1, 1.1, size / 2, 0);
 	       TEveGeoShapeExtract *extract2 = new TEveGeoShapeExtract("SC");
 	       extract2->SetTrans(t.Array());
-	       TColor* c = gROOT->GetColor(tList->GetMainColor());
 	       Float_t rgba[4] = { 1, 0, 0, 1 };
-	       if (c) {
-		    rgba[0] = c->GetRed();
-		    rgba[1] = c->GetGreen();
-		    rgba[2] = c->GetBlue();
-	       }
+	       if (find(seed_detids.begin(), seed_detids.end(), *k) != 
+		   seed_detids.end()) {
+		    TColor* c = gROOT->GetColor(tList->GetMainColor());
+		    if (c) {
+			 rgba[0] = c->GetRed();
+			 rgba[1] = c->GetGreen();
+			 rgba[2] = c->GetBlue();
+		    }
+	       } 
 	       extract2->SetRGBA(rgba);
 	       extract2->SetRnrSelf(true);
 	       extract2->SetRnrElements(true);
@@ -214,15 +248,42 @@ void ElectronsProxySCBuilder::build (TEveElementList **product)
 	       tList->AddElement(shape);
 */
 	  }
-	  TEvePointSet *intersection = new TEvePointSet("sc intersection", 1);
-	  intersection->SetNextPoint(i->TrackPositionAtCalo().x(),
-				     i->TrackPositionAtCalo().y(),
-				     i->TrackPositionAtCalo().z());
-	  intersection->SetMarkerStyle(28);
-	  intersection->SetMarkerColor(tList->GetMainColor());
-	  tList->AddElement(intersection);
-	rotation_center[0] = i->TrackPositionAtCalo().x();
-	rotation_center[1] = i->TrackPositionAtCalo().y();
-	rotation_center[2] = i->TrackPositionAtCalo().z();
+	  TEvePointSet *trackpositionAtCalo = 
+	       new TEvePointSet("sc trackpositionAtCalo", 1);
+	  trackpositionAtCalo->SetNextPoint(i->TrackPositionAtCalo().x(),
+					    i->TrackPositionAtCalo().y(),
+					    i->TrackPositionAtCalo().z());
+	  trackpositionAtCalo->SetMarkerStyle(28);
+	  trackpositionAtCalo->SetMarkerColor(kRed);
+	  tList->AddElement(trackpositionAtCalo);
+	  rotation_center[0] = i->TrackPositionAtCalo().x();
+	  rotation_center[1] = i->TrackPositionAtCalo().y();
+	  rotation_center[2] = i->TrackPositionAtCalo().z();
+	  TEvePointSet *scposition = 
+	       new TEvePointSet("sc position", 1);
+	  scposition->SetNextPoint(i->caloPosition().x(),
+				   i->caloPosition().y(),
+				   i->caloPosition().z());
+	  scposition->SetMarkerStyle(28);
+	  scposition->SetMarkerColor(kBlue);
+	  tList->AddElement(scposition);
+	  TVector3 sc(i->caloPosition().x(),
+		      i->caloPosition().y(),
+		      i->caloPosition().z());
+	  TVector3 v_pin_intersection;
+	  v_pin_intersection.SetPtEtaPhi(
+	       sc.Perp(),
+	       sc.Eta() - i->deltaEtaSuperClusterTrackAtVtx(),
+	       sc.Phi() - i->deltaPhiSuperClusterTrackAtVtx());
+	  TEvePointSet *pinposition = 
+	       new TEvePointSet("pin position", 1);
+	  pinposition->SetNextPoint(v_pin_intersection.x(),
+				    v_pin_intersection.y(),
+				    v_pin_intersection.z());
+	  pinposition->SetMarkerStyle(28);
+	  pinposition->SetMarkerColor(kCyan);
+	  tList->AddElement(pinposition);
+	  
+     
      }
 }
