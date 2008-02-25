@@ -3,17 +3,16 @@
 #include "TFile.h"
 #include "TSystem.h"
 #include "DataFormats/FWLite/interface/Event.h"
-#include "Fireworks/Core/interface/FWDisplayEvent.h"
-#include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
+// #include "Fireworks/Core/interface/FWDisplayEvent.h"
+// #include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
 
 void RUNME(const char* datafile = 0) {
-   
    // get geometry files if they are missing
    TFile* ff = TFile::Open("cmsGeom10.root");
-   if (! ff ) 
+   if (! ff )
      gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
    else
      ff->Close();
@@ -22,7 +21,7 @@ void RUNME(const char* datafile = 0) {
      gSystem->Exec("wget -O tracker.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=tracker.root");
    else
      ff->Close();
-   
+
    // load data file
    gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
    if ( datafile )
@@ -100,27 +99,35 @@ void RUNME(const char* datafile = 0) {
 				      "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electronTracks);
 
-//    FWPhysicsObjectDesc electronSCRecHits("ElectronSC",
-//   					 TClass::GetClass("EcalRecHitCollection"),
-//   					 FWDisplayProperties(kYellow),
-//   					 "ecalRecHit",
-//   					 "EcalRecHitsEB");
-//    ed.registerPhysicsObject(electronSCRecHits);
-   FWPhysicsObjectDesc electronSCGSF("ElectronSC",
- 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
- 				     FWDisplayProperties(kYellow),
- 				     "pixelMatchGsfElectrons");
-   ed.registerPhysicsObject(electronSCGSF);
+
+//   FWPhysicsObjectDesc electronSCGSF("ElectronSC",
+// 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+// 				     FWDisplayProperties(kYellow),
+// 				     "pixelMatchGsfElectrons");
+//   ed.registerPhysicsObject(electronSCGSF);
    
-//    FWPhysicsObjectDesc hybridSuperclusters("BasicClusterShapeAssociation",
-//  					   TClass::GetClass("reco::BasicClusterShapeAssociationCollection"),
-//  					   FWDisplayProperties(kYellow),
-//  					   "hybridSuperClusters");
-//    ed.registerPhysicsObject(hybridSuperclusters);
    //Finished configuration
+
+   TTree* events = (TTree*)ff->Get("Events");
+   TEventList* list = new TEventList("list","");
    
-   for( unsigned int i = 0; i < ev.size(); ) {
-      ev.to(i);
+   // const char* selection = "muons.p4().pt()>20";
+   const char* selection = 0;
+   
+   if ( selection && events )
+     {
+	events->Draw(">>list",selection);
+	events->SetEventList( list );
+	printf("WANRING: looping over selected events!\n\tselection: \t%s\n",selection);
+     }
+   int nEntries = ev.size();
+   if ( events && events->GetEventList() ) nEntries = list->GetN();
+   
+   for( unsigned int i = 0; i < nEntries; ) {
+      if ( events && events->GetEventList() ) 
+	ev.to( events->GetEntryNumber(i) );
+      else 
+	ev.to(i);
       int code = ed.draw(ev);
       if ( code == 1 ) ++i;
       if ( code == -1 && i>0 ) --i;
