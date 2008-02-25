@@ -1,5 +1,10 @@
+#include "TClass.h"
+#include "TError.h"
 #include "TFile.h"
+#include "TSystem.h"
 #include "DataFormats/FWLite/interface/Event.h"
+#include "Fireworks/Core/interface/FWDisplayEvent.h"
+#include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
