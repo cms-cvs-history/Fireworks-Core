@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_fwmodelid.cc,v 1.1 2008/01/21 01:17:47 chrjones Exp $
+// $Id: unittest_fwconfiguration.cc,v 1.1 2008/02/25 21:32:20 chrjones Exp $
 //
 
 // system include files
@@ -19,8 +19,23 @@
 
 // user include files
 #include "Fireworks/Core/interface/FWConfiguration.h"
+#include "Fireworks/Core/interface/FWConfigurable.h"
+#include "Fireworks/Core/interface/FWConfigurationManager.h"
 
+namespace {
+   struct Conf : public FWConfigurable {
 
+      virtual void addTo(FWConfiguration& iTop) const {
+         iTop = m_config;
+      }
+      
+      virtual void setFrom(const FWConfiguration& iFrom) {
+         m_config = iFrom;
+      }
+      
+      FWConfiguration m_config;
+   };
+}
 //
 // constants, enums and typedefs
 //
@@ -79,5 +94,44 @@ BOOST_AUTO_TEST_CASE( fwconfiguration )
    BOOST_CHECK_THROW(config.valueForKey("blah"), std::runtime_error);
    
    std::cout <<topConfig<<std::endl;
+
    
+   //Test manager
+   std::auto_ptr<Conf> pConf(new Conf() );
+   
+   FWConfigurationManager confMgr;
+   confMgr.add("first", pConf.get() );
+   
+   confMgr.setFrom(topConfig);
+   BOOST_REQUIRE( 0 != pConf->m_config.stringValues() );
+   BOOST_CHECK( 1 == pConf->m_config.stringValues()->size() );
+   BOOST_CHECK( 0 == pConf->m_config.keyValues() );
+   BOOST_CHECK( kValue == pConf->m_config.value() );
+
+   {
+      FWConfiguration topConfig;
+      confMgr.to(topConfig);
+      
+      BOOST_REQUIRE( 0 != topConfig.keyValues() );
+      BOOST_CHECK( 1 == topConfig.keyValues()->size() );
+      BOOST_CHECK( 0 == topConfig.stringValues() );
+      BOOST_CHECK( std::string("first") == topConfig.keyValues()->front().first );
+      BOOST_CHECK( kValue == topConfig.keyValues()->front().second.value() );
+      found = topConfig.valueForKey("first");
+      BOOST_REQUIRE(0!=found);
+      BOOST_CHECK(found->value()==kValue);      
+   }
+   confMgr.writeToFile("testConfig");
+   {
+      FWConfiguration temp;
+      pConf->m_config.swap(temp);
+   }
+   confMgr.readFromFile("testConfig");
+   BOOST_REQUIRE( 0 != pConf->m_config.stringValues() );
+   BOOST_CHECK( 1 == pConf->m_config.stringValues()->size() );
+   BOOST_CHECK( 0 == pConf->m_config.keyValues() );
+   BOOST_CHECK( kValue == pConf->m_config.value() );
+   
+   BOOST_CHECK_THROW(confMgr.readFromFile("doesNotExist"), std::runtime_error);
+
 }
