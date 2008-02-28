@@ -56,7 +56,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
-   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
+   // ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
