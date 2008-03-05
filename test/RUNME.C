@@ -20,11 +20,6 @@ void RUNME(const char* datafile = 0) {
      gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
    else
      ff->Close();
-   ff = TFile::Open("tracker.root");
-   if (! ff ) 
-     gSystem->Exec("wget -O tracker.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=tracker.root");
-   else
-     ff->Close();
 
    // load data file
    gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
@@ -45,7 +40,9 @@ void RUNME(const char* datafile = 0) {
    
    fwlite::Event ev(ff);
    
-   FWDisplayEvent ed;
+   Bool_t debugMode = kFALSE;
+   if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
+   FWDisplayEvent ed(debugMode);
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
