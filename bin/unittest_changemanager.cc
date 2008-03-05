@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_changemanager.cc,v 1.2 2008/01/22 16:34:09 chrjones Exp $
+// $Id: unittest_changemanager.cc,v 1.3 2008/01/25 01:54:08 chrjones Exp $
 //
 
 // system include files
@@ -21,6 +21,7 @@
 
 // user include files
 #include "Fireworks/Core/interface/FWModelChangeManager.h"
+#include "Fireworks/Core/interface/FWEventItem.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 
