@@ -45,6 +45,7 @@ void RUNME(const char* datafile = 0) {
    FWDisplayEvent ed(debugMode);
 
    //The following will be moved to a configuration file
+   ed.registerProxyBuilder("Jets","CaloJetSelectedProxy3DLegoBuilder");
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
