@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
-// $Id: FWGUIManager.cc,v 1.5 2008/02/21 20:49:11 chrjones Exp $
+// $Id: FWGUIManager.cc,v 1.6 2008/02/24 20:39:05 dmytro Exp $
 //
 
 // system include files
@@ -34,6 +34,7 @@
 #include "Fireworks/Core/interface/FWModelExpressionSelector.h"
 #include "Fireworks/Core/interface/FWEventItemsManager.h"
 #include "Fireworks/Core/interface/FWViewBase.h"
+#include "Fireworks/Core/interface/ElectronView.h"
 //
 // constants, enums and typedefs
 //
@@ -51,7 +52,8 @@ m_selectionManager(iSelMgr),
 m_eiManager(iEIMgr),
 m_continueProcessingEvents(false),
 m_waitForUserAction(true),
-m_code(0)
+m_code(0),
+m_electronView(new ElectronView)
 {
    m_selectionManager->selectionChanged_.connect(boost::bind(&FWGUIManager::selectionChanged,this,_1));
    m_eiManager->newItem_.connect(boost::bind(&FWGUIManager::newItem,
@@ -157,6 +159,12 @@ m_code(0)
             m_unselectAllButton->SetEnabled(kFALSE);
          }
          frmMain->AddFrame(vf);
+
+	 TGTextButton *ele_butt = new TGTextButton(frmMain, "Electron view");
+	 frmMain->AddFrame(ele_butt, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+// 	 ele_butt->Connect("Clicked()", "ElectronView", m_electronView, "event()");
+	 ele_butt->Connect("Clicked()", "FWGUIManager", this, "makeElectronView()");
+
          frmMain->MapSubwindows();
          frmMain->Resize();
          frmMain->MapWindow();
@@ -414,6 +422,12 @@ FWGUIManager::allowInteraction()
    return m_code;
 }
 
+void FWGUIManager::makeElectronView ()
+{
+     printf("FWGUIManager::makeElectronView()\n");
+     m_electronView->event();
+}
 //
 // static member functions
 //
+

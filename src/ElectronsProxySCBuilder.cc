@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: ElectronsProxySCBuilder.cc,v 1.5 2008/02/28 23:25:19 jmuelmen Exp $
+// $Id: ElectronsProxySCBuilder.cc,v 1.6 2008/02/28 23:43:05 jmuelmen Exp $
 //
 
 // system include files
@@ -45,7 +45,7 @@
 //
 // constants, enums and typedefs
 //
-
+ElectronsProxySCBuilder *ElectronsProxySCBuilder::the_electron_sc_proxy = 0;
 //
 // static data member definitions
 //
@@ -55,6 +55,8 @@
 //
 ElectronsProxySCBuilder::ElectronsProxySCBuilder()
 {
+     // hack hack hack hack hack
+     the_electron_sc_proxy = this;
 }
 
 // ElectronsProxySCBuilder::ElectronsProxySCBuilder(const ElectronsProxySCBuilder& rhs)

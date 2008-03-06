@@ -18,6 +18,7 @@
 
 #include "Fireworks/Core/interface/FW3DLegoView.h"
 #include "Fireworks/Core/interface/ElectronsProxySCBuilder.h"
+#include "Fireworks/Core/interface/ElectronView.h"
 
 namespace {
    struct Fireworks_Core {

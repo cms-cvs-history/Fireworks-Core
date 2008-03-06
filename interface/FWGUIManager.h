@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 10:52:24 EST 2008
-// $Id: FWGUIManager.h,v 1.4 2008/02/21 16:09:54 chrjones Exp $
+// $Id: FWGUIManager.h,v 1.5 2008/02/21 20:49:10 chrjones Exp $
 //
 
 // system include files
@@ -39,6 +39,7 @@ class TGCompositeFrame;
 class FWEventItemsManager;
 class FWEventItem;
 class FWViewBase;
+class ElectronView;
 
 class FWGUIManager
 {
@@ -77,6 +78,7 @@ class FWGUIManager
       void processGUIEvents();
       int allowInteraction();
 
+     void makeElectronView ();
    private:
       FWGUIManager(const FWGUIManager&); // stop default
 
@@ -117,6 +119,9 @@ class FWGUIManager
       
       typedef std::map<std::string, ViewBuildFunctor > NameToViewBuilder;
       NameToViewBuilder m_nameToViewBuilder;
+     
+protected:
+     ElectronView *m_electronView;
 };
 
 
