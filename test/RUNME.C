@@ -113,8 +113,8 @@ void RUNME(const char* datafile = 0) {
    TTree* events = (TTree*)ff->Get("Events");
    TEventList* list = new TEventList("list","");
    
-   // const char* selection = "muons.p4().pt()>20";
-   const char* selection = 0;
+   const char* selection = "pixelMatchGsfElectrons.pt() > 0"; // " && pixelMatchGsfElectrons.phi() > 0";
+//    const char* selection = 0;
    
    if ( selection && events )
      {
