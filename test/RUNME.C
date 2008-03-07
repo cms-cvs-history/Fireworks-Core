@@ -57,7 +57,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
    // ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
-   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
+//    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
@@ -96,21 +96,21 @@ void RUNME(const char* datafile = 0) {
 				 "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electrons);
 
-   FWPhysicsObjectDesc electronTracks("ElectronTracks",
-				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-				      FWDisplayProperties(kPink),
-				      "pixelMatchGsfElectrons");
-   ed.registerPhysicsObject(electronTracks);
+//    FWPhysicsObjectDesc electronTracks("ElectronTracks",
+// 				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+// 				      FWDisplayProperties(kPink),
+// 				      "pixelMatchGsfElectrons");
+//    ed.registerPhysicsObject(electronTracks);
 
 
-   FWPhysicsObjectDesc electronSC("ElectronSC",
-				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-				     FWDisplayProperties(kYellow),
-				     "pixelMatchGsfElectrons");
-   ed.registerPhysicsObject(electronSC);
+//    FWPhysicsObjectDesc electronSC("ElectronSC",
+// 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
+// 				     FWDisplayProperties(kYellow),
+// 				     "pixelMatchGsfElectrons");
+//    ed.registerPhysicsObject(electronSC);
 
    // register detail viewers
-   ed.registerDetailView("ElectronSC", new ElectronDetailView);
+   ed.registerDetailView("Electrons", new ElectronDetailView);
 
    //Finished configuration
 
