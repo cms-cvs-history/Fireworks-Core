@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include <iostream>
 #include "TClass.h"
 #include "TError.h"
 #include "TEventList.h"
@@ -37,8 +38,8 @@ void RUNME(const char* datafile = 0) {
    }
    
    if ( ! ff ) {
-      cout << "Failed to load data file" <<endl;
-      return;
+	std::cout << "Failed to load data file" << std::endl;
+	return;
    }
    
    fwlite::Event ev(ff);
@@ -57,7 +58,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
-   //   ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
+//       ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
    //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
    //   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
@@ -96,12 +97,12 @@ void RUNME(const char* datafile = 0) {
 		     "trackerMuons");
    ed.registerPhysicsObject(muons);
 
-   /*   FWPhysicsObjectDesc muonsPU("MuonsPU", 
-	TClass::GetClass("reco::MuonCollection"), 
-	FWDisplayProperties(kRed), 
-	"trackerMuons"); 
-	ed.registerPhysicsObject(muonsPU); 
-   */
+//       FWPhysicsObjectDesc muonsPU("MuonsPU", 
+// 	TClass::GetClass("reco::MuonCollection"), 
+// 	FWDisplayProperties(kRed), 
+// 	"trackerMuons"); 
+// 	ed.registerPhysicsObject(muonsPU); 
+   
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
@@ -148,7 +149,9 @@ void RUNME(const char* datafile = 0) {
 	ev.to( events->GetEntryNumber(i) );
       else 
 	ev.to(i);
+      printf("starting to draw event %d...\n", i);
       int code = ed.draw(ev);
+      printf("... event %d drawn\n", i);
       if ( code == 1 ) ++i;
       if ( code == -1 && i>0 ) --i;
       if ( code == -2 ) i=0;
