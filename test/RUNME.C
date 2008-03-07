@@ -28,6 +28,7 @@ void RUNME(const char* datafile = 0) {
      ff = TFile::Open(datafile);
    else
      ff = TFile::Open("data.root");
+     //     ff = TFile::Open("CSA07-CSA07Muon-Chowder-A3-PDMuon-ReReco-100pb-Skims4_0000_08A0A10B-25C5-DC11-BE27-001617C3B6B4.root");
    gErrorIgnoreLevel = -1;
    if ( ! ff && ! datafile ) {
       gSystem->Exec("wget -O data.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=data.root");
@@ -55,6 +56,10 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
+   ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
+   //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
+   //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
+   //   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    // ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
 //    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
@@ -89,6 +94,12 @@ void RUNME(const char* datafile = 0) {
 		     FWDisplayProperties(kRed),
 		     "trackerMuons");
    ed.registerPhysicsObject(muons);
+
+   FWPhysicsObjectDesc muonsPU("MuonsPU", 
+			     TClass::GetClass("reco::MuonCollection"), 
+			     FWDisplayProperties(kRed), 
+			     "trackerMuons"); 
+   ed.registerPhysicsObject(muonsPU); 
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
