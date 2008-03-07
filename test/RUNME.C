@@ -9,6 +9,7 @@
 #include "Fireworks/Core/interface/FWDisplayEvent.h"
 #include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
 #include "Fireworks/Core/interface/ElectronDetailView.h"
+#include "Fireworks/Core/interface/MuonDetailView.h"
 #endif
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
@@ -56,7 +57,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
-   ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
+   //   ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
    //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
    //   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
@@ -95,11 +96,12 @@ void RUNME(const char* datafile = 0) {
 		     "trackerMuons");
    ed.registerPhysicsObject(muons);
 
-   FWPhysicsObjectDesc muonsPU("MuonsPU", 
-			     TClass::GetClass("reco::MuonCollection"), 
-			     FWDisplayProperties(kRed), 
-			     "trackerMuons"); 
-   ed.registerPhysicsObject(muonsPU); 
+   /*   FWPhysicsObjectDesc muonsPU("MuonsPU", 
+	TClass::GetClass("reco::MuonCollection"), 
+	FWDisplayProperties(kRed), 
+	"trackerMuons"); 
+	ed.registerPhysicsObject(muonsPU); 
+   */
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
@@ -122,6 +124,7 @@ void RUNME(const char* datafile = 0) {
 
    // register detail viewers
    ed.registerDetailView("Electrons", new ElectronDetailView);
+   ed.registerDetailView("Muons", new MuonDetailView);
 
    //Finished configuration
 
