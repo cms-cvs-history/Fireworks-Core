@@ -8,6 +8,7 @@
 #include "DataFormats/FWLite/interface/Event.h"
 #include "Fireworks/Core/interface/FWDisplayEvent.h"
 #include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
+#include "Fireworks/Core/interface/ElectronDetailView.h"
 #endif
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
@@ -107,7 +108,10 @@ void RUNME(const char* datafile = 0) {
 				     FWDisplayProperties(kYellow),
 				     "pixelMatchGsfElectrons");
    ed.registerPhysicsObject(electronSC);
-   
+
+   // register detail viewers
+   ed.registerDetailView("ElectronSC", new ElectronDetailView);
+
    //Finished configuration
 
    TTree* events = (TTree*)ff->Get("Events");
