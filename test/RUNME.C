@@ -57,7 +57,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
-   ed.registerProxyBuilder("Muons","MuonsProxy3DBuilder");
+   ed.registerProxyBuilder("Muons","MuonsProxyRhoPhiZ2DBuilder");
 //       ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
    //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
    //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
@@ -82,7 +82,10 @@ void RUNME(const char* datafile = 0) {
    FWPhysicsObjectDesc jets("Jets",
 		    TClass::GetClass("reco::CaloJetCollection"),
 		    FWDisplayProperties(kYellow),
-		    "iterativeCone5CaloJets");
+		    "iterativeCone5CaloJets",
+		    "",
+		    "",
+		    "$.pt()>15");
    ed.registerPhysicsObject(jets);
 
    FWPhysicsObjectDesc tracks("Tracks",
