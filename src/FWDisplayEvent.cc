@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: FWDisplayEvent.cc,v 1.31 2008/03/07 03:18:02 tdaniels Exp $
+// $Id: FWDisplayEvent.cc,v 1.32 2008/03/07 03:59:14 tdaniels Exp $
 //
 
 // system include files
@@ -35,6 +35,7 @@
 #include "Fireworks/Core/interface/FWDisplayEvent.h"
 #include "Fireworks/Core/interface/FWRhoPhiZViewManager.h"
 #include "Fireworks/Core/interface/FW3DLegoViewManager.h"
+#include "Fireworks/Core/interface/FWEveLegoViewManager.h"
 #include "Fireworks/Core/interface/FWEventItemsManager.h"
 #include "Fireworks/Core/interface/FWViewManagerManager.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
@@ -92,12 +93,15 @@ FWDisplayEvent::FWDisplayEvent(bool iEnableDebug) :
   boost::shared_ptr<FWViewManagerBase> rpzViewManager( new FWRhoPhiZViewManager(m_guiManager.get()) );
   rpzViewManager->setGeom(&m_detIdToGeo);
   m_viewManager->add(rpzViewManager);
-  m_viewManager->add( boost::shared_ptr<FWViewManagerBase>( new FW3DLegoViewManager(m_guiManager.get())));
+  // m_viewManager->add( boost::shared_ptr<FWViewManagerBase>( new FW3DLegoViewManager(m_guiManager.get())));
 //   m_viewManager->add( boost::shared_ptr<FWViewManagerBase>( new MuonPUViewManager));
+  
+  m_viewManager->add( boost::shared_ptr<FWViewManagerBase>( new FWEveLegoViewManager(m_guiManager.get()) ) );
    
   m_guiManager->createView("Rho Phi");
   m_guiManager->createView("Rho Z");
-  m_guiManager->createView("3D Lego");
+  // m_guiManager->createView("3D Lego");
+  m_guiManager->createView("3D Lego Pro");
 
   m_guiManager->processGUIEvents();
 }
