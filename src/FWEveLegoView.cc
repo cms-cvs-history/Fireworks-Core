@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWEveLegoView.cc,v 1.3 2008/03/07 09:06:49 dmytro Exp $
+// $Id: FWEveLegoView.cc,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
 //
 
 // system include files
@@ -82,6 +82,7 @@ void
 FWEveLegoView::draw(TEveCaloDataHist* data)
 {
    m_lego->SetData(data);
+   m_lego->ElementChanged();
 }
 
 

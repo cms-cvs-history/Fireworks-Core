@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWEveLegoViewManager.cc,v 1.17 2008/03/10 07:29:26 dmytro Exp $
+// $Id: FWEveLegoViewManager.cc,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
 //
 
 // system include files
@@ -85,19 +85,23 @@ FWEveLegoViewManager::newEventAvailable()
   
    if(0==m_data || 0==m_views.size()) return;
    
-   m_data = new TEveCaloDataHist(); // it's a smart object, so it will clean up
+   // m_data = new TEveCaloDataHist(); // it's a smart object, so it will clean up
    
-   for ( std::vector<FWEveLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
-	 proxy != m_modelProxies.end(); ++proxy ) {
+   //   for ( std::vector<FWEveLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
+   //	 proxy != m_modelProxies.end(); ++proxy ) {
+   for ( unsigned int i = 0; i < m_modelProxies.size(); ++i ) {
+      FWEveLegoModelProxy* proxy = & (m_modelProxies[i]);
       bool firstTime = (proxy->product == 0);
       TH2* pointer = proxy->product;
+      if ( ! firstTime && m_data->GetNSlices() == int(m_modelProxies.size()) )
+	pointer = const_cast<TH2F*>(m_data->GetHistogram(i));
       proxy->builder->build( &pointer );
       proxy->product = dynamic_cast<TH2F*>(pointer);
       if (! proxy->product) printf("WARNING: proxy builder failed to initialize product for FWEveLegoViewManager\n");
       if ( firstTime && 0!= proxy->product ){
 	 proxy->product->Rebin2D();
+	 m_data->AddHistogram(proxy->product);
       }
-      if ( proxy->product ) m_data->AddHistogram(proxy->product);
    }
    
    std::for_each(m_views.begin(), m_views.end(),
