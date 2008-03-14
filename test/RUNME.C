@@ -46,7 +46,7 @@ void RUNME(const char* datafile = 0) {
    
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
-   FWDisplayEvent ed(debugMode);
+   FWDisplayEvent ed("",debugMode);
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("Jets","CaloJetSelectedProxy3DLegoBuilder");
