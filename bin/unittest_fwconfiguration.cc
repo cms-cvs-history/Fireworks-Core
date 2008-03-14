@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_fwconfiguration.cc,v 1.1 2008/02/25 21:32:20 chrjones Exp $
+// $Id: unittest_fwconfiguration.cc,v 1.2 2008/02/27 00:52:25 chrjones Exp $
 //
 
 // system include files
@@ -95,6 +95,8 @@ BOOST_AUTO_TEST_CASE( fwconfiguration )
    
    std::cout <<topConfig<<std::endl;
 
+   std::cout <<std::endl;
+   addToCode("a","top",topConfig,std::cout) << std::cout;
    
    //Test manager
    std::auto_ptr<Conf> pConf(new Conf() );
