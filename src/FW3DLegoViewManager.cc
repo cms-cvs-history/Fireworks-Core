@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FW3DLegoViewManager.cc,v 1.16 2008/03/07 09:06:49 dmytro Exp $
+// $Id: FW3DLegoViewManager.cc,v 1.17 2008/03/10 07:29:26 dmytro Exp $
 //
 
 // system include files
@@ -123,15 +123,21 @@ FW3DLegoViewManager::newEventAvailable()
    m_highlight->Reset();
    for ( std::vector<FW3DLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
 	 proxy != m_modelProxies.end(); ++proxy ) {
+      if ( proxy->ignore ) continue;
       bool firstTime = (proxy->product == 0);
       proxy->builder->build( &(proxy->product) );
-      if ( firstTime && 0!= proxy->product ){
-	 proxy->product->Rebin2D();
-	 if ( dynamic_cast<TH2F*>(proxy->product) ) m_stack->Add(proxy->product);
-      }
       
-      if ( proxy->product && dynamic_cast<TH2C*>(proxy->product) )
-	m_highlight_map->Add(proxy->product);
+      if ( ! proxy->product ){
+	 printf("WARNING: proxy builder failed to initialize product for FW3DLegoViewManager. Ignored\n");
+	 proxy->ignore = true;
+	 continue;
+      }
+
+      if ( firstTime ){
+	 ((TH2*)proxy->product)->Rebin2D();
+	 if (TH2F* hist = dynamic_cast<TH2F*>(proxy->product) ) m_stack->Add(hist);
+      }
+      if ( TH2C* hist = dynamic_cast<TH2C*>(proxy->product) ) m_highlight_map->Add(hist);
   }
 
    // apply selection by moving data out of proxy products to m_highlight
@@ -140,11 +146,12 @@ FW3DLegoViewManager::newEventAvailable()
 	 if ( m_highlight_map->GetBinContent(ix,iy) < 1 ) continue;
 	 for ( std::vector<FW3DLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
 	       proxy != m_modelProxies.end(); ++proxy ) {
-	    if ( ! proxy->product ) continue;
-	    m_highlight->SetBinContent(ix, iy, 
-				       m_highlight->GetBinContent(ix,iy) + proxy->product->GetBinContent(ix,iy) 
-				       );
-	    proxy->product->SetBinContent(ix,iy,0);
+	    if ( TH2F* product = dynamic_cast<TH2F*>(proxy->product) ) {
+	       m_highlight->SetBinContent(ix, iy, 
+					  m_highlight->GetBinContent(ix,iy) + product->GetBinContent(ix,iy)
+					  );
+	       product->SetBinContent(ix,iy,0);
+	    }
 	 }
       }
    }

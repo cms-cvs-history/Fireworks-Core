@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: FWEveLegoViewManager.h,v 1.9 2008/03/07 09:06:48 dmytro Exp $
+// $Id: FWEveLegoViewManager.h,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
 //
 
 // system include files
@@ -42,14 +42,18 @@ class TGFrame;
 class FWEveLegoView;
 class FWViewBase;
 class TEveCaloDataHist;
+class TEveElementList;
+class TEveSelection;
+class FWSelectionManager;
 
 struct FWEveLegoModelProxy
 {
    boost::shared_ptr<FW3DLegoDataProxyBuilder>   builder;
-   TH2F*                           product; //owned by builder
-   FWEveLegoModelProxy():product(0){}
+   TObject*                           product; //owned by builder
+   bool ignore;
+   FWEveLegoModelProxy():product(0),ignore(false){}
    FWEveLegoModelProxy(boost::shared_ptr<FW3DLegoDataProxyBuilder> iBuilder):
-    builder(iBuilder),product(0) {}
+    builder(iBuilder),product(0),ignore(false){}
 };
 
 class FWEveLegoViewManager : public FWViewManagerBase
@@ -72,6 +76,11 @@ class FWEveLegoViewManager : public FWViewManagerBase
 				const std::string&);
    
       FWViewBase* buildView(TGFrame* iParent);
+      
+      //connect to ROOT signals
+      void selectionAdded(TEveElement*);
+      void selectionRemoved(TEveElement*);
+      void selectionCleared();
 
    protected:
    virtual void modelChangesComing();
@@ -88,8 +97,12 @@ class FWEveLegoViewManager : public FWViewManagerBase
       std::vector<FWEveLegoModelProxy> m_modelProxies;
 
       std::vector<boost::shared_ptr<FWEveLegoView> > m_views;
+      TEveElementList* m_elements;
       TEveCaloDataHist* m_data;
       int  m_legoRebinFactor;
+      
+      TEveSelection* m_eveSelection;
+      FWSelectionManager* m_selectionManager;
 };
 
 

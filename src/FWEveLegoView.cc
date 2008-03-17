@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWEveLegoView.cc,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
+// $Id: FWEveLegoView.cc,v 1.1.2.2 2008/03/13 08:25:52 dmytro Exp $
 //
 
 // system include files
@@ -28,7 +28,7 @@
 #include "TEveManager.h"
 #include "TEveElement.h"
 #include "TEveCalo.h"
-
+#include "TEveElement.h"
 #include "TEveRGBAPalette.h"
 
 // user include files
@@ -46,7 +46,7 @@
 //
 // constructors and destructor
 //
-FWEveLegoView::FWEveLegoView(TGFrame* iParent)
+FWEveLegoView::FWEveLegoView(TGFrame* iParent, TEveElementList* list)
 {
    m_pad = new TEvePad;
    TGLEmbeddedViewer* ev = new TGLEmbeddedViewer(iParent, m_pad);
@@ -64,7 +64,7 @@ FWEveLegoView::FWEveLegoView(TGFrame* iParent)
    TEveRGBAPalette* pal = new TEveRGBAPalette(0, 100);
    // pal->SetLimits(0, data->GetMaxVal());
    pal->SetLimits(0, 100);
-   pal->SetDefaultColor((Color_t)4);
+   pal->SetDefaultColor((Color_t)1000);
    
    m_lego = new TEveCaloLego();
    m_lego->SetPalette(pal);
@@ -72,6 +72,8 @@ FWEveLegoView::FWEveLegoView(TGFrame* iParent)
    // lego->SetTitle("caloTower Et distribution");
    gEve->AddElement(m_lego, ns);
    gEve->AddToListTree(m_lego, kTRUE);
+   gEve->AddElement(list,ns);
+   gEve->AddToListTree(list, kTRUE);
 }
 
 FWEveLegoView::~FWEveLegoView()
@@ -81,8 +83,16 @@ FWEveLegoView::~FWEveLegoView()
 void
 FWEveLegoView::draw(TEveCaloDataHist* data)
 {
+   bool firstTime = (m_lego->GetData() == 0);
    m_lego->SetData(data);
    m_lego->ElementChanged();
+   m_lego->InvalidateCache();
+   if ( firstTime ) {
+      m_scene->Repaint();
+      m_viewer->Redraw(kTRUE);
+      m_viewer->GetGLViewer()->ResetCurrentCamera();
+   }
+   m_viewer->GetGLViewer()->RequestDraw();
 }
 
 

@@ -50,11 +50,13 @@ void RUNME(const char* datafile = 0) {
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
-   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
-   ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetEveProxy3DLegoBuilder");
    // ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    // ed.registerProxyBuilder("Jets","CaloJetSelectedProxy3DLegoBuilder");
+   
+   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
+   ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxyRhoPhiZ2DBuilder");

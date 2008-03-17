@@ -8,14 +8,16 @@
 //
 // Original Author:  
 //         Created:  Thu Dec  6 17:49:54 PST 2007
-// $Id: FW3DLegoDataProxyBuilder.cc,v 1.2 2008/02/03 02:43:55 dmytro Exp $
+// $Id: FW3DLegoDataProxyBuilder.cc,v 1.3 2008/03/06 10:17:17 dmytro Exp $
 //
 
 // system include files
 
 // user include files
 #include "Fireworks/Core/interface/FW3DLegoDataProxyBuilder.h"
-
+#include "TH2F.h"
+#include "TEveElement.h"
+#include <iostream>
 
 //
 // constants, enums and typedefs
@@ -81,11 +83,19 @@ FW3DLegoDataProxyBuilder::setItem(const FWEventItem* iItem)
 }
 
 void
-FW3DLegoDataProxyBuilder::build(TH2** iObject)
+FW3DLegoDataProxyBuilder::build(TObject** iObject)
 {
-  if(0!= m_item) {
-    build(m_item, iObject);
-  }
+   if ( ! m_item ) return;
+   TH2* hist = dynamic_cast<TH2*>(*iObject);
+   if ( ! *iObject || hist ) build(m_item, &hist);
+   if ( hist ) {
+      *iObject = hist;
+      return;
+   }
+   
+   TEveElementList* list = dynamic_cast<TEveElementList*>(*iObject);
+   if ( ! *iObject || list ) build(m_item, &list);
+   if ( list ) *iObject = list;
 }
 //
 // const member functions

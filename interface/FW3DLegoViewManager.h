@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: FW3DLegoViewManager.h,v 1.8 2008/03/06 10:17:17 dmytro Exp $
+// $Id: FW3DLegoViewManager.h,v 1.9 2008/03/07 09:06:48 dmytro Exp $
 //
 
 // system include files
@@ -41,14 +41,16 @@ class FWGUIManager;
 class TGFrame;
 class FW3DLegoView;
 class FWViewBase;
+class TObject;
 
 struct FW3DLegoModelProxy
 {
    boost::shared_ptr<FW3DLegoDataProxyBuilder>   builder;
-   TH2*                           product; //owned by builder
-   FW3DLegoModelProxy():product(0){}
+   TObject*                           product; //owned by builder
+   bool ignore;
+   FW3DLegoModelProxy():product(0), ignore(false){}
    FW3DLegoModelProxy(boost::shared_ptr<FW3DLegoDataProxyBuilder> iBuilder):
-    builder(iBuilder),product(0) {}
+    builder(iBuilder),product(0), ignore(false){}
 };
 
 class FW3DLegoViewManager : public FWViewManagerBase

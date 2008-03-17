@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWEveLegoView.h,v 1.3 2008/03/07 09:06:48 dmytro Exp $
+// $Id: FWEveLegoView.h,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
 //
 
 // system include files
@@ -33,12 +33,13 @@ class TEveCaloDataHist;
 class TEvePad;
 class TEveViewer;
 class TEveScene;
+class TEveElementList;
 
 class FWEveLegoView : public FWViewBase
 {
 
    public:
-      FWEveLegoView(TGFrame*);
+      FWEveLegoView(TGFrame*, TEveElementList*);
       virtual ~FWEveLegoView();
 
       // ---------- const member functions ---------------------

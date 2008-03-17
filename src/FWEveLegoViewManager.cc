@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWEveLegoViewManager.cc,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
+// $Id: FWEveLegoViewManager.cc,v 1.1.2.2 2008/03/13 08:25:52 dmytro Exp $
 //
 
 // system include files
@@ -26,6 +26,8 @@
 #include "TColor.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TEveCaloData.h"
+#include "TEveElement.h"
+#include "TROOT.h"
 
 // user include files
 #include "Fireworks/Core/interface/FWEveLegoViewManager.h"
@@ -34,6 +36,8 @@
 #include "Fireworks/Core/interface/FWEventItem.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
 
+#include "TEveSelection.h"
+#include "Fireworks/Core/interface/FWSelectionManager.h"
 
 //
 // constants, enums and typedefs
@@ -48,14 +52,22 @@
 //
 FWEveLegoViewManager::FWEveLegoViewManager(FWGUIManager* iGUIMgr):
   FWViewManagerBase("Proxy3DLegoBuilder"),
+  m_elements(0),
   m_data(0),
-  m_legoRebinFactor(1)
+  m_legoRebinFactor(1),
+  m_eveSelection(0),
+  m_selectionManager(0)
 {
    FWGUIManager::ViewBuildFunctor f;
    f=boost::bind(&FWEveLegoViewManager::buildView,
                  this, _1);
    iGUIMgr->registerViewBuilder(FWEveLegoView::staticTypeName(), f);
    
+   m_eveSelection=gEve->GetSelection();
+   m_eveSelection->SetPickToSelect(TEveSelection::kPS_Projectable);
+   m_eveSelection->Connect("SelectionAdded(TEveElement*)","FWEveLegoViewManager",this,"selectionAdded(TEveElement*)");
+   m_eveSelection->Connect("SelectionRemoved(TEveElement*)","FWEveLegoViewManager",this,"selectionRemoved(TEveElement*)");
+   m_eveSelection->Connect("SelectionCleared()","FWEveLegoViewManager",this,"selectionCleared()");
 }
 
 FWEveLegoViewManager::~FWEveLegoViewManager()
@@ -68,11 +80,13 @@ FWEveLegoViewManager::~FWEveLegoViewManager()
 FWViewBase* 
 FWEveLegoViewManager::buildView(TGFrame* iParent)
 {
+   if ( ! m_elements ) m_elements = new TEveElementList("Lego");
+   
    if(0==m_data) {
       m_data = new TEveCaloDataHist();
       // m_data->SetMaximum(100);
    }
-   boost::shared_ptr<FWEveLegoView> view( new FWEveLegoView(iParent) );
+   boost::shared_ptr<FWEveLegoView> view( new FWEveLegoView(iParent, m_elements) );
    m_views.push_back(view);
    return view.get();
 
@@ -90,20 +104,43 @@ FWEveLegoViewManager::newEventAvailable()
    //   for ( std::vector<FWEveLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
    //	 proxy != m_modelProxies.end(); ++proxy ) {
    for ( unsigned int i = 0; i < m_modelProxies.size(); ++i ) {
+      if ( m_modelProxies[i].ignore ) continue;
       FWEveLegoModelProxy* proxy = & (m_modelProxies[i]);
-      bool firstTime = (proxy->product == 0);
-      TH2* pointer = proxy->product;
-      if ( ! firstTime && m_data->GetNSlices() == int(m_modelProxies.size()) )
-	pointer = const_cast<TH2F*>(m_data->GetHistogram(i));
-      proxy->builder->build( &pointer );
-      proxy->product = dynamic_cast<TH2F*>(pointer);
-      if (! proxy->product) printf("WARNING: proxy builder failed to initialize product for FWEveLegoViewManager\n");
-      if ( firstTime && 0!= proxy->product ){
-	 proxy->product->Rebin2D();
-	 m_data->AddHistogram(proxy->product);
-      }
+      if ( proxy->product == 0) // first time
+	{
+	   TObject* product(0);
+	   proxy->builder->build( &product );
+	   if ( ! product) {
+	      printf("WARNING: proxy builder failed to initialize product for FWEveLegoViewManager. Ignored\n");
+	      proxy->ignore = true;
+	      continue;
+	   } 
+	   TH2F* hist = dynamic_cast<TH2F*>(product);
+	   if ( hist ) {
+	      hist->Rebin2D(); // FIX ME
+	      m_data->AddHistogram(hist);
+	      // set color
+	      TColor *color = gROOT->GetColor( hist->GetFillColor() );
+	      new TColor( 1000+m_data->GetNSlices()-1, color->GetRed(), color->GetGreen(), color->GetBlue() );
+	      // HACK to share a single histogram for each proxy
+	      // TEveLegoDataHist creates an internal copy of the histogram, 
+	      // let's use it for the product as well.
+	      proxy->product = const_cast<TH2F*>(m_data->GetHistogram(m_data->GetNSlices()-1) );
+	      continue;
+	   }
+	   TEveElementList* element = dynamic_cast<TEveElementList*>(product);
+	   if ( element ) {
+	      m_elements->AddElement( element );
+	      proxy->product = element;
+	      continue;
+	   }
+	   printf("WARNING: unknown product for FWEveLegoViewManager. Proxy is ignored\n");
+	   proxy->ignore = true;
+	} else {
+	   proxy->builder->build( &(proxy->product) );
+	}
    }
-   
+
    std::for_each(m_views.begin(), m_views.end(),
                  boost::bind(&FWEveLegoView::draw,_1, m_data) );
 }
@@ -111,6 +148,10 @@ FWEveLegoViewManager::newEventAvailable()
 void 
 FWEveLegoViewManager::newItem(const FWEventItem* iItem)
 {
+   if(0==m_selectionManager) {
+      //std::cout <<"got selection manager"<<std::endl;
+      m_selectionManager = iItem->selectionManager();
+   }
   TypeToBuilders::iterator itFind = m_typeToBuilders.find(iItem->name());
   if(itFind != m_typeToBuilders.end()) {
      for ( std::vector<std::string>::const_iterator builderName = itFind->second.begin();
@@ -148,3 +189,49 @@ FWEveLegoViewManager::modelChangesDone()
 }
 
 
+void
+FWEveLegoViewManager::selectionAdded(TEveElement* iElement)
+{
+   //std::cout <<"selection added"<<std::endl;
+   if(0!=iElement) {
+      void* userData=iElement->GetUserData();
+      //std::cout <<"  user data "<<userData<<std::endl;
+      if(0 != userData) {
+         FWModelId* id = static_cast<FWModelId*>(userData);
+         if( not id->item()->modelInfo(id->index()).isSelected() ) {
+            bool last = m_eveSelection->BlockSignals(kTRUE);
+            //std::cout <<"   selecting"<<std::endl;
+
+            id->select();
+            m_eveSelection->BlockSignals(last);
+         }
+      }
+   }
+}
+
+void
+FWEveLegoViewManager::selectionRemoved(TEveElement* iElement)
+{
+   //std::cout <<"selection removed"<<std::endl;
+   if(0!=iElement) {
+      void* userData=iElement->GetUserData();
+      if(0 != userData) {
+         FWModelId* id = static_cast<FWModelId*>(userData);
+         if( id->item()->modelInfo(id->index()).isSelected() ) {
+            bool last = m_eveSelection->BlockSignals(kTRUE);
+            //std::cout <<"   removing"<<std::endl;
+            id->unselect();
+            m_eveSelection->BlockSignals(last);
+         }
+      }
+   }
+   
+}
+
+void
+FWEveLegoViewManager::selectionCleared()
+{
+   if(0!= m_selectionManager) {
+      m_selectionManager->clearSelection();
+   }   
+}
