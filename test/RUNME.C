@@ -47,6 +47,8 @@ void RUNME(const char* datafile = 0) {
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
    FWDisplayEvent ed("",debugMode);
+   //uncomment this to read the configuration
+   //FWDisplayEvent ed("myconfig.fwc",debugMode);
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("Jets","CaloJetSelectedProxy3DLegoBuilder");
@@ -160,4 +162,5 @@ void RUNME(const char* datafile = 0) {
       if ( code == -2 ) i=0;
       if ( code == -3 ) break;
    }
+   ed.writeConfigurationFile("myconfig.fwc");
 }
