@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWEveLegoViewManager.cc,v 1.1.2.2 2008/03/13 08:25:52 dmytro Exp $
+// $Id: FWEveLegoViewManager.cc,v 1.1.2.3 2008/03/17 02:19:58 dmytro Exp $
 //
 
 // system include files
@@ -55,6 +55,7 @@ FWEveLegoViewManager::FWEveLegoViewManager(FWGUIManager* iGUIMgr):
   m_elements(0),
   m_data(0),
   m_legoRebinFactor(1),
+  m_itemChanged(false),
   m_eveSelection(0),
   m_selectionManager(0)
 {
@@ -169,6 +170,7 @@ FWEveLegoViewManager::newItem(const FWEventItem* iItem)
 	  }
        }
   }
+   iItem->itemChanged_.connect(boost::bind(&FWEveLegoViewManager::itemChanged,this,_1));
 }
 
 void 
@@ -179,13 +181,26 @@ FWEveLegoViewManager::registerProxyBuilder(const std::string& iType,
 }
 
 void 
+FWEveLegoViewManager::itemChanged(const FWEventItem*) {
+   m_itemChanged=true;
+}
+void 
 FWEveLegoViewManager::modelChangesComing()
 {
+   gEve->DisableRedraw();
 }
 void 
 FWEveLegoViewManager::modelChangesDone()
 {
-   newEventAvailable();
+   if ( m_itemChanged ) 
+     newEventAvailable();
+   else {
+      std::for_each(m_views.begin(), m_views.end(),
+		    boost::bind(&FWEveLegoView::draw,_1, m_data) );
+   }
+   
+   m_itemChanged = false;
+   gEve->EnableRedraw();
 }
 
 
@@ -235,3 +250,4 @@ FWEveLegoViewManager::selectionCleared()
       m_selectionManager->clearSelection();
    }   
 }
+

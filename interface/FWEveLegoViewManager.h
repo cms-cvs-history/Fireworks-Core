@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: FWEveLegoViewManager.h,v 1.1.2.1 2008/03/12 06:28:17 dmytro Exp $
+// $Id: FWEveLegoViewManager.h,v 1.1.2.2 2008/03/17 02:19:58 dmytro Exp $
 //
 
 // system include files
@@ -83,13 +83,15 @@ class FWEveLegoViewManager : public FWViewManagerBase
       void selectionCleared();
 
    protected:
-   virtual void modelChangesComing();
-   virtual void modelChangesDone();
+      virtual void modelChangesComing();
+      virtual void modelChangesDone();
 
    private:
       FWEveLegoViewManager(const FWEveLegoViewManager&); // stop default
 
       const FWEveLegoViewManager& operator=(const FWEveLegoViewManager&); // stop default
+   
+      void itemChanged(const FWEventItem*);
 
       // ---------- member data --------------------------------
       typedef  std::map<std::string,std::vector<std::string> > TypeToBuilders;
@@ -101,6 +103,7 @@ class FWEveLegoViewManager : public FWViewManagerBase
       TEveCaloDataHist* m_data;
       int  m_legoRebinFactor;
       
+      bool m_itemChanged;
       TEveSelection* m_eveSelection;
       FWSelectionManager* m_selectionManager;
 };
