@@ -70,36 +70,53 @@ void RUNME(const char* datafile = 0) {
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
-		    TClass::GetClass("CaloTowerCollection"),
-		    FWDisplayProperties(kRed),
-		    "towerMaker");
+                            TClass::GetClass("CaloTowerCollection"),
+                            FWDisplayProperties(kRed),
+                            "towerMaker",
+                            "",
+                            "",
+                            "",
+                            2);
    ed.registerPhysicsObject(ecal);
 
    FWPhysicsObjectDesc hcal("HCal",
 		    TClass::GetClass("CaloTowerCollection"),
-		    FWDisplayProperties(kBlue),
-		    "towerMaker");
+                            FWDisplayProperties(kBlue),
+                            "towerMaker",
+                            "",
+                            "",
+                            "",
+                            2);
    ed.registerPhysicsObject(hcal);
 
    FWPhysicsObjectDesc jets("Jets",
-		    TClass::GetClass("reco::CaloJetCollection"),
-		    FWDisplayProperties(kYellow),
-		    "iterativeCone5CaloJets",
-		    "",
-		    "",
-		    "$.pt()>15");
+                            TClass::GetClass("reco::CaloJetCollection"),
+                            FWDisplayProperties(kYellow),
+                            "iterativeCone5CaloJets",
+                            "",
+                            "",
+                            "$.pt()>15",
+                            3);
    ed.registerPhysicsObject(jets);
 
    FWPhysicsObjectDesc tracks("Tracks",
-		      TClass::GetClass("reco::TrackCollection"),
-		      FWDisplayProperties(kGreen),
-		      "ctfWithMaterialTracks");
+                              TClass::GetClass("reco::TrackCollection"),
+                              FWDisplayProperties(kGreen),
+                              "ctfWithMaterialTracks",
+                              "",
+                              "",
+                              "$.pt()>0",
+                              1);
    ed.registerPhysicsObject(tracks);
 
    FWPhysicsObjectDesc muons("Muons",
-		     TClass::GetClass("reco::MuonCollection"),
-		     FWDisplayProperties(kRed),
-		     "trackerMuons");
+                             TClass::GetClass("reco::MuonCollection"),
+                             FWDisplayProperties(kRed),
+                             "trackerMuons",
+                             "",
+                             "",
+                             "$.pt()>0",
+                             5);
    ed.registerPhysicsObject(muons);
 
 //       FWPhysicsObjectDesc muonsPU("MuonsPU", 
@@ -111,8 +128,12 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-				 FWDisplayProperties(kPink),
-				 "pixelMatchGsfElectrons");
+				 FWDisplayProperties(kCyan),
+				 "pixelMatchGsfElectrons",
+                                 "",
+                                 "",
+                                 "$.pt()>0",
+                                 3);
    ed.registerPhysicsObject(electrons);
 
 //    FWPhysicsObjectDesc electronTracks("ElectronTracks",
