@@ -47,17 +47,25 @@ void RUNME(const char* datafile = 0) {
    
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
-   FWDisplayEvent ed("",debugMode);
+   Bool_t newLegoMode = kFALSE;
+   if ( gSystem->Getenv("FireworksNewLego") ) newLegoMode = kTRUE;
+   std::string configFile = "";
+   if ( gSystem->Getenv("FireworksConfig") ) configFile = gSystem->Getenv("FireworksConfig");
+   
+   FWDisplayEvent ed(configFile,debugMode,newLegoMode);
+   
    //uncomment this to read the configuration
    //FWDisplayEvent ed("myconfig.fwc",debugMode);
 
    //The following will be moved to a configuration file
-   ed.registerProxyBuilder("Jets","CaloJetSelectedProxy3DLegoBuilder");
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
-   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetProxyEveLegoBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetProxyTH2LegoBuilder");
+   ed.registerProxyBuilder("Jets","CaloJetSelectedProxyTH2LegoBuilder");
+   
+   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
-   ed.registerProxyBuilder("Jets","CaloJetProxy3DLegoBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
    ed.registerProxyBuilder("Muons","MuonsProxyRhoPhiZ2DBuilder");
