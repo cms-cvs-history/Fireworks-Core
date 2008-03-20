@@ -10,6 +10,7 @@
 #include "Fireworks/Core/interface/FWDisplayEvent.h"
 #include "Fireworks/Core/interface/FWPhysicsObjectDesc.h"
 #include "Fireworks/Core/interface/ElectronDetailView.h"
+#include "Fireworks/Core/interface/TrackDetailView.h"
 #include "Fireworks/Core/interface/MuonDetailView.h"
 #endif
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
@@ -68,6 +69,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
 //    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
+//    ed.registerProxyBuilder("TrackHits", "TracksRecHitsProxy3DBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
@@ -108,6 +110,12 @@ void RUNME(const char* datafile = 0) {
                               "$.pt()>0",
                               1);
    ed.registerPhysicsObject(tracks);
+
+//    FWPhysicsObjectDesc trackhits("TrackHits",
+// 		      TClass::GetClass("reco::TrackCollection"),
+// 		      FWDisplayProperties(kWhite),
+// 		      "ctfWithMaterialTracks");
+//    ed.registerPhysicsObject(trackhits);
 
    FWPhysicsObjectDesc muons("Muons",
                              TClass::GetClass("reco::MuonCollection"),
@@ -152,15 +160,15 @@ void RUNME(const char* datafile = 0) {
    // register detail viewers
    ed.registerDetailView("Electrons", new ElectronDetailView);
    ed.registerDetailView("Muons", new MuonDetailView);
+   ed.registerDetailView("Tracks", new TrackDetailView);
 
    //Finished configuration
 
    TTree* events = (TTree*)ff->Get("Events");
    TEventList* list = new TEventList("list","");
    
-//    const char* selection = "pixelMatchGsfElectrons.pt() > 0"; // " && pixelMatchGsfElectrons.phi() > 0";
+//     const char* selection = "pixelMatchGsfElectrons.pt() > 0"; // " && pixelMatchGsfElectrons.phi() > 0";
    const char* selection = 0;
-   
    if ( selection && events )
      {
 	events->Draw(">>list",selection);
@@ -170,7 +178,7 @@ void RUNME(const char* datafile = 0) {
    int nEntries = ev.size();
    if ( events && events->GetEventList() ) nEntries = list->GetN();
    
-   for( unsigned int i = 0; i < nEntries; ) {
+   for( unsigned int i = 0 /*1909*/; i < nEntries; ) {
       if ( events && events->GetEventList() ) 
 	ev.to( events->GetEntryNumber(i) );
       else 
