@@ -27,207 +27,8 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("ECal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
   topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("600");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("HCal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::CaloJet>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("iterativeCone5CaloJets");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("400");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Jets", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Track>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("ctfWithMaterialTracks");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("416");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Tracks", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Muon>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("trackerMuons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Muons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::PixelMatchGsfElectron>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("pixelMatchGsfElectrons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("432");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Electrons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
+  topaa.addKeyValue("filterExpression", topaaa);
 }
 {
   FWConfiguration topaaa(0);
@@ -265,207 +66,8 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaa(0);
-  topaaa.addValue("600");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("HCal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::CaloJet>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("iterativeCone5CaloJets");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
   topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("400");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Jets", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Track>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("ctfWithMaterialTracks");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("416");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Tracks", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Muon>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("trackerMuons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Muons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::PixelMatchGsfElectron>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("pixelMatchGsfElectrons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("432");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Electrons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("ECal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
+  topaa.addKeyValue("filterExpression", topaaa);
 }
 {
   FWConfiguration topaaa(0);
@@ -503,207 +105,8 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaa(0);
-  topaaa.addValue("400");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Jets", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Track>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("ctfWithMaterialTracks");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("416");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Tracks", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Muon>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("trackerMuons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Muons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::PixelMatchGsfElectron>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("pixelMatchGsfElectrons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("432");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Electrons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("ECal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("600");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("HCal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::CaloJet>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("iterativeCone5CaloJets");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
+  topaaa.addValue("$.pt()>15");
+  topaa.addKeyValue("filterExpression", topaaa);
 }
 {
   FWConfiguration topaaa(0);
@@ -741,207 +144,8 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaa(0);
-  topaaa.addValue("416");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Tracks", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Muon>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("trackerMuons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Muons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::PixelMatchGsfElectron>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("pixelMatchGsfElectrons");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("432");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Electrons", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("632");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("ECal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("edm::SortedCollection<CaloTower,edm::StrictWeakOrdering<CaloTower> >");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("towerMaker");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("600");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("HCal", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::CaloJet>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("iterativeCone5CaloJets");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("400");
-  topaa.addKeyValue("color", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("t");
-  topaa.addKeyValue("isVisible", topaaa);
-}
-  topa.addKeyValue("Jets", topaa);
-}
-{
-  FWConfiguration topaa(1);
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("std::vector<reco::Track>");
-  topaa.addKeyValue("type", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("ctfWithMaterialTracks");
-  topaa.addKeyValue("moduleLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("productInstanceLabel", topaaa);
-}
-{
-  FWConfiguration topaaa(0);
-  topaaa.addValue("");
-  topaa.addKeyValue("processName", topaaa);
+  topaaa.addValue("$.pt()>0");
+  topaa.addKeyValue("filterExpression", topaaa);
 }
 {
   FWConfiguration topaaa(0);
@@ -979,6 +183,11 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaa(0);
+  topaaa.addValue("$.pt()>0");
+  topaa.addKeyValue("filterExpression", topaaa);
+}
+{
+  FWConfiguration topaaa(0);
   topaaa.addValue("632");
   topaa.addKeyValue("color", topaaa);
 }
@@ -1010,6 +219,11 @@ FWConfiguration* fwConfig() {
   FWConfiguration topaaa(0);
   topaaa.addValue("");
   topaa.addKeyValue("processName", topaaa);
+}
+{
+  FWConfiguration topaaa(0);
+  topaaa.addValue("$.pt()>0");
+  topaa.addKeyValue("filterExpression", topaaa);
 }
 {
   FWConfiguration topaaa(0);
@@ -1052,7 +266,7 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaaa(0);
-  topaaaa.addValue("3.61574");
+  topaaaa.addValue("2.91691");
   topaaa.addKeyValue("cameraZoomRho Z", topaaaa);
 }
 {
@@ -1146,7 +360,7 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaaa(0);
-  topaaaa.addValue("4.971");
+  topaaaa.addValue("3.07316");
   topaaa.addKeyValue("cameraZoomRho Phi", topaaaa);
 }
 {
@@ -1216,12 +430,12 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaaaa(0);
-  topaaaa.addValue("-11.7946");
+  topaaaa.addValue("0");
   topaaa.addKeyValue("cameraMatrix13Rho Phi", topaaaa);
 }
 {
   FWConfiguration topaaaa(0);
-  topaaaa.addValue("21.1805");
+  topaaaa.addValue("0");
   topaaa.addKeyValue("cameraMatrix14Rho Phi", topaaaa);
 }
 {
@@ -1244,9 +458,9 @@ FWConfiguration* fwConfig() {
 }
 {
   FWConfiguration topaa(1);
-  topaa.addValue("294");
-  topaa.addValue("263");
-  topaa.addValue("470");
+  topaa.addValue("432");
+  topaa.addValue("322");
+  topaa.addValue("434");
   topaa.addValue("713");
   topa.addKeyValue("view area", topaa);
 }
