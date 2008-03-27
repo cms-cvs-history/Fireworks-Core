@@ -47,15 +47,10 @@ void RUNME(const char* datafile = 0) {
    
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
-   Bool_t newLegoMode = kFALSE;
-   if ( gSystem->Getenv("FireworksNewLego") ) newLegoMode = kTRUE;
-   std::string configFile = "";
+   std::string configFile = "myconfig.fwc";
    if ( gSystem->Getenv("FireworksConfig") ) configFile = gSystem->Getenv("FireworksConfig");
-   
-   FWDisplayEvent ed(configFile,debugMode,newLegoMode);
-   
-   //uncomment this to read the configuration
-   //FWDisplayEvent ed("myconfig.fwc",debugMode);
+
+   FWDisplayEvent ed(configFile,debugMode);
 
    //The following will be moved to a configuration file
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
@@ -87,7 +82,6 @@ void RUNME(const char* datafile = 0) {
                             "",
                             "",
                             2);
-   ed.registerPhysicsObject(ecal);
 
    FWPhysicsObjectDesc hcal("HCal",
 		    TClass::GetClass("CaloTowerCollection"),
@@ -97,7 +91,6 @@ void RUNME(const char* datafile = 0) {
                             "",
                             "",
                             2);
-   ed.registerPhysicsObject(hcal);
 
    FWPhysicsObjectDesc jets("Jets",
                             TClass::GetClass("reco::CaloJetCollection"),
@@ -107,7 +100,6 @@ void RUNME(const char* datafile = 0) {
                             "",
                             "$.pt()>15",
                             3);
-   ed.registerPhysicsObject(jets);
 
    FWPhysicsObjectDesc tracks("Tracks",
                               TClass::GetClass("reco::TrackCollection"),
@@ -117,13 +109,6 @@ void RUNME(const char* datafile = 0) {
                               "",
                               "$.pt()>0",
                               1);
-   ed.registerPhysicsObject(tracks);
-
-//    FWPhysicsObjectDesc trackhits("TrackHits",
-// 		      TClass::GetClass("reco::TrackCollection"),
-// 		      FWDisplayProperties(kWhite),
-// 		      "ctfWithMaterialTracks");
-//    ed.registerPhysicsObject(trackhits);
 
    FWPhysicsObjectDesc muons("Muons",
                              TClass::GetClass("reco::MuonCollection"),
@@ -133,14 +118,6 @@ void RUNME(const char* datafile = 0) {
                              "",
                              "$.pt()>0",
                              5);
-   ed.registerPhysicsObject(muons);
-
-//       FWPhysicsObjectDesc muonsPU("MuonsPU", 
-// 	TClass::GetClass("reco::MuonCollection"), 
-// 	FWDisplayProperties(kRed), 
-// 	"trackerMuons"); 
-// 	ed.registerPhysicsObject(muonsPU); 
-   
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
@@ -150,20 +127,16 @@ void RUNME(const char* datafile = 0) {
                                  "",
                                  "$.pt()>0",
                                  3);
-   ed.registerPhysicsObject(electrons);
 
-//    FWPhysicsObjectDesc electronTracks("ElectronTracks",
-// 				      TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-// 				      FWDisplayProperties(kPink),
-// 				      "pixelMatchGsfElectrons");
-//    ed.registerPhysicsObject(electronTracks);
-
-
-//    FWPhysicsObjectDesc electronSC("ElectronSC",
-// 				     TClass::GetClass("reco::PixelMatchGsfElectronCollection"),
-// 				     FWDisplayProperties(kYellow),
-// 				     "pixelMatchGsfElectrons");
-//    ed.registerPhysicsObject(electronSC);
+   if (configFile.empty()) {
+      ed.registerPhysicsObject(ecal);
+      ed.registerPhysicsObject(hcal);
+      ed.registerPhysicsObject(jets);
+      ed.registerPhysicsObject(tracks);
+      ed.registerPhysicsObject(muons);
+      ed.registerPhysicsObject(electrons);
+   }
+   
 
    // register detail viewers
    ed.registerDetailView("Electrons", new ElectronDetailView);
