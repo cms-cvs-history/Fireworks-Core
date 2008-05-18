@@ -14,10 +14,8 @@ my $libs_file              = "libs.txt";
 my $core_make_file         = "core.mk";
 my $project_make_file      = "project.mk";
 my $mode                   = "core";
-my $gccxml                 = "/afs/cern.ch/sw/lcg/external/gccxml/0.7.0_20070615/slc4_ia32_gcc34";
   
 GetOptions( "m|mode=s"     => \$mode,
-            "g|gccxml=s"   => \$gccxml,
             "d|dir=s"      => \$dir ) || die ("Abort.\n");
 
 $core_mode = 1 if ( $mode =~ /core/i);
@@ -192,8 +190,7 @@ sub split_external_name{
 }
 
 foreach my $tool ( sort keys %scram_tools ){
-    if ( $tool =~ /gccxml/i && $core_mode){
-	system("cp -r /afs/cern.ch/sw/lcg/external/gccxml/0.7.0_20070615/slc4_ia32_gcc34 $dir/external/gccxml");
+#    if ( $tool =~ /gccxml/i && $core_mode){
 #	# open tool file and parse it
 #	if ( `cat $dir/tools/gccxml | grep GCCXML_BASE` =~ /GCCXML_BASE=(\S+)/ ){
 #	    my ($path,$name,$fullpath) = split_external_name($1);
@@ -204,8 +201,8 @@ foreach my $tool ( sort keys %scram_tools ){
 #		$mk_text .= "GCCXMLDIR := $fullpath\n";
 #	    }
 #	}
-	next;
-    }
+#	next;
+#    }
     
     if ($scram_tools{$tool}->{libs} =~ /\S/){
 	$mk_libs .= " $scram_tools{$tool}->{libs}";
@@ -273,8 +270,6 @@ if ( $core_mode ) {
     print OUT "CoreIncludes := $mk_incs\n";
     print OUT $mk_text;
     close OUT;
-    system("cp $0 $dir/");
-    system("cp Makefile $dir/");
 } else {
     open(OUT, ">$dir/$project_make_file")||die "Cannot write to file $dir/$project_make_file\n$!\n";
     print OUT "ProjectLibs := $mk_libs\n";
