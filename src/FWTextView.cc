@@ -81,6 +81,22 @@ void FWTextView::newEvent (const fwlite::Event &ev)
      }
      if (mets != 0)
 	  n_mets = mets->size();
+     //------------------------------------------------------------
+     // get tracks
+     //------------------------------------------------------------
+     fwlite::Handle<reco::TrackCollection> h_tracks;
+     const reco::TrackCollection *tracks = 0;
+     int n_tracks = 0;
+     try {
+	  h_tracks.getByLabel(ev, "generalTracks");
+	  tracks = h_tracks.ptr();
+     }
+     catch (...) 
+     {
+	  std::cout << "no tracks :-(" << std::endl;
+     }
+     if (mets != 0)
+	  n_tracks = tracks->size();
 
      //------------------------------------------------------------
      // print header
@@ -114,8 +130,8 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	       trd0 = muon.track()->d0();
 	       trsd0 = muon.track()->d0Error();
 	  }
-	  printf("%5.1f\t %c\t %c\t %c\t %c\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f\t"
-		 "%.3f\t\t %d\t\t %.3f\t %7.3f\t %c\t\t %c\t\t %c\t\t %c\n",
+	  printf("%5.1f\t %c\t %c\t %c\t %c\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t"
+		 "%6.3f\t\t %d\t\t %6.3f\t %7.3f\t %c\t\t %c\t\t %c\t\t %c\n",
 		 muon.pt(), // is this right?
 		 muon.isGlobalMuon() 		? 'y' : 'n', 
 		 muon.isTrackerMuon()		? 'y' : 'n', 
@@ -144,8 +160,8 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	  }
 	  const double pin  = electron.trackMomentumAtVtx().R();
 	  const double pout = electron.trackMomentumOut().R();
-	  printf("%5.1f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f\t %.3f\t"
-		 "%.3f\t %.3f\t %.3f\t %c\t %c\t %c\n",
+	  printf("%5.1f\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t %6.3f\t"
+		 "%6.3f\t %6.3f\t %6.3f\t %c\t %c\t %c\n",
 		 et, electron.eta(), electron.phi(),
 		 electron.eSuperClusterOverP(), electron.hadronicOverEm(),
 		 (pin - pout) / pin,
@@ -168,7 +184,7 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	       printf("skipping %d jets\n", n_jets - i);
 	       break;
 	  }
-	  printf("%5.1f\t %.3f\t %.3f\t %5.1f\t %5.1f\t %.3f\t %.3f\n",
+	  printf("%5.1f\t %6.3f\t %6.3f\t %5.1f\t %5.1f\t %6.3f\t %6.3f\n",
 		 et, jet.eta(), jet.phi(),
 		 jet.p4().E() * jet.emEnergyFraction(),		// this has got
 		 jet.p4().E() * jet.energyFractionHadronic(),	// to be a joke
@@ -176,4 +192,8 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 		 0.	// how do we get the charge fraction?
 	       );
      }
+     //------------------------------------------------------------
+     // print tracks
+     //------------------------------------------------------------
+     printf("Tracks\n");
 }
