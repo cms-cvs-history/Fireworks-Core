@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: FWDisplayEvent.cc,v 1.41 2008/03/29 19:14:27 chrjones Exp $
+// $Id: FWDisplayEvent.cc,v 1.42 2008/04/01 15:45:01 dmytro Exp $
 //
 
 // system include files
@@ -44,6 +44,7 @@
 #include "Fireworks/Core/interface/FWSelectionManager.h"
 #include "Fireworks/Core/interface/FWModelExpressionSelector.h"
 #include "Fireworks/Core/interface/FWDetailViewManager.h"
+#include "Fireworks/Core/interface/FWTextView.h"
 #include "Fireworks/Core/interface/ElectronSCViewManager.h"
 #include "Fireworks/Core/interface/MuonPUViewManager.h"
 #include "DataFormats/FWLite/interface/Event.h"
@@ -74,6 +75,7 @@ FWDisplayEvent::FWDisplayEvent(const std::string& iConfigFileName,
                                 m_eiManager.get(),
                                 iEnableDebug)),
   m_viewManager( new FWViewManagerManager(m_changeManager.get())),
+  m_textView(new FWTextView),
   m_configFileName(iConfigFileName)
 {
   //connect up the managers
@@ -201,6 +203,7 @@ FWDisplayEvent::draw(const fwlite::Event& iEvent) const
 {
   m_eiManager->setGeom(&m_detIdToGeo);
   m_eiManager->newEvent(&iEvent);
+  m_textView->newEvent(iEvent);
   return m_guiManager->allowInteraction();
 }
 
