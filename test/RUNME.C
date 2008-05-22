@@ -12,6 +12,7 @@
 #include "Fireworks/Core/interface/ElectronDetailView.h"
 #include "Fireworks/Core/interface/TrackDetailView.h"
 #include "Fireworks/Core/interface/MuonDetailView.h"
+#include "Fireworks/Core/interface/GenParticleDetailView.h"
 #endif
 //if this is commented out then 'ev' disappears from CINT after ed.draw(ev)
 // #include "Fireworks/Core/interface/FWDisplayEvent.h"
@@ -73,6 +74,7 @@ void RUNME(const char* datafile = 0) {
 //    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 //    ed.registerProxyBuilder("TrackHits", "TracksRecHitsProxy3DBuilder");
+   ed.registerProxyBuilder("GenParticles", "GenParticleProxy3DBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
@@ -128,6 +130,15 @@ void RUNME(const char* datafile = 0) {
                                  "$.pt()>0",
                                  3);
 
+   FWPhysicsObjectDesc genParticles("GenParticles",
+				    TClass::GetClass("reco::GenParticleCollection"),
+				    FWDisplayProperties(kMagenta),
+				    "genParticles",
+				    "",
+				    "",
+				    "$.pt()>1 && $.status() == 3",
+				    6);
+
    if (configFile.empty()) {
       ed.registerPhysicsObject(ecal);
       ed.registerPhysicsObject(hcal);
@@ -135,6 +146,7 @@ void RUNME(const char* datafile = 0) {
       ed.registerPhysicsObject(tracks);
       ed.registerPhysicsObject(muons);
       ed.registerPhysicsObject(electrons);
+      ed.registerPhysicsObject(genParticles);
    }
    
 
@@ -142,6 +154,7 @@ void RUNME(const char* datafile = 0) {
    ed.registerDetailView("Electrons", new ElectronDetailView);
    ed.registerDetailView("Muons", new MuonDetailView);
    ed.registerDetailView("Tracks", new TrackDetailView);
+   ed.registerDetailView("GenParticles", new GenParticleDetailView);
 
    //Finished configuration
 
