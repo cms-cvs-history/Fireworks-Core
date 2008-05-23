@@ -15,6 +15,17 @@
 
 #include <iostream>
 
+#include "TableManagers.h"
+
+FWTextView::FWTextView ()
+     : el_manager(new ElectronTableManager),
+       mu_manager(new MuonTableManager),
+       jet_manager(new JetTableManager),
+       fMain(0)
+{
+
+}
+
 void FWTextView::newEvent (const fwlite::Event &ev)
 {
      //------------------------------------------------------------
@@ -112,6 +123,7 @@ void FWTextView::newEvent (const fwlite::Event &ev)
      //------------------------------------------------------------
      // print muons
      //------------------------------------------------------------
+     mu_manager->rows.clear();
      printf("Muons\n");
      printf("pt\t global\t tk\t SA\t calo\t iso(3)\t iso(5)\t tr pt\t eta\t"
 	    " phi\t chi^2/ndof\t matches\t d0\t sig(d0)\t"
@@ -144,10 +156,25 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 		 trd0, trd0 / trsd0,
 		 'm', 'm', 'm', 'm' // get these flags!
 	       );
+	  MuonRowStruct row = {
+		 muon.pt(), // is this right?
+		 muon.isGlobalMuon() 		? FLAG_YES : FLAG_NO, 
+		 muon.isTrackerMuon()		? FLAG_YES : FLAG_NO, 
+		 muon.isStandAloneMuon()	? FLAG_YES : FLAG_NO, 
+		 muon.isCaloMuon()		? FLAG_YES : FLAG_NO,
+		 0., 0., // what iso? 
+		 trpt, muon.eta(), muon.phi(),
+		 0., // how to get chi^2?
+		 muon.numberOfMatches(Muon::SegmentArbitration), // is this the right arbitration?
+		 trd0, trd0 / trsd0,
+		 FLAG_MAYBE, FLAG_MAYBE, FLAG_MAYBE, FLAG_MAYBE // get these flags!
+	  };
+	  mu_manager->rows.push_back(row);
      }
      //------------------------------------------------------------
      // print electrons
      //------------------------------------------------------------
+     el_manager->rows.clear();
      printf("Electrons\n");
      printf("Et\t eta\t phi\t E/p\t H/E\t fbrem\t dei\t dpi\t see\t spp\t"
 	    " iso\t robust\t loose\t tight\n");
@@ -171,10 +198,22 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 		 0., // can we get the iso?
 		 'm', 'm', 'm' // can we get these flags?
 	       );
+	  ElectronRowStruct row = { 		 
+	       et, electron.eta(), electron.phi(),
+	       electron.eSuperClusterOverP(), electron.hadronicOverEm(),
+	       (pin - pout) / pin,
+	       electron.deltaEtaSuperClusterTrackAtVtx(),
+	       electron.deltaPhiSuperClusterTrackAtVtx(),
+	       0., 0., // can we get the shape?
+	       0., // can we get the iso?
+	       FLAG_MAYBE, FLAG_MAYBE, FLAG_MAYBE // can we get these flags?
+	  };
+	  el_manager->rows.push_back(row);
      }
      //------------------------------------------------------------
      // print jets
      //------------------------------------------------------------
+     jet_manager->rows.clear();
      printf("Jets\n");
      printf("Et\t eta\t phi\t ECAL\t HCAL\t emf\t chf\n");
      for (int i = 0; i < n_jets; ++i) {
@@ -191,9 +230,46 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 		 jet.emEnergyFraction(), 
 		 0.	// how do we get the charge fraction?
 	       );
+	  JetRowStruct row = {
+		 et, jet.eta(), jet.phi(),
+		 jet.p4().E() * jet.emEnergyFraction(),		// this has got
+		 jet.p4().E() * jet.energyFractionHadronic(),	// to be a joke
+		 jet.emEnergyFraction(), 
+		 0.	// how do we get the charge fraction?
+	  };
+	  jet_manager->rows.push_back(row);
      }
      //------------------------------------------------------------
      // print tracks
      //------------------------------------------------------------
      printf("Tracks\n");
+     
+     //------------------------------------------------------------
+     // widget up some tables
+     //------------------------------------------------------------
+     int width=1200;
+     int height=600;
+     // Create a main frame 
+     if (fMain == 0) {
+	  fMain = new TGMainFrame(gClient->GetRoot(),width,height);
+	  mu_manager->MakeFrame(fMain, width, height);
+	  el_manager->MakeFrame(fMain, width, height);
+	  jet_manager->MakeFrame(fMain, width, height);
+	  
+	  // use hierarchical cleaning
+	  fMain->SetCleanup(kDeepCleanup);
+	  
+	  // Set a name to the main frame 
+	  fMain->SetWindowName("Text view"); 
+	  
+	  // Map all subwindows of main frame 
+	  fMain->MapSubwindows(); 
+     
+	  // Map main frame 
+	  fMain->MapWindow(); 
+	  
+	  // resize main window to tableWidth plus size of scroller and for first few cells heights.
+	  // so far I don't know how to figure out scroller size, I just found it's about 30 units.
+	  fMain->Resize(width+20,height+20);
+     }
 }
