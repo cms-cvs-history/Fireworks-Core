@@ -30,13 +30,8 @@ void cosmics(const char* datafile = 0) {
    if ( datafile )
      ff = TFile::Open(datafile);
    else
-     ff = TFile::Open("data.root");
-     //     ff = TFile::Open("CSA07-CSA07Muon-Chowder-A3-PDMuon-ReReco-100pb-Skims4_0000_08A0A10B-25C5-DC11-BE27-001617C3B6B4.root");
+     ff = TFile::Open("cosmics.root");
    gErrorIgnoreLevel = -1;
-   if ( ! ff && ! datafile ) {
-      gSystem->Exec("wget -O data.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=data.root");
-      ff = TFile::Open("data.root");
-   }
    
    if ( ! ff ) {
 	std::cout << "Failed to load data file" << std::endl;
