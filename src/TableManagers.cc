@@ -44,7 +44,7 @@ void FWTableManager::MakeFrame (TGMainFrame *parent, int width, int height)
      frame = new TGCompositeFrame(parent, width, height);
      TGLayoutHints *tFrameHints = 
  	  new TGLayoutHints(kLHintsTop|kLHintsLeft|
- 			    kLHintsExpandX|kLHintsExpandY);
+ 			    kLHintsExpandX);
      parent->AddFrame(frame,tFrameHints);
      parent->HideFrame(frame);
      
