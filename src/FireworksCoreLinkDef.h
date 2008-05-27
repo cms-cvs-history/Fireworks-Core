@@ -6,6 +6,7 @@
 #include "Fireworks/Core/src/FWListViewObject.h"
 #include "Fireworks/Core/src/FWListViewObjectEditor.h"
 #include "Fireworks/Core/src/FWListItemBase.h"
+#include "Fireworks/Core/src/TableWidget.h"
 #ifdef __CINT__
 #pragma link off all globals;
 #pragma link off all classes;
@@ -18,4 +19,5 @@
 #pragma link C++ class FWListViewObject;
 #pragma link C++ class FWListViewObjectEditor;
 #pragma link C++ class FWListItemBase;
+#pragma link C++ class TableWidget;
 #endif
