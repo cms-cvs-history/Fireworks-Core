@@ -30,12 +30,13 @@ std::string format_string (const std::string &fmt, double x)
 
 void FWTableManager::MakeFrame (TGMainFrame *parent, int width, int height) 
 {
-     TGCompositeFrame *tFrame  = new TGCompositeFrame(parent, width, height);
+     frame = new TGCompositeFrame(parent, width, height);
      TGLayoutHints *tFrameHints = 
-	  new TGLayoutHints(kLHintsTop|kLHintsLeft|
-			    kLHintsExpandX|kLHintsExpandY);
-     parent->AddFrame(tFrame,tFrameHints);
+ 	  new TGLayoutHints(kLHintsTop|kLHintsLeft|
+ 			    kLHintsExpandX|kLHintsExpandY);
+     parent->AddFrame(frame,tFrameHints);
+     parent->HideFrame(frame);
      
-     widget = new TableWidget(tFrame, this); 
+     widget = new TableWidget(frame, this); 
 //      widget->HighlightRow(0);
 }

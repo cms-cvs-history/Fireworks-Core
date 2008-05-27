@@ -14,12 +14,13 @@ public:
      void Update () { widget->InitTableCells(); widget->UpdateTableCells(0, 0); }
 public:
      TableWidget 	*widget;
+     TGCompositeFrame	*frame;
 };
 
 std::string format_string (const std::string &fmt, int x);
 std::string format_string (const std::string &fmt, double x);
 
-enum { FLAG_YES, FLAG_NO, FLAG_MAYBE };
+enum { FLAG_NO, FLAG_YES, FLAG_MAYBE };
 
 struct ElectronRowStruct {
      float 	Et, eta, phi, eop, hoe, fbrem, dei, dpi, see, spp, iso;
