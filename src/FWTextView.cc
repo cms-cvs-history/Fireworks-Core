@@ -97,6 +97,7 @@ void FWTextViewPage::deselect ()
      for (std::vector<FWTableManager *>::const_iterator i = tables.begin();
 	  i != tables.end(); ++i) {
  	  frame->RemoveFrame((*i)->frame);
+	  frame->RemoveFrame((*i)->title_frame);
      }
 //      frame->MapSubwindows();
 //      frame->MapWindow(); 
@@ -403,13 +404,13 @@ void FWTextView::newEvent (const fwlite::Event &ev)
      //------------------------------------------------------------
      printf("Tracks\n");
 
-     static int i = 0; 
-     i++;
-     if (i == 3) {
-	  page->deselect();
-	  page = page->next;
-	  page->select();
-     }
+//      static int i = 0; 
+//      i++;
+//      if (i == 3) {
+// 	  page->deselect();
+// 	  page = page->next;
+// 	  page->select();
+//      }
 
      page->update();
 
