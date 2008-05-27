@@ -157,6 +157,15 @@ TableWidget::UpdateTableCells(int iRow, int iCol)
        m_tCellEntryVector[i]->SetBackgroundColor(m_cellColor);
        m_tCellEntryVector[i]->SetText((*iter).c_str());
    }
+   // clear the rest of the table
+   for (int row = 0; row < m_tabRows; ++row)
+	for (int col = 0; col < m_tabCols; ++col) {
+	     if (row * m_tabCols + col < i)
+		  continue;
+	     m_tCellEntryVector[row * m_tabCols + col]->Clear();
+	     m_tCellEntryVector[row * m_tabCols + col]->SetBackgroundColor(
+		  m_cellColor);
+	}
 }
 void
 TableWidget::InitTableCells()
@@ -278,12 +287,12 @@ TableWidget::OnTitleClick(Event_t *event)
           m_tTitleEntryVector[id]->SetText(s.c_str());
           m_tTitleEntryVector[id]->SetBackgroundColor(m_highlightTitleColor);
        } else {
-          if (id) {
-              std::string s=titleVector[id-1];
-              m_tTitleEntryVector[id]->Clear();
-              m_tTitleEntryVector[id]->SetText(s.c_str());
-              m_tTitleEntryVector[id]->SetBackgroundColor(m_titleColor);
-          }
+	    if (id > 0 && (unsigned int)id < titleVector.size()) {
+               std::string s=titleVector[id-1];
+               m_tTitleEntryVector[id]->Clear();
+               m_tTitleEntryVector[id]->SetText(s.c_str());
+               m_tTitleEntryVector[id]->SetBackgroundColor(m_titleColor);
+           }
        }
        ++id;
    }
