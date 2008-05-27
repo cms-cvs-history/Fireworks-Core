@@ -11,7 +11,9 @@ public:
      void Dump () { }
      // and has a utility for making a display frame
      void MakeFrame (TGMainFrame *parent, int width, int height);
-protected:
+     void Update () { widget->InitTableCells(); widget->UpdateTableCells(0, 0); }
+public:
+     TableWidget 	*widget;
 };
 
 std::string format_string (const std::string &fmt, int x);
@@ -28,8 +30,10 @@ struct ElectronRow : public ElectronRowStruct {
 public:
      ElectronRow (const ElectronRowStruct &e) : ElectronRowStruct(e) { }
      const std::vector<std::string> 	&str () const;
+     const std::vector<float> 		&vec () const;
 protected:
      mutable std::vector<std::string>	str_;
+     mutable std::vector<float>		vec_;
 };
 
 class ElectronTableManager : public FWTableManager {
@@ -61,8 +65,10 @@ struct MuonRow : public MuonRowStruct {
 public:
      MuonRow (const MuonRowStruct &e) : MuonRowStruct(e) { }
      const std::vector<std::string> 	&str () const;
+     const std::vector<float> 		&vec () const;
 protected:
      mutable std::vector<std::string>	str_;
+     mutable std::vector<float>		vec_;
 };
 
 class MuonTableManager : public FWTableManager {

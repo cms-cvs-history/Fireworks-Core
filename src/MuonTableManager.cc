@@ -52,9 +52,23 @@ int MuonTableManager::NumberOfCols() const
      return sizeof(titles) / sizeof(std::string);
 }
 
+struct sort_asc {
+     int i;
+     bool order;
+     bool operator () (const MuonRow &r1, const MuonRow &r2) const 
+	  {
+	       if (order)
+		    return r1.vec()[i] > r2.vec()[i];
+	       else return r1.vec()[i] < r2.vec()[i];
+	  }
+};
+
 void MuonTableManager::Sort(int col, bool sortOrder)
 {
-
+     sort_asc sort_fun;
+     sort_fun.i = col;
+     sort_fun.order = sortOrder;
+     std::sort(rows.begin(), rows.end(), sort_fun);
 }
 
 std::vector<std::string> MuonTableManager::GetTitles(int col)
@@ -122,4 +136,30 @@ const std::vector<std::string> 	&MuonRow::str () const
 	  str_.push_back(format_string(MuonTableManager::formats[i++], tight_depth	));
      }
      return str_;
+}
+
+const std::vector<float> 	&MuonRow::vec () const
+{
+     if (vec_.size() == 0) {
+	  // cache
+	  vec_.push_back(pt         	);
+	  vec_.push_back(global     	);
+	  vec_.push_back(tk         	);
+	  vec_.push_back(SA         	);
+	  vec_.push_back(calo       	);
+	  vec_.push_back(iso_3      	);
+	  vec_.push_back(iso_5      	);
+	  vec_.push_back(tr_pt      	);
+	  vec_.push_back(eta        	);
+	  vec_.push_back(phi        	);
+	  vec_.push_back(chi2_ndof  	);
+	  vec_.push_back(matches    	);
+	  vec_.push_back(d0         	);
+	  vec_.push_back(sig_d0     	);
+	  vec_.push_back(loose_match	);
+	  vec_.push_back(tight_match	);
+	  vec_.push_back(loose_depth	);
+	  vec_.push_back(tight_depth	);
+     }
+     return vec_;
 }

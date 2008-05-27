@@ -44,9 +44,23 @@ int ElectronTableManager::NumberOfCols() const
      return sizeof(titles) / sizeof(std::string);
 }
 
+struct sort_asc {
+     int i;
+     bool order;
+     bool operator () (const ElectronRow &r1, const ElectronRow &r2) const 
+	  {
+	       if (order)
+		    return r1.vec()[i] > r2.vec()[i];
+	       else return r1.vec()[i] < r2.vec()[i];
+	  }
+};
+
 void ElectronTableManager::Sort(int col, bool sortOrder)
 {
-
+     sort_asc sort_fun;
+     sort_fun.i = col;
+     sort_fun.order = sortOrder;
+     std::sort(rows.begin(), rows.end(), sort_fun);
 }
 
 std::vector<std::string> ElectronTableManager::GetTitles(int col)
@@ -111,3 +125,26 @@ const std::vector<std::string> 	&ElectronRow::str () const
      }
      return str_;
 }
+
+const std::vector<float> 	&ElectronRow::vec () const
+{
+     if (vec_.size() == 0) {
+	  // cache
+	  vec_.push_back(Et    	);
+	  vec_.push_back(eta   	);
+	  vec_.push_back(phi   	);
+	  vec_.push_back(eop   	);
+	  vec_.push_back(hoe   	);
+	  vec_.push_back(fbrem 	);
+	  vec_.push_back(dei   	);
+	  vec_.push_back(dpi   	);
+	  vec_.push_back(see   	);
+	  vec_.push_back(spp   	);
+	  vec_.push_back(iso  	);
+	  vec_.push_back(robust	);
+	  vec_.push_back(loose 	);
+	  vec_.push_back(tight	);
+     }
+     return vec_;
+}
+
