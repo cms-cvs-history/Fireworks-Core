@@ -21,13 +21,166 @@
 
 #include "TableManagers.h"
 
+FWTextViewPage::FWTextViewPage (const std::string &title_, 
+				const std::vector<FWTableManager *> &tables_,
+				TGMainFrame *frame_,
+				FWTextView *view_)
+     : title(title_),
+       tables(tables_),
+       frame(frame_),
+       view(view_),
+       prev(0),
+       next(0)
+{
+
+}
+
+void FWTextViewPage::setNext (FWTextViewPage *p)
+{
+     next = p;
+}
+
+void FWTextViewPage::setPrev (FWTextViewPage *p)
+{
+     prev = p;
+}
+
+void FWTextViewPage::select ()
+{
+//      TGLayoutHints *tFrameHints = 
+//  	  new TGLayoutHints(kLHintsTop|kLHintsLeft|
+//  			    kLHintsExpandX|kLHintsExpandY);
+     //------------------------------------------------------------
+     // set up the navigation frame
+     //------------------------------------------------------------
+     TGLayoutHints *center_hints = new TGLayoutHints(kLHintsTop|kLHintsCenterX|
+						     kLHintsExpandX);
+     TGLayoutHints *left_hints = new TGLayoutHints(kLHintsTop|kLHintsLeft);
+     TGLayoutHints *right_hints = new TGLayoutHints(kLHintsTop|kLHintsRight);
+     nav_frame = new TGCompositeFrame(frame);
+     TGTextView *nav_title = new TGTextView(nav_frame, 1200, 50);
+     nav_title->AddLine(title.c_str());
+     nav_frame->AddFrame(nav_title, center_hints);
+     TGTextButton *button_next = new TGTextButton(nav_frame, (
+						       std::string("next page (") +
+						       (next ? next->title : std::string("no next")) +
+						       ")").c_str());
+     button_next->Resize(100, 50);
+     button_next->Connect("Clicked()", "FWTextView", view, "nextPage()");
+     nav_frame->AddFrame(button_next, left_hints);
+     TGTextButton *button_prev = new TGTextButton(nav_frame, (
+						       std::string("prev page (") +
+						       (prev ? prev->title : std::string("no prev")) +
+						       ")").c_str());
+     button_prev->Resize(100, 50);
+     button_prev->Connect("Clicked()", "FWTextView", view, "prevPage()");
+     nav_frame->AddFrame(button_prev, right_hints);
+     frame->AddFrame(nav_frame, center_hints);
+
+     for (std::vector<FWTableManager *>::const_iterator i = tables.begin();
+	  i != tables.end(); ++i) {
+	  int width=1200;
+	  int height=600;
+	  (*i)->MakeFrame(frame, width, height);
+// 	  frame->AddFrame((*i)->frame, tFrameHints);
+// 	  printf("frame: adding frame\n");
+     }
+     frame->MapSubwindows();
+     frame->MapWindow(); 
+}
+
+void FWTextViewPage::deselect ()
+{
+     printf("deselect, fucking fuck!\n");
+//      frame->UnmapWindow();
+     frame->RemoveFrame(nav_frame);
+     for (std::vector<FWTableManager *>::const_iterator i = tables.begin();
+	  i != tables.end(); ++i) {
+ 	  frame->RemoveFrame((*i)->frame);
+     }
+//      frame->MapSubwindows();
+//      frame->MapWindow(); 
+}
+
+void FWTextViewPage::update ()
+{
+     for (std::vector<FWTableManager *>::const_iterator i = tables.begin();
+	  i != tables.end(); ++i) {
+	  (*i)->Update();
+     }
+}
+
 FWTextView::FWTextView ()
      : el_manager(new ElectronTableManager),
        mu_manager(new MuonTableManager),
        jet_manager(new JetTableManager),
-       fMain(0)
-{
+       l1_manager    	(new ElectronTableManager),
+       hlt_manager   	(new ElectronTableManager),
+       track_manager 	(new ElectronTableManager),
+       vertex_manager  	(new ElectronTableManager)
+{      
+     //------------------------------------------------------------
+     // widget up some tables
+     //------------------------------------------------------------
+     int width=1200;
+     int height=600;
+     TEveBrowser *b = gEve->GetBrowser();
+     b->StartEmbedding();
+     fMain = new TGMainFrame(gClient->GetRoot(),width,height);
+     b->StopEmbedding();
+     
+//      mu_manager->MakeFrame(fMain, width, height);
+//      el_manager->MakeFrame(fMain, width, height);
+//      jet_manager->MakeFrame(fMain, width, height);
+	  
+//      l1_manager->MakeFrame(fMain, width, height);
+//      hlt_manager->MakeFrame(fMain, width, height);
 
+//      track_manager->MakeFrame(fMain, width, height);
+//      vertex_manager->MakeFrame(fMain, width, height);
+	  
+     // use hierarchical cleaning
+     fMain->SetCleanup(kDeepCleanup);
+     
+     // Set a name to the main frame 
+     fMain->SetWindowName("Text view"); 
+     
+//      // Map all subwindows of main frame 
+//      fMain->MapSubwindows(); 
+     
+//      // Map main frame 
+//      fMain->MapWindow(); 
+     
+     // resize main window to tableWidth plus size of scroller and for first few cells heights.
+     // so far I don't know how to figure out scroller size, I just found it's about 30 units.
+//      fMain->Resize(width+20,height+20);
+
+     //------------------------------------------------------------
+     // set up the display pages
+     //------------------------------------------------------------
+     std::vector<FWTableManager *> v_objs;
+     v_objs.push_back(mu_manager);
+     v_objs.push_back(el_manager);
+     v_objs.push_back(jet_manager);
+     FWTextViewPage *objects = new FWTextViewPage("Physics objects", 
+						  v_objs, fMain, this);
+     std::vector<FWTableManager *> v_trigger;
+     v_trigger.push_back(l1_manager);
+     v_trigger.push_back(hlt_manager);
+     FWTextViewPage *trigger = new FWTextViewPage("Trigger information", 
+						  v_trigger, fMain, this);
+     std::vector<FWTableManager *> v_tracks;
+     v_tracks.push_back(track_manager);
+     v_tracks.push_back(vertex_manager);
+     FWTextViewPage *tracks = new FWTextViewPage("Tracking", v_tracks,
+						 fMain, this);
+     page = objects;
+     objects->setNext(trigger);
+     trigger->setPrev(objects);
+     trigger->setNext(tracks);
+     tracks->setPrev(trigger);
+     // select current page
+     page->select();
 }
 
 void FWTextView::newEvent (const fwlite::Event &ev)
@@ -249,56 +402,33 @@ void FWTextView::newEvent (const fwlite::Event &ev)
      // print tracks
      //------------------------------------------------------------
      printf("Tracks\n");
-     
-     //------------------------------------------------------------
-     // widget up some tables
-     //------------------------------------------------------------
-     int width=1200;
-     int height=600;
-     // Create a main frame 
-     if (fMain == 0) {
- 	  TEveBrowser *b = gEve->GetBrowser();
-	  b->StartEmbedding();
-	  fMain = new TGMainFrame(gClient->GetRoot(),width,height);
-	  b->StopEmbedding();
-	  
-	  TGTextView *mu_title = new TGTextView(fMain, 1200, 50);
-	  mu_title->AddLine("Muons");
-	  fMain->AddFrame(mu_title, 	  
-			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
-					    kLHintsExpandX));
-	  mu_manager->MakeFrame(fMain, width, height);
-	  TGTextView *el_title = new TGTextView(fMain, 1200, 50);
-	  el_title->AddLine("Electrons");
-	  fMain->AddFrame(el_title, 	  
-			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
-					    kLHintsExpandX));
-	  el_manager->MakeFrame(fMain, width, height);
-	  TGTextView *jet_title = new TGTextView(fMain, 1200, 50);
-	  jet_title->AddLine("Jets");
-	  fMain->AddFrame(jet_title, 	  
-			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
-					    kLHintsExpandX));
-	  jet_manager->MakeFrame(fMain, width, height);
-	  
-	  // use hierarchical cleaning
-	  fMain->SetCleanup(kDeepCleanup);
-	  
-	  // Set a name to the main frame 
-	  fMain->SetWindowName("Text view"); 
-	  
-	  // Map all subwindows of main frame 
-	  fMain->MapSubwindows(); 
-     
-	  // Map main frame 
-	  fMain->MapWindow(); 
-	  
-	  // resize main window to tableWidth plus size of scroller and for first few cells heights.
-	  // so far I don't know how to figure out scroller size, I just found it's about 30 units.
-	  fMain->Resize(width+20,height+20);
-     } else {
-	  mu_manager	->Update();
-	  el_manager	->Update();
-	  jet_manager	->Update();
+
+     static int i = 0; 
+     i++;
+     if (i == 3) {
+	  page->deselect();
+	  page = page->next;
+	  page->select();
+     }
+
+     page->update();
+
+}
+
+void FWTextView::nextPage ()
+{
+     if (page->next != 0) {
+	  page->deselect();
+	  page = page->next;
+	  page->select();
+     }
+}
+
+void FWTextView::prevPage ()
+{
+     if (page->prev != 0) {
+	  page->deselect();
+	  page = page->prev;
+	  page->select();
      }
 }
