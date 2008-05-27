@@ -47,6 +47,7 @@ class TableManager {
                              int rowEnd, int colEnd, std::vector<std::string>& oToFill) = 0;
       virtual TGFrame* GetRowCell(int row, TGFrame *parentFrame) = 0;
       virtual void UpdateRowCell(int row, TGFrame *rowCell) = 0;
+     virtual const std::string title() const { return "Table"; }
 };
 
 class TableWidget { 
@@ -98,11 +99,13 @@ class TableWidget {
       TGVScrollBar      *m_vSlider;
 
       // vectors which hold entries of TGCompositeFrame for individual table components
+      TGTextEntry		*m_tNameEntry;
       std::vector<TGTextEntry*> m_tTitleEntryVector;
       std::vector<TGFrame*>     m_tRowEntryVector;
       std::vector<TGTextEntry*> m_tCellEntryVector;
 
       // TGLayoutHints for table components
+      TGTableLayoutHints	       *m_tNameHints;
       std::vector<TGTableLayoutHints*> m_tTitleHintsVector;
       std::vector<TGTableLayoutHints*> m_tRowHintsVector;
       std::vector<TGTableLayoutHints*> m_tCellHintsVector;

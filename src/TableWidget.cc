@@ -184,6 +184,7 @@ TableWidget::InitTableCells()
                } else {
                   cell = new TGTextEntry("",m_tFrame);
                }
+	       cell->ChangeOptions(0);
                cell->Resize(m_cellWidth,m_cellHeight);
                cell->SetBackgroundColor(m_titleColor);
                cell->SetAlignment(kTextRight);
@@ -203,6 +204,7 @@ TableWidget::InitTableCells()
            if (!col && row) {
 //               cell = new TGTextEntry(m_tm->PrintRowNumber(row),m_tFrame);
                rowCell = m_tm->GetRowCell(row,m_tFrame);
+	       rowCell->ChangeOptions(0);
                rowCell->Resize(m_cellWidth,m_cellHeight);
                rowCell->Connect("ProcessedEvent(Event_t*)","TableWidget",this,"OnRowClick(Event_t*)");
                TGTableLayoutHints* tloh = 
@@ -218,6 +220,7 @@ TableWidget::InitTableCells()
            }
            if (row && col) {
                cell = new TGTextEntry("",m_tFrame);
+	       cell->ChangeOptions(0);
                cell->SetToolTipText("This is a table cell");
                cell->Resize(m_cellWidth,m_cellHeight);
                cell->SetAlignment(kTextRight);
