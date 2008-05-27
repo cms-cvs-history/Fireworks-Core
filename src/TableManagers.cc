@@ -1,3 +1,6 @@
+#define private public
+#include "TableWidget.h"
+#undef private
 #include <string.h>
 #include "TableManagers.h"
 
@@ -30,6 +33,14 @@ std::string format_string (const std::string &fmt, double x)
 
 void FWTableManager::MakeFrame (TGMainFrame *parent, int width, int height) 
 {
+     // display the table name prominently
+     TGTextEntry *m_tNameEntry = new TGTextEntry(title().c_str(), parent);
+     TGLayoutHints *m_tNameHints = new TGLayoutHints(
+	  kLHintsCenterX |
+	  kLHintsExpandX |
+	  kLHintsFillX );
+     parent->AddFrame(m_tNameEntry, m_tNameHints);
+
      frame = new TGCompositeFrame(parent, width, height);
      TGLayoutHints *tFrameHints = 
  	  new TGLayoutHints(kLHintsTop|kLHintsLeft|
@@ -38,5 +49,10 @@ void FWTableManager::MakeFrame (TGMainFrame *parent, int width, int height)
      parent->HideFrame(frame);
      
      widget = new TableWidget(frame, this); 
+     m_tNameEntry->Resize(width, widget->m_cellHeight);
+     m_tNameEntry->SetBackgroundColor(widget->m_titleColor);
+     m_tNameEntry->SetAlignment(kTextCenterX);
+     m_tNameEntry->ChangeOptions(kRaisedFrame);
+     title_frame = m_tNameEntry;
 //      widget->HighlightRow(0);
 }

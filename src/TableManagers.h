@@ -15,6 +15,7 @@ public:
 public:
      TableWidget 	*widget;
      TGCompositeFrame	*frame;
+     TGTextEntry	*title_frame;
 };
 
 std::string format_string (const std::string &fmt, int x);
@@ -49,6 +50,7 @@ public:
 			    std::vector<std::string>& oToFill);
      virtual TGFrame* GetRowCell(int row, TGFrame *parentFrame);
      virtual void UpdateRowCell(int row, TGFrame *rowCell);
+     const std::string		title () const { return "Electrons"; }
 
      std::vector<ElectronRow>	rows;
      static std::string		titles[];
@@ -84,6 +86,7 @@ public:
 			    std::vector<std::string>& oToFill);
      virtual TGFrame* GetRowCell(int row, TGFrame *parentFrame);
      virtual void UpdateRowCell(int row, TGFrame *rowCell);
+     const std::string		title () const { return "Muons"; }
 
      std::vector<MuonRow>	rows;
      static std::string		titles[];
@@ -114,6 +117,7 @@ public:
 			    std::vector<std::string>& oToFill);
      virtual TGFrame* GetRowCell(int row, TGFrame *parentFrame);
      virtual void UpdateRowCell(int row, TGFrame *rowCell);
+     const std::string		title () const { return "Jets"; }
 
      std::vector<JetRow>	rows;
      static std::string		titles[];
