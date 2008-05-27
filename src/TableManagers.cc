@@ -36,6 +36,6 @@ void FWTableManager::MakeFrame (TGMainFrame *parent, int width, int height)
 			    kLHintsExpandX|kLHintsExpandY);
      parent->AddFrame(tFrame,tFrameHints);
      
-     TableWidget *widget = new TableWidget(tFrame, this); 
+     widget = new TableWidget(tFrame, this); 
 //      widget->HighlightRow(0);
 }

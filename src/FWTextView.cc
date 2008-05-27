@@ -12,6 +12,10 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "Fireworks/Core/interface/FWTextView.h"
+#include "TEveBrowser.h"
+#include "TEveManager.h"
+#include "TEveViewer.h"
+#include "TGTextView.h"
 
 #include <iostream>
 
@@ -171,6 +175,7 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	  };
 	  mu_manager->rows.push_back(row);
      }
+     mu_manager->Sort(0, true);
      //------------------------------------------------------------
      // print electrons
      //------------------------------------------------------------
@@ -210,6 +215,7 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	  };
 	  el_manager->rows.push_back(row);
      }
+     el_manager->Sort(0, true);
      //------------------------------------------------------------
      // print jets
      //------------------------------------------------------------
@@ -251,9 +257,28 @@ void FWTextView::newEvent (const fwlite::Event &ev)
      int height=600;
      // Create a main frame 
      if (fMain == 0) {
+ 	  TEveBrowser *b = gEve->GetBrowser();
+	  b->StartEmbedding();
 	  fMain = new TGMainFrame(gClient->GetRoot(),width,height);
+	  b->StopEmbedding();
+	  
+	  TGTextView *mu_title = new TGTextView(fMain, 1200, 50);
+	  mu_title->AddLine("Muons");
+	  fMain->AddFrame(mu_title, 	  
+			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
+					    kLHintsExpandX));
 	  mu_manager->MakeFrame(fMain, width, height);
+	  TGTextView *el_title = new TGTextView(fMain, 1200, 50);
+	  el_title->AddLine("Electrons");
+	  fMain->AddFrame(el_title, 	  
+			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
+					    kLHintsExpandX));
 	  el_manager->MakeFrame(fMain, width, height);
+	  TGTextView *jet_title = new TGTextView(fMain, 1200, 50);
+	  jet_title->AddLine("Jets");
+	  fMain->AddFrame(jet_title, 	  
+			  new TGLayoutHints(kLHintsTop|kLHintsCenterX|
+					    kLHintsExpandX));
 	  jet_manager->MakeFrame(fMain, width, height);
 	  
 	  // use hierarchical cleaning
@@ -271,5 +296,9 @@ void FWTextView::newEvent (const fwlite::Event &ev)
 	  // resize main window to tableWidth plus size of scroller and for first few cells heights.
 	  // so far I don't know how to figure out scroller size, I just found it's about 30 units.
 	  fMain->Resize(width+20,height+20);
+     } else {
+	  mu_manager	->Update();
+	  el_manager	->Update();
+	  jet_manager	->Update();
      }
 }
