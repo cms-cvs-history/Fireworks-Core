@@ -1,5 +1,5 @@
 {
-   gSystem->Load("libFireworksCore");
+   // gSystem->Load("libFireworksCore");
    DetIdToMatrix map;
    const char* geomtryFile = "cmsGeom10.root";
    map.loadGeometry( geomtryFile );
