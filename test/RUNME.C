@@ -75,7 +75,8 @@ void RUNME(const char* datafile = 0) {
    //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 //    ed.registerProxyBuilder("TrackHits", "TracksRecHitsProxy3DBuilder");
    ed.registerProxyBuilder("GenParticles", "GenParticleProxy3DBuilder");
-
+   ed.registerProxyBuilder("Vertices", "VerticesProxy3DBuilder");
+   
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
                             FWDisplayProperties(kRed),
@@ -109,7 +110,7 @@ void RUNME(const char* datafile = 0) {
                               "generalTracks",
                               "",
                               "",
-                              "$.pt()>0",
+                              "$.pt()>2",
                               1);
 
    FWPhysicsObjectDesc muons("Muons",
@@ -118,7 +119,7 @@ void RUNME(const char* datafile = 0) {
                              "muons",
                              "",
                              "",
-                             "$.pt()>0",
+                             "$.isGlobalMuon()",
                              5);
 
    FWPhysicsObjectDesc electrons("Electrons",
@@ -127,7 +128,7 @@ void RUNME(const char* datafile = 0) {
 				 "pixelMatchGsfElectrons",
                                  "",
                                  "",
-                                 "$.pt()>0",
+                                 "$.hadronicOverEm()<0.05",
                                  3);
 
    FWPhysicsObjectDesc genParticles("GenParticles",
@@ -139,6 +140,15 @@ void RUNME(const char* datafile = 0) {
 				    "$.pt()>1 && $.status() == 3",
 				    6);
 
+   // Vertices
+   FWPhysicsObjectDesc vertices("Vertices",
+				TClass::GetClass("std::vector<reco::Vertex>"),
+				FWDisplayProperties(kYellow),
+				"offlinePrimaryVertices",
+				"",
+				"",
+				"",
+				10);
    if (configFile.empty()) {
       ed.registerPhysicsObject(ecal);
       ed.registerPhysicsObject(hcal);
@@ -147,6 +157,7 @@ void RUNME(const char* datafile = 0) {
       ed.registerPhysicsObject(muons);
       ed.registerPhysicsObject(electrons);
       ed.registerPhysicsObject(genParticles);
+      ed.registerPhysicsObject(vertices);
    }
    
 
