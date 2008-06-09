@@ -53,29 +53,6 @@ void RUNME(const char* datafile = 0) {
 
    FWDisplayEvent ed(configFile,debugMode);
 
-   //The following will be moved to a configuration file
-   ed.registerProxyBuilder("ECal","ECalCaloTowerProxy3DLegoBuilder");
-   ed.registerProxyBuilder("HCal","HCalCaloTowerProxy3DLegoBuilder");
-   ed.registerProxyBuilder("Jets","CaloJetProxyEveLegoBuilder");
-   ed.registerProxyBuilder("Jets","CaloJetProxyTH2LegoBuilder");
-   ed.registerProxyBuilder("Jets","CaloJetSelectedProxyTH2LegoBuilder");
-   
-   ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
-   ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
-   ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
-   ed.registerProxyBuilder("Tracks","TracksProxy3DBuilder");
-   ed.registerProxyBuilder("Muons","MuonsProxyRhoPhiZ2DBuilder");
-//       ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
-   //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
-   //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
-   //   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
-   // ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
-   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
-//    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
-   //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
-//    ed.registerProxyBuilder("TrackHits", "TracksRecHitsProxy3DBuilder");
-   ed.registerProxyBuilder("GenParticles", "GenParticleProxy3DBuilder");
-   ed.registerProxyBuilder("Vertices", "VerticesProxy3DBuilder");
    
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
