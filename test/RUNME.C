@@ -56,6 +56,7 @@ void RUNME(const char* datafile = 0) {
    
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
+                            "ECal",
                             FWDisplayProperties(kRed),
                             "towerMaker",
                             "",
@@ -65,6 +66,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc hcal("HCal",
 		    TClass::GetClass("CaloTowerCollection"),
+                            "HCal",
                             FWDisplayProperties(kBlue),
                             "towerMaker",
                             "",
@@ -74,6 +76,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc jets("Jets",
                             TClass::GetClass("reco::CaloJetCollection"),
+                            "Jets",
                             FWDisplayProperties(kYellow),
                             "iterativeCone5CaloJets",
                             "",
@@ -83,6 +86,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc tracks("Tracks",
                               TClass::GetClass("reco::TrackCollection"),
+                              "Tracks",
                               FWDisplayProperties(kGreen),
                               "generalTracks",
                               "",
@@ -92,6 +96,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc muons("Muons",
                              TClass::GetClass("reco::MuonCollection"),
+                             "Muons",
                              FWDisplayProperties(kRed),
                              "muons",
                              "",
@@ -101,6 +106,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc electrons("Electrons",
 				 TClass::GetClass("reco::GsfElectronCollection"),
+                                 "Electrons",
 				 FWDisplayProperties(kCyan),
 				 "pixelMatchGsfElectrons",
                                  "",
@@ -110,6 +116,7 @@ void RUNME(const char* datafile = 0) {
 
    FWPhysicsObjectDesc genParticles("GenParticles",
 				    TClass::GetClass("reco::GenParticleCollection"),
+                                    "GenParticles",
 				    FWDisplayProperties(kMagenta),
 				    "genParticles",
 				    "",
@@ -120,6 +127,7 @@ void RUNME(const char* datafile = 0) {
    // Vertices
    FWPhysicsObjectDesc vertices("Vertices",
 				TClass::GetClass("std::vector<reco::Vertex>"),
+                                "Vertices",
 				FWDisplayProperties(kYellow),
 				"offlinePrimaryVertices",
 				"",
