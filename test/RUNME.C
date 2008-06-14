@@ -84,6 +84,46 @@ void RUNME(const char* datafile = 0) {
                             "$.pt()>15",
                             3);
 
+   FWPhysicsObjectDesc l1EmTrigs("L1EmTrig",
+                            TClass::GetClass("l1extra::L1EmParticleCollection"),
+                            "L1EmTrig",
+                            FWDisplayProperties(kOrange),
+                            "hltL1extraParticles",
+                            "Isolated",
+                            "",
+                            "",
+                            3);
+
+   FWPhysicsObjectDesc l1MuonTrigs("L1MuonTrig",
+                            TClass::GetClass("l1extra::L1MuonParticleCollection"),
+                            "L1MuonTrig",
+                            FWDisplayProperties(kViolet),
+                            "hltL1extraParticles",
+                            "",
+                            "",
+                            "",
+                            3);
+
+   FWPhysicsObjectDesc l1EtMissTrigs("L1EtMissTrig",
+                            TClass::GetClass("l1extra::L1EtMissParticleCollection"),
+                            "L1EtMissTrig",
+                            FWDisplayProperties(kTeal),
+                            "hltL1extraParticles",
+                            "",
+                            "",
+                            "",
+                            3);
+
+   FWPhysicsObjectDesc l1JetTrigs("L1JetTrig",
+                            TClass::GetClass("l1extra::L1JetParticleCollection"),
+                            "L1JetTrig",
+                            FWDisplayProperties(kMagenta),
+                            "hltL1extraParticles",
+                            "Central",
+                            "",
+                            "",
+                            3);
+
    FWPhysicsObjectDesc tracks("Tracks",
                               TClass::GetClass("reco::TrackCollection"),
                               "Tracks",
@@ -138,6 +178,10 @@ void RUNME(const char* datafile = 0) {
       ed.registerPhysicsObject(ecal);
       ed.registerPhysicsObject(hcal);
       ed.registerPhysicsObject(jets);
+      ed.registerPhysicsObject(l1EmTrigs);
+      ed.registerPhysicsObject(l1MuonTrigs);
+      ed.registerPhysicsObject(l1EtMissTrigs);
+      ed.registerPhysicsObject(l1JetTrigs);
       ed.registerPhysicsObject(tracks);
       ed.registerPhysicsObject(muons);
       ed.registerPhysicsObject(electrons);
