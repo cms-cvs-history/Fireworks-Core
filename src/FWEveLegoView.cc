@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWEveLegoView.cc,v 1.9 2008/06/10 19:54:08 chrjones Exp $
+// $Id: FWEveLegoView.cc,v 1.10 2008/06/11 13:57:32 dmytro Exp $
 //
 
 // system include files
@@ -88,19 +88,19 @@ FWEveLegoView::FWEveLegoView(TGFrame* iParent, TEveElementList* list):
    pal->SetLimits(0, 100);
    pal->SetDefaultColor((Color_t)1000);
    
-   m_lego = new TEveCaloLego();
-   m_lego->InitMainTrans();
-   m_lego->RefMainTrans().SetScale(2*M_PI, 2*M_PI, M_PI);
+//    m_lego = new TEveCaloLego();
+//    m_lego->InitMainTrans();
+//    m_lego->RefMainTrans().SetScale(2*M_PI, 2*M_PI, M_PI);
    
-   m_lego->SetPalette(pal);
-   // m_lego->SetMainColor(Color_t(TColor::GetColor("#0A0A0A")));
-   m_lego->SetGridColor(Color_t(TColor::GetColor("#202020")));
-   m_lego->Set2DMode(TEveCaloLego::kValSize);
-   m_lego->SetBinWidth(6);
+//    m_lego->SetPalette(pal);
+//    // m_lego->SetMainColor(Color_t(TColor::GetColor("#0A0A0A")));
+//    m_lego->SetGridColor(Color_t(TColor::GetColor("#202020")));
+//    m_lego->Set2DMode(TEveCaloLego::kValSize);
+//    m_lego->SetBinWidth(6);
    // lego->SetEtaLimits(etaLimLow, etaLimHigh);
    // lego->SetTitle("caloTower Et distribution");
-   gEve->AddElement(m_lego, ns);
-   gEve->AddToListTree(m_lego, kTRUE);
+//    gEve->AddElement(m_lego, ns);
+//    gEve->AddToListTree(m_lego, kTRUE);
    gEve->AddElement(list,ns);
    gEve->AddToListTree(list, kTRUE);
    m_minEcalEnergy.changed_.connect(boost::bind(&FWEveLegoView::setMinEcalEnergy,this,_1));
@@ -115,9 +115,9 @@ void
 FWEveLegoView::draw(TEveCaloDataHist* data)
 {
    // bool firstTime = (m_lego->GetData() == 0);
-   m_lego->SetData(data);
-   m_lego->ElementChanged();
-   m_lego->InvalidateCache();
+//    m_lego->SetData(data);
+//    m_lego->ElementChanged();
+//    m_lego->InvalidateCache();
    /*
    if ( firstTime ) {
       m_scene->Repaint();
@@ -131,36 +131,36 @@ FWEveLegoView::draw(TEveCaloDataHist* data)
 void 
 FWEveLegoView::setMinEcalEnergy(double value)
 {
-   if ( ! m_lego->GetData() ) return;
-   if ( ! m_ecalSlice )
-     for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
-       if ( strcmp(m_lego->GetData()->RefSliceInfo(i).fHist->GetName(),"ecalLego") )
-	 {
-	    m_ecalSlice = &(m_lego->GetData()->RefSliceInfo(i));
-	    break;
-	 }
-   if ( ! m_ecalSlice ) return;
-   m_ecalSlice->fThreshold = value;
-   m_lego->ElementChanged();
-   m_lego->InvalidateCache();
+//    if ( ! m_lego->GetData() ) return;
+//    if ( ! m_ecalSlice )
+//      for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
+//        if ( strcmp(m_lego->GetData()->RefSliceInfo(i).fHist->GetName(),"ecalLego") )
+// 	 {
+// 	    m_ecalSlice = &(m_lego->GetData()->RefSliceInfo(i));
+// 	    break;
+// 	 }
+//    if ( ! m_ecalSlice ) return;
+//    m_ecalSlice->fThreshold = value;
+//    m_lego->ElementChanged();
+//    m_lego->InvalidateCache();
    m_viewer->GetGLViewer()->RequestDraw();
 }
 
 void 
 FWEveLegoView::setMinHcalEnergy(double value)
 {
-   if ( ! m_lego->GetData() ) return;
-   if ( ! m_hcalSlice )
-     for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
-       if ( strcmp(m_lego->GetData()->RefSliceInfo(i).fHist->GetName(),"hcalLego") )
-	 {
-	    m_hcalSlice = &(m_lego->GetData()->RefSliceInfo(i));
-	    break;
-	 }
-   if ( ! m_hcalSlice ) return;
-   m_hcalSlice->fThreshold = value;
-   m_lego->ElementChanged();
-   m_lego->InvalidateCache();
+//    if ( ! m_lego->GetData() ) return;
+//    if ( ! m_hcalSlice )
+//      for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
+//        if ( strcmp(m_lego->GetData()->RefSliceInfo(i).fHist->GetName(),"hcalLego") )
+// 	 {
+// 	    m_hcalSlice = &(m_lego->GetData()->RefSliceInfo(i));
+// 	    break;
+// 	 }
+//    if ( ! m_hcalSlice ) return;
+//    m_hcalSlice->fThreshold = value;
+//    m_lego->ElementChanged();
+//    m_lego->InvalidateCache();
    m_viewer->GetGLViewer()->RequestDraw();
 }
 
