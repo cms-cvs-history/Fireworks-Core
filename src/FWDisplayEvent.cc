@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: FWDisplayEvent.cc,v 1.47 2008/06/10 22:30:34 chrjones Exp $
+// $Id: FWDisplayEvent.cc,v 1.48 2008/06/11 14:08:14 dmytro Exp $
 //
 
 // system include files
@@ -78,8 +78,7 @@ FWDisplayEvent::FWDisplayEvent(const std::string& iConfigFileName,
                                 m_eiManager.get(),
                                 iEnableDebug)),
   m_viewManager( new FWViewManagerManager(m_changeManager.get())),
-  m_textView(0),
-  // m_textView(new FWTextView),
+  m_textView(new FWTextView(this, &*m_selectionManager)),
   m_configFileName(iConfigFileName)
 {
   //connect up the managers
@@ -202,7 +201,8 @@ FWDisplayEvent::draw(const fwlite::Event& iEvent) const
   TStopwatch stopwatch;
   m_eiManager->setGeom(&m_detIdToGeo);
   m_eiManager->newEvent(&iEvent);
-  // m_textView->newEvent(iEvent);
+  if (m_textView.get() != 0)
+       m_textView->newEvent(iEvent, this);
   stopwatch.Stop();
   stopwatch.Print();
   return m_guiManager->allowInteraction();

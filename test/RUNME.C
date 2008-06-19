@@ -114,6 +114,16 @@ void RUNME(const char* datafile = 0) {
                                  "$.hadronicOverEm()<0.05",
                                  3);
 
+   FWPhysicsObjectDesc mets("METs",
+			    TClass::GetClass("reco::CaloMETCollection"),
+			    "METs",
+			    FWDisplayProperties(kCyan),
+			    "met",
+			    "",
+			    "",
+			    "",
+			    3);
+
    FWPhysicsObjectDesc genParticles("GenParticles",
 				    TClass::GetClass("reco::GenParticleCollection"),
                                     "GenParticles",
@@ -134,6 +144,7 @@ void RUNME(const char* datafile = 0) {
 				"",
 				"",
 				10);
+
    if (configFile.empty()) {
       ed.registerPhysicsObject(ecal);
       ed.registerPhysicsObject(hcal);
@@ -143,8 +154,8 @@ void RUNME(const char* datafile = 0) {
       ed.registerPhysicsObject(electrons);
       ed.registerPhysicsObject(genParticles);
       ed.registerPhysicsObject(vertices);
+      ed.registerPhysicsObject(mets);
    }
-   
 
    // register detail viewers
    ed.registerDetailView("Electrons", new ElectronDetailView);
