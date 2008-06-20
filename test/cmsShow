@@ -4,4 +4,4 @@ VAR="$@"
 CMSSHOW_ARGS=$VAR
 export CMSSHOW_ARGS
 echo $CMSSHOW_ARGS
-gdb root.exe
+./root.sh runMain.C
