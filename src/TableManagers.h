@@ -43,6 +43,7 @@ public:
      void selectRows ();
      virtual int table_row_to_index (int) const { return 0; }
      virtual int index_to_table_row (int) const { return 0; }
+     void setItem (FWEventItem *);
 
 public:
      LightTableWidget 	*widget;
@@ -50,6 +51,7 @@ public:
      TGTextEntry	*title_frame;
      FWEventItem	*item;
      std::set<int> 	sel_indices;
+     std::set<int> 	vis_indices;
      int		sort_col_;
      bool		sort_asc_;
 };

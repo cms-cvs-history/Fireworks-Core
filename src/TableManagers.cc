@@ -5,6 +5,7 @@
 #include "Fireworks/Core/interface/FWSelectionManager.h"
 #undef private
 #include <string.h>
+#include "TColor.h"
 #include "TableManagers.h"
 
 std::string format_string (const std::string &fmt, int x)
@@ -255,4 +256,10 @@ void FWTableManager::sort (int col, bool reset)
 	  sort_col_ = col;
      }
      Sort(sort_col_, sort_asc_);
+}
+
+void FWTableManager::setItem (FWEventItem *i)
+{
+     item = i;
+     widget->SetTextColor(item->m_displayProperties.color());
 }

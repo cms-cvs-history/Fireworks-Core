@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.14 2008/07/01 19:13:16 chrjones Exp $
+// $Id: CmsShowMain.cc,v 1.15 2008/07/04 00:54:18 dmytro Exp $
 //
 
 // system include files
@@ -146,7 +146,9 @@ CmsShowMain::CmsShowMain(int argc, char *argv[]) :
   if ( vm.count("shine") ) TEveLine::SetDefaultSmooth(kTRUE);
      
   if ( !vm.count("fast") )
-     m_textView = std::auto_ptr<FWTextView>( new FWTextView(this, &*m_selectionManager, &*m_guiManager) );
+     m_textView = std::auto_ptr<FWTextView>(
+	  new FWTextView(this, &*m_selectionManager, &*m_changeManager,
+			 &*m_guiManager) );
 
   printf("Input: %s\n", m_inputFileName.c_str());
   printf("Config: %s\n", m_configFileName.c_str());

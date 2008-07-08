@@ -12,6 +12,7 @@
 class FWTableManager;
 class TGCompositeFrame;
 class TGTextView;
+class TGGC;
 
 class LightTableWidget : public TGTextView { 
      RQ_OBJECT("TableWidget")
@@ -34,6 +35,7 @@ public:
 	  {
 	       selectRows(row, mask, hcolor);
 	  }
+     void SetTextColor (Color_t col);
      
 // GUI functions
 public:
@@ -44,9 +46,10 @@ protected:
 
 
 protected:
-     TGTextView		*textview;
      FWTableManager	*manager;
      std::vector<int>	col_widths;
+     static const TGGC	*fgShadowGC;
+     TGGC		invisibleGC;
 
 // temporary hacks
 public:
