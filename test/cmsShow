@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
-#is there some way I can find the directory holding this shell script?
-
-CMSSW_BASE=$PWD
+#strip of the directory name for this shell script
+SHELLDIR=`dirname $0`
+export SHELLDIR
+#if no directory specified we need to use the local directory
+if [ ! -n "$SHELLDIR" ] ; then
+  SHELLDIR=.
+  export SHELLDIR
+fi
+CMSSW_BASE=$SHELLDIR
 export CMSSW_BASE
 ROOTSYS=$CMSSW_BASE/external/root 
 export ROOTSYS
 LD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
 export LD_LIBRARY_PATH
-./cmsShow.exe $@
+$CMSSW_BASE/cmsShow.exe $@
