@@ -6,7 +6,9 @@
 
 int main (int argc, char **argv)
 {
-   TApplication app("cmsShow", &argc, argv);
+   char* dummyArgv[] = {"cmsShow"};
+   int dummyArgc = 1;
+   TApplication app("cmsShow", &dummyArgc, dummyArgv);
    AutoLibraryLoader::enable();
    new CmsShowMain(argc,argv);
    app.Run();
