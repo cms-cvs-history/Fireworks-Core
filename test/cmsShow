@@ -14,6 +14,8 @@ ROOTSYS=$CMSSW_BASE/external/root
 export ROOTSYS
 LD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
 export LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
+export DYLD_LIBRARY_PATH
 echo "Loading cmsShow"
 if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
