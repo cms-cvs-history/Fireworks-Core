@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWEveLegoView.cc,v 1.21 2008/07/13 21:53:28 chrjones Exp $
+// $Id: FWEveLegoView.cc,v 1.22 2008/07/20 18:22:00 dmytro Exp $
 //
 
 // system include files
@@ -194,80 +194,6 @@ FWEveLegoView::setCameras()
    }
    m_cameraSet = true;
 }
-
-#if defined(THIS_WILL_NEVER_BE_DEFINED)
-void
-FWEveLegoView::draw(TEveCaloDataHist* data)
-{
-   // bool firstTime = (m_lego->GetData() == 0);
-   m_lego->SetData(data);
-   m_lego->ElementChanged();
-   m_lego->DataChanged();
-   if ( ! m_cameraSet ) setCameras();*/
-     /*
-     {
-      m_scene->Repaint();
-      m_viewer->Redraw(kTRUE);
-      // std::cout << "Viewer: " <<  m_viewer << std::endl;
-      // m_viewer->GetGLViewer()->ResetCameras();
-      m_cameraSet = true;
-   }
-      */
-   // m_viewer->GetGLViewer()->UpdateScene();
-   //CDJ m_viewer->GetGLViewer()->RequestDraw();
-}
-
-void 
-FWEveLegoView::setMinEcalEnergy(double value)
-{
-   /*
-   const std::string name = "ecalLego";
-   if ( ! m_lego->GetData() ) return;
-   if ( ! m_ecalSlice )
-     for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
-       if ( name == m_lego->GetData()->RefSliceInfo(i).fHist->GetName() )
-	 {
-	    m_ecalSlice = &(m_lego->GetData()->RefSliceInfo(i));
-	    break;
-	 }
-   if ( ! m_ecalSlice ) return;
-   m_ecalSlice->fThreshold = value;
-   m_lego->ElementChanged();
-   m_lego->DataChanged();
-   m_viewer->GetGLViewer()->RequestDraw();
-    */
-}
-
-void 
-FWEveLegoView::setMinHcalEnergy(double value)
-{
-   /*
-   const std::string name = "hcalLego";
-   if ( ! m_lego->GetData() ) return;
-   if ( ! m_hcalSlice )
-     for ( int i = 0; i < m_lego->GetData()->GetNSlices(); ++i )
-       if ( name == m_lego->GetData()->RefSliceInfo(i).fHist->GetName() )
-	 {
-	    m_hcalSlice = &(m_lego->GetData()->RefSliceInfo(i));
-	    break;
-	 }
-   if ( ! m_hcalSlice ) return;
-   m_hcalSlice->fThreshold = value;
-   m_lego->ElementChanged();
-   m_lego->DataChanged();
-   m_viewer->GetGLViewer()->RequestDraw();
-    */
-}
-
-void 
-FWEveLegoView::setMinEnergy()
-{
-   /*
-   setMinEcalEnergy( m_minEcalEnergy.value() );
-   setMinHcalEnergy( m_minHcalEnergy.value() );
-    */
-}
-#endif
 
 void 
 FWEveLegoView::setFrom(const FWConfiguration& iFrom)

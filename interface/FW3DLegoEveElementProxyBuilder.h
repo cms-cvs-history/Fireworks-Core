@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Sat Jul  5 11:13:18 EDT 2008
-// $Id: FW3DLegoEveElementProxyBuilder.h,v 1.1 2008/07/07 00:30:27 chrjones Exp $
+// $Id: FW3DLegoEveElementProxyBuilder.h,v 1.2 2008/07/12 01:31:09 dmytro Exp $
 //
 
 // system include files
@@ -40,7 +40,7 @@ class FW3DLegoEveElementProxyBuilder : public FW3DLegoDataProxyBuilder
 
       // ---------- member functions ---------------------------
    virtual void attach(TEveElement* iElement,
-                       TEveCaloDataHist* iHist);
+                       TEveCaloData* iHist);
    virtual void build();
 
    private:

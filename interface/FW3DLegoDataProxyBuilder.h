@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sat Jan  5 15:02:03 EST 2008
-// $Id: FW3DLegoDataProxyBuilder.h,v 1.8 2008/07/07 00:33:51 chrjones Exp $
+// $Id: FW3DLegoDataProxyBuilder.h,v 1.9 2008/07/09 20:06:17 chrjones Exp $
 //
 
 // system include files
@@ -34,7 +34,7 @@ class TObject;
 class TEveElementList;
 class TEveElement;
 class FWModelId;
-class TEveCaloDataHist;
+class TEveCaloData;
 
 namespace fw3dlego
 {
@@ -62,7 +62,7 @@ class FW3DLegoDataProxyBuilder
       void itemChanged(const FWEventItem*);
 
       virtual void attach(TEveElement* iElement,
-                          TEveCaloDataHist* iHist)  = 0;
+                          TEveCaloData* iHist)  = 0;
    
    protected:
       int legoRebinFactor() const {return 1;}

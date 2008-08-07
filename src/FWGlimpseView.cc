@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWGlimpseView.cc,v 1.9 2008/07/17 10:11:32 dmytro Exp $
+// $Id: FWGlimpseView.cc,v 1.10 2008/07/17 23:02:41 dmytro Exp $
 //
 
 // system include files
@@ -301,6 +301,7 @@ FWGlimpseView::showAxes( )
 { 
    if ( m_showAxes.value() )
      m_embeddedViewer->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
+     // m_embeddedViewer->SetGuideState(TGLUtil::kAxesEdge, kTRUE, kFALSE, 0);
    else
      m_embeddedViewer->SetGuideState(TGLUtil::kAxesNone, kTRUE, kFALSE, 0);
 }

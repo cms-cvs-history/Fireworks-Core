@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Sat Jul  5 11:13:22 EDT 2008
-// $Id: FW3DLegoEveElementProxyBuilder.cc,v 1.1 2008/07/07 00:30:27 chrjones Exp $
+// $Id: FW3DLegoEveElementProxyBuilder.cc,v 1.2 2008/07/12 01:31:09 dmytro Exp $
 //
 
 // system include files
@@ -61,7 +61,7 @@ FW3DLegoEveElementProxyBuilder::~FW3DLegoEveElementProxyBuilder()
 
 void 
 FW3DLegoEveElementProxyBuilder::attach(TEveElement* iElement,
-                                       TEveCaloDataHist* iHist)
+                                       TEveCaloData* iHist)
 {
    iElement->AddElement(&m_elementHolder);
 }

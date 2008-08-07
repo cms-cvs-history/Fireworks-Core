@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:21 EST 2008
-// $Id: FWEveLegoViewManager.h,v 1.5 2008/07/07 00:44:13 chrjones Exp $
+// $Id: FWEveLegoViewManager.h,v 1.6 2008/07/07 02:15:45 chrjones Exp $
 //
 
 // system include files
@@ -35,7 +35,7 @@ class FWGUIManager;
 class TGFrame;
 class FWEveLegoView;
 class FWViewBase;
-class TEveCaloDataHist;
+class TEveCaloDataVec;
 class TEveElementList;
 class TEveSelection;
 class FWSelectionManager;
@@ -99,7 +99,7 @@ class FWEveLegoViewManager : public FWViewManagerBase
 
       std::vector<boost::shared_ptr<FWEveLegoView> > m_views;
       TEveElementList m_elements;
-      TEveCaloDataHist* m_data;
+      TEveCaloDataVec* m_data;
       TEveCaloLego* m_lego;
       int  m_legoRebinFactor;
       

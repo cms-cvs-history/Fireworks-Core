@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Sat Jul  5 11:26:06 EDT 2008
-// $Id: FW3DLegoEveHistProxyBuilder.h,v 1.1 2008/07/07 00:30:27 chrjones Exp $
+// $Id: FW3DLegoEveHistProxyBuilder.h,v 1.2 2008/07/09 20:05:28 chrjones Exp $
 //
 
 // system include files
@@ -27,7 +27,8 @@
 
 // forward declarations
 class TH2F;
-class TEveCaloDataHist;
+class TEveCaloData;
+class TEveCaloDataVec;
 
 class FW3DLegoEveHistProxyBuilder : public FW3DLegoDataProxyBuilder
 {
@@ -39,11 +40,16 @@ class FW3DLegoEveHistProxyBuilder : public FW3DLegoDataProxyBuilder
       // ---------- const member functions ---------------------
 
       // ---------- static member functions --------------------
-
+      // static TEveCaloDataVec* makeCorrectlyBinnedCalo( const TH2* );
+      static void fillCorrectlyBinnedLego( TEveCaloDataVec*, 
+					   const TH2F*,
+					   unsigned int slice );
+   
       // ---------- member functions ---------------------------
       virtual void attach(TEveElement* iElement,
-                          TEveCaloDataHist* iHist);
+                          TEveCaloData* iHist);
       virtual void build();
+      virtual int slice() = 0;
    
    private:
       virtual void modelChangesImp(const FWModelIds&);
@@ -60,8 +66,8 @@ class FW3DLegoEveHistProxyBuilder : public FW3DLegoDataProxyBuilder
 
       // ---------- member data --------------------------------
       TH2F* m_hist;
-      TEveCaloDataHist* m_data;
-      Int_t m_sliceIndex;
+      TEveCaloData* m_data;
+      // Int_t m_sliceIndex;
 };
 
 

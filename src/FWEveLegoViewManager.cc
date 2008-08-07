@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWEveLegoViewManager.cc,v 1.13 2008/07/22 15:31:59 chrjones Exp $
+// $Id: FWEveLegoViewManager.cc,v 1.14 2008/07/25 14:45:36 dmytro Exp $
 //
 
 // system include files
@@ -46,6 +46,7 @@
 #include "Fireworks/Core/interface/FWSelectionManager.h"
 
 #include "Fireworks/Core/interface/FW3DLegoDataProxyBuilderFactory.h"
+#include "Fireworks/Core/interface/FW3DLegoEveHistProxyBuilder.h"
 
 //
 // constants, enums and typedefs
@@ -121,14 +122,15 @@ void
 FWEveLegoViewManager::initData()
 {
    if(0==m_data) {
-      m_data = new TEveCaloDataHist();
+      m_data = new TEveCaloDataVec(2);
       Bool_t status = TH1::AddDirectoryStatus();
       TH1::AddDirectory(kFALSE); //Keeps histogram from going into memory
       TH2F* background = new TH2F("background","",
                                   82, fw3dlego::xbins, 72/1, -3.1416, 3.1416);
       TH1::AddDirectory(status);
-      m_data->AddHistogram(background);
-      // m_data->SetMaximum(100);
+      // what slice to makes no difference, we only initialized 
+      // the cells.
+      FW3DLegoEveHistProxyBuilder::fillCorrectlyBinnedLego(m_data,background,0); 
    }
 }
 
@@ -181,57 +183,6 @@ FWEveLegoViewManager::beingDestroyed(const FWViewBase* iView)
 }
 
 
-/*
-void 
-FWEveLegoViewManager::newEventAvailable()
-{
-  
-   if(0==m_data || 0==m_views.size()) return;
-   
-   // m_data = new TEveCaloDataHist(); // it's a smart object, so it will clean up
-   
-   //   for ( std::vector<FWEveLegoModelProxy>::iterator proxy =  m_modelProxies.begin();
-   //	 proxy != m_modelProxies.end(); ++proxy ) {
-   for ( unsigned int i = 0; i < m_modelProxies.size(); ++i ) {
-      if ( m_modelProxies[i].ignore ) continue;
-      FWEveLegoModelProxy* proxy = & (m_modelProxies[i]);
-      if ( proxy->product == 0) // first time
-	{
-	   TObject* product(0);
-	   proxy->builder->build( &product );
-	   if ( ! product) {
-	      printf("WARNING: proxy builder failed to initialize product for FWEveLegoViewManager. Ignored\n");
-	      proxy->ignore = true;
-	      continue;
-	   } 
-	   TH2F* hist = dynamic_cast<TH2F*>(product);
-	   if ( hist ) {
-	      // hist->Dump();
-	      hist->Rebin2D(); // FIX ME
-	      unsigned int index = m_data->AddHistogram(hist);
-	      m_data->RefSliceInfo(index).Setup(hist->GetTitle(), 0., hist->GetFillColor());
-	      
-	      proxy->product = hist;
-	      continue;
-	   }
-	   TEveElementList* element = dynamic_cast<TEveElementList*>(product);
-	   if ( element ) {
-	      m_elements->AddElement( element );
-	      proxy->product = element;
-	      continue;
-	   }
-	   printf("WARNING: unknown product for FWEveLegoViewManager. Proxy is ignored\n");
-	   proxy->ignore = true;
-	} else {
-	   proxy->builder->build( &(proxy->product) );
-	}
-   }
-
-   std::for_each(m_views.begin(), m_views.end(),
-                 boost::bind(&FWEveLegoView::draw,_1, m_data) );
-   for ( unsigned int i = 0; i < m_views.size(); ++i ) m_views[i]->setMinEnergy();
-}
-*/
 void 
 FWEveLegoViewManager::makeProxyBuilderFor(const FWEventItem* iItem)
 {
