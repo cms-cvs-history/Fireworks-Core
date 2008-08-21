@@ -21,4 +21,6 @@ if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
   export LIBGL_DRIVERS_PATH
 fi
+PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin
+export PATH
 $CMSSW_BASE/cmsShow.exe $@
