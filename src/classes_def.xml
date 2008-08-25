@@ -7,7 +7,6 @@
   <class name="TEveElementIter"/>
   <class name="FWGUIManager"/>
   <class name="CmsShowEDI"/>
-  <class name="FWGUIValidatingTextEntry"/>
   <class name="CmsShowModelPopup"/>
   <class name="CmsShowViewPopup"/>
   <class name="FWGUISubviewArea"/>

@@ -8,7 +8,7 @@
 //
 // Original Author:  Joshua Berger  
 //         Created:  Mon Jun 23 15:48:11 EDT 2008
-// $Id: CmsShowEDI.cc,v 1.11 2008/08/22 16:56:38 chrjones Exp $
+// $Id: CmsShowEDI.cc,v 1.10 2008/08/21 21:12:08 chrjones Exp $
 //
 
 // system include files
@@ -30,7 +30,6 @@
 #include "TEveManager.h"
 
 #include "TGMsgBox.h"
-#include "TGComboBox.h"
 
 // user include files
 #include "Fireworks/Core/interface/CmsShowEDI.h"
@@ -43,10 +42,6 @@
 #include "Fireworks/Core/interface/FWModelExpressionSelector.h"
 #include "Fireworks/Core/interface/FWModelChangeManager.h"
 #include "Fireworks/Core/interface/FWExpressionException.h"
-#include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
-#include "Fireworks/Core/src/FWExpressionValidator.h"
-
-
 //
 // constants, enums and typedefs
 //
@@ -60,8 +55,7 @@
 //
 CmsShowEDI::CmsShowEDI(const TGWindow* p, UInt_t w, UInt_t h, FWSelectionManager* selMgr) : 
 TGTransientFrame(gClient->GetDefaultRoot(),p, w, h),
-m_item(0),
-m_validator( new FWExpressionValidator)
+m_item(0)
 {
   m_selectionManager = selMgr;
   SetCleanup(kDeepCleanup);
@@ -121,8 +115,7 @@ m_validator( new FWExpressionValidator)
   TGVerticalFrame* filterFrame = new TGVerticalFrame(ediTabs, 200, 600);
   TGLabel* filterExpressionLabel = new TGLabel(filterFrame, "Expression:");
   filterFrame->AddFrame(filterExpressionLabel);
-  m_filterExpressionEntry = new FWGUIValidatingTextEntry(filterFrame);
-  m_filterExpressionEntry->setValidator(m_validator);
+  m_filterExpressionEntry = new TGTextEntry(filterFrame);
   m_filterExpressionEntry->SetEnabled(kFALSE);
   filterFrame->AddFrame(m_filterExpressionEntry, new TGLayoutHints(kLHintsExpandX));
   m_filterButton = new TGTextButton(filterFrame, "Filter");
@@ -133,15 +126,13 @@ m_validator( new FWExpressionValidator)
   m_filterError->SetBackgroundColor(TGFrame::GetDefaultFrameBackground()); 
   m_filterError->ChangeOptions(0);
   filterFrame->AddFrame(m_filterError, new TGLayoutHints(kLHintsExpandX| kLHintsExpandY));
-  //taken from TGComboBox.cxx
   ediTabs->AddTab("Filter", filterFrame);
 
   // Select tab
   TGVerticalFrame* selectFrame = new TGVerticalFrame(ediTabs, 200, 600);
   TGLabel* expressionLabel = new TGLabel(selectFrame, "Expression:");
   selectFrame->AddFrame(expressionLabel);
-  m_selectExpressionEntry = new FWGUIValidatingTextEntry(selectFrame);
-  m_selectExpressionEntry->setValidator(m_validator);
+  m_selectExpressionEntry = new TGTextEntry(selectFrame);
   m_selectExpressionEntry->SetEnabled(kFALSE);
   selectFrame->AddFrame(m_selectExpressionEntry,new TGLayoutHints(kLHintsExpandX));
   m_selectButton = new TGTextButton(selectFrame, "Select");
@@ -255,7 +246,6 @@ CmsShowEDI::~CmsShowEDI()
    //  delete m_objectLabel;
   //  delete m_colorSelectWidget;
   //  delete m_isVisibleButton;
-   delete m_validator;
 }
 
 //
@@ -281,8 +271,7 @@ CmsShowEDI::fillEDIFrame(FWEventItem* iItem) {
     m_objectLabel->SetText(iItem->name().c_str());
     m_colorSelectWidget->SetColor(gVirtualX->GetPixel(iItem->defaultDisplayProperties().color()),kFALSE);
     m_isVisibleButton->SetDisabledAndSelected(iItem->defaultDisplayProperties().isVisible());
-     m_validator->setType(ROOT::Reflex::Type::ByTypeInfo(*(iItem->type()->GetTypeInfo())));
-     m_filterExpressionEntry->SetText(iItem->filterExpression().c_str());
+    m_filterExpressionEntry->SetText(iItem->filterExpression().c_str());
     m_filterError->Clear();
     m_selectError->Clear();
     m_nameEntry->SetText(iItem->name().c_str());
@@ -398,8 +387,6 @@ CmsShowEDI::runFilter() {
       }
    }
 }
-
-
 
 void
 CmsShowEDI::runSelection() {
