@@ -16,7 +16,6 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "Fireworks/Core/interface/FWTextView.h"
 #include "Fireworks/Core/interface/FWDisplayEvent.h"
 #include "Fireworks/Core/interface/FWEventItemsManager.h"
@@ -467,7 +466,6 @@ void FWTextView::newEvent (const fwlite::Event &ev, const CmsShowMain *de)
      const reco::CaloJetCollection *jets = 0;
      const reco::CaloMETCollection *mets = 0;
      const reco::TrackCollection *tracks = 0;
-     const std::vector<reco::Vertex> *vertices = 0;
      const l1extra::L1EmParticleCollection	*l1ems = 0;
      const l1extra::L1MuonParticleCollection	*l1mus = 0;
      const l1extra::L1JetParticleCollection	*l1jets = 0;
@@ -490,8 +488,8 @@ void FWTextView::newEvent (const fwlite::Event &ev, const CmsShowMain *de)
 	       (*i)->get(mets);
 	  } else if ((*i)->name() == "Tracks") { 
 	       (*i)->get(tracks);
-	  } else if ((*i)->name() == "Vertices") { 
-	       (*i)->get(vertices);
+//	  } else if ((*i)->name() == "Vertices") { 
+//	     (*i)->get(vertices);
 	  } else if ((*i)->name() == "L1EmTrig") { 
 	       (*i)->get(l1ems);
 	  } else if ((*i)->name() == "L1-Muons") { 
@@ -517,8 +515,8 @@ void FWTextView::newEvent (const fwlite::Event &ev, const CmsShowMain *de)
 	       jet_manager->setItem(*i);
 	  } else if ((*i)->name() == "Tracks") { 
 	       track_manager->setItem(*i);
-	  } else if ((*i)->name() == "Vertices") { 
-	       vertex_manager->setItem(*i);
+//	  } else if ((*i)->name() == "Vertices") { 
+//	       vertex_manager->setItem(*i);
 	  } else if ((*i)->name() == "L1EmTrig") { 
 	       l1em_manager->setItem(*i);
 	  } else if ((*i)->name() == "L1-Muons") { 	
@@ -561,8 +559,8 @@ void FWTextView::newEvent (const fwlite::Event &ev, const CmsShowMain *de)
      // vertices
      //------------------------------------------------------------
      int n_vertices = 0;
-     if (vertices != 0)
-	  n_vertices = vertices->size();
+//     if (vertices != 0)
+//	  n_vertices = vertices->size();
      //------------------------------------------------------------
      // L1 EMs
      //------------------------------------------------------------
@@ -753,32 +751,14 @@ void FWTextView::newEvent (const fwlite::Event &ev, const CmsShowMain *de)
 	       tr.pt(), tr.eta(), tr.phi(),
 	       tr.d0(), tr.d0Error(), tr.dz(), tr.dzError(),
 	       tr.vx(), tr.vy(), tr.vz(), 
-	       tr.hitPattern().numberOfValidPixelHits(),
-	       tr.hitPattern().numberOfValidStripHits(),
+	       0,
+	       0,
 // 	       125,
 	       tr.chi2(), tr.ndof()
 	  };
 	  track_manager->rows.push_back(row);
      }
      track_manager->sort(0, true);
-     //------------------------------------------------------------
-     // print vertices
-     //------------------------------------------------------------
-//     printf("Vertices\n");
-     vertex_manager->rows.clear();
-//      printf("Et\t eta\t phi\t ECAL\t HCAL\t emf\t chf\n");
-     for (int i = 0; i < n_vertices; ++i) {
-	  const reco::Vertex &vtx = vertices->at(i);
-	  VertexRowStruct row = {
-	       i,
-	       vtx.x(), vtx.xError(), 
-	       vtx.y(), vtx.yError(), 
-	       vtx.z(), vtx.zError(), 
-	       vtx.tracksSize(), vtx.chi2(), vtx.ndof()
-	  };
-	  vertex_manager->rows.push_back(row);
-     }
-     vertex_manager->sort(0, true);
      //------------------------------------------------------------
      // print L1 EMs
      //------------------------------------------------------------

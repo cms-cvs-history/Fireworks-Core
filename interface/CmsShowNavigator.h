@@ -16,7 +16,7 @@
 //
 // Original Author:  Joshua Berger
 //         Created:  Tue Jun 10 14:56:34 EDT 2008
-// $Id: CmsShowNavigator.h,v 1.9 2008/08/20 21:02:54 chrjones Exp $
+// $Id: CmsShowNavigator.h,v 1.10 2008/08/25 00:08:28 dmytro Exp $
 //
 
 // system include files
@@ -80,8 +80,6 @@ class CmsShowNavigator
       // ---------- member data --------------------------------
       TFile *m_file;
       fwlite::Event *m_event;
-      edm::EventID m_firstID;
-      edm::EventID m_lastID;
       TTree *m_eventTree;
      std::string m_selection;
       TEventList *m_eventList;

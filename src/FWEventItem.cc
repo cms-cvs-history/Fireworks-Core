@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Thu Jan  3 14:59:23 EST 2008
-// $Id: FWEventItem.cc,v 1.23 2008/07/22 09:29:11 jmuelmen Exp $
+// $Id: FWEventItem.cc,v 1.24 2008/07/22 09:44:28 jmuelmen Exp $
 //
 
 // system include files
@@ -105,7 +105,7 @@ m_printedNoDataError(false)
    assert(dataType != ROOT::Reflex::Type() );
    
    std::string wrapperName = std::string("edm::Wrapper<")+dataType.Name(ROOT::Reflex::SCOPED)+" >";
-   //std::cout <<wrapperName<<std::endl;
+   // std::cout <<wrapperName<<std::endl;
    m_wrapperType = ROOT::Reflex::Type::ByName(wrapperName);
    
    assert(m_wrapperType != ROOT::Reflex::Type());

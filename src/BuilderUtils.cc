@@ -20,6 +20,7 @@
 #include "TEveStraightLineSet.h"
 #include <time.h>
 #include "DataFormats/FWLite/interface/Event.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 std::pair<double,double> fw::getPhiRange( const std::vector<double>& phis, double phi )
 {
@@ -228,7 +229,13 @@ void fw::addStraightLineSegment( TEveStraightLineSet * marker,
 double 
 fw::estimate_field( const reco::Track& track )
 {
-   if ( ! track.extra().isAvailable() ) return -1;
+   try {
+      if ( ! track.extra().isAvailable() ) return -1;
+   } 
+   catch ( cms::Exception& e ){
+      return -1;
+   }
+
    math::XYZVector displacement(track.outerPosition().x()-track.innerPosition().x(),
 				track.outerPosition().y()-track.innerPosition().y(),
 				0);
@@ -242,7 +249,7 @@ fw::estimate_field( const reco::Track& track )
 std::string
 fw::getTimeGMT( const fwlite::Event& event )
 {
-   time_t t(event.time().value() >> 32);
+   time_t t(0); //event.time().value() >> 32);
    std::string text( asctime( gmtime(&t) ) );
    size_t pos = text.find('\n');
    if ( pos != std::string::npos ) text = text.substr(0,pos);

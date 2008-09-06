@@ -6,8 +6,7 @@
 #include "TEveTrack.h"
 #include "TEveTrackPropagator.h"
 
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 #include "Fireworks/Core/interface/DetIdToMatrix.h"
 #include "Fireworks/Core/interface/FWEventItem.h"
@@ -45,10 +44,8 @@ void GenParticleDetailView::build (TEveElementList **product, const FWModelId &i
      rnrStyle->SetMaxR(120.0);
      rnrStyle->SetMaxZ(300.0);    
      
-     reco::GenParticleCollection const * genParticles=0;
+     reco::CandidateCollection const * genParticles=0;
      m_item->get(genParticles);
-     //fwlite::Handle<reco::TrackCollection> tracks;
-     //tracks.getByLabel(*iEvent,"ctfWithMaterialTracks");
      
      if(0 == genParticles ) return;
      
@@ -60,7 +57,7 @@ void GenParticleDetailView::build (TEveElementList **product, const FWModelId &i
      TEveRecTrack t;
      
      t.fBeta = 1.;
-     reco::GenParticleCollection::const_iterator it = genParticles->begin(),
+     reco::CandidateCollection::const_iterator it = genParticles->begin(),
        end = genParticles->end();
      for( ; it != end; ++it,++index) {
 	  if (index != id.index())

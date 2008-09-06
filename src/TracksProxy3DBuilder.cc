@@ -14,7 +14,7 @@
 //
 // Original Author:  
 //         Created:  Thu Dec  6 18:01:21 PST 2007
-// $Id: TracksProxy3DBuilder.cc,v 1.16 2008/08/29 02:31:27 dmytro Exp $
+// $Id: TracksProxy3DBuilder.cc,v 1.17 2008/08/30 16:08:55 dmytro Exp $
 //
 
 // system include files
@@ -120,8 +120,10 @@ TracksProxy3DBuilder::prepareTrack(const reco::Track& track,
 {
    // To make use of all available information, we have to order states 
    // properly first. Propagator should take care of y=0 transition.
-   
-   if ( ! track.extra().isAvailable() )
+   bool reco = true;
+   try { reco &= !track.extra().isAvailable(); } catch( cms::Exception& e ) { reco = false; }
+	
+   if ( !reco  )
      return prepareSimpleTrack(track,propagator,trackList,color);
    
    // we have 3 states for sure, bust some of them may overlap.

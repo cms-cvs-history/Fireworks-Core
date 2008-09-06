@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Tue Jun 10 14:56:46 EDT 2008
-// $Id: CmsShowNavigator.cc,v 1.15 2008/08/25 00:08:29 dmytro Exp $
+// $Id: CmsShowNavigator.cc,v 1.16 2008/08/30 18:33:09 dmytro Exp $
 //
 
 // hacks
@@ -126,19 +126,20 @@ CmsShowNavigator::realEntry(Int_t selectedEntry) {
 
 Int_t
 CmsShowNavigator::realEntry(Int_t run, Int_t event) {
+   return 0; /*
    m_event->fillFileIndex();
    edm::FileIndex::const_iterator i = m_event->fileIndex_.findEventPosition(run, 0, event, true);
    if (m_event->fileIndex_.end() != i) 
      return i->entry_;
    else
-     return -1;
+     return -1;*/
 }
 	
 void
 CmsShowNavigator::checkPosition() {
-  if ( m_event->id() == m_firstID )
+  if ( m_currentSelectedEntry == 0 )
     atBeginning.emit();
-  if ( m_event->id() == m_lastID)
+  if ( m_currentSelectedEntry == m_nEntries-1 )
     atEnd.emit();
 }      
     
@@ -194,6 +195,7 @@ CmsShowNavigator::firstEvent()
 void
 CmsShowNavigator::goToRun(CSGAction* action)
 {
+   /*
    Long_t run = action->getNumberEntry()->GetIntNumber();
    Int_t entry = realEntry(run, 0);
    if ( entry < 0 ) {
@@ -211,12 +213,13 @@ CmsShowNavigator::goToRun(CSGAction* action)
       checkPosition();
    }
    else oldEvent.emit(*m_event);
+    */
 }
 
 void
 CmsShowNavigator::goToEvent(CSGAction* action)
 {
-   Long_t event = action->getNumberEntry()->GetIntNumber();
+   /*Long_t event = action->getNumberEntry()->GetIntNumber();
    Int_t entry = realEntry(m_event->id().run(), event);
    if ( entry < 0 ) {
       oldEvent.emit(*m_event);
@@ -233,6 +236,7 @@ CmsShowNavigator::goToEvent(CSGAction* action)
       checkPosition();
    }
    else oldEvent.emit(*m_event);
+    */
 }
 
 void
@@ -286,10 +290,6 @@ CmsShowNavigator::filterEventsAndReset(const char* sel)
 	   m_nEntries = m_event->size();
 	}
      }
-     m_event->to(realEntry(0));
-     m_firstID = m_event->id();
-     m_event->to(realEntry(m_nEntries - 1));
-     m_lastID = m_event->id();
      firstEvent();
 }
 

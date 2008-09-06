@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:57:00 EST 2008
-// $Id: MuonsProxyPUBuilder.cc,v 1.3 2008/05/12 15:43:29 dmytro Exp $
+// $Id: MuonsProxyPUBuilder.cc,v 1.4 2008/07/17 10:04:17 dmytro Exp $
 //
 
 // system include files
@@ -263,7 +263,7 @@ void MuonsProxyPUBuilder::build (TEveElementList **product)
        Well then, we have muon eta phi and we can go ahead and grab the towers near that.
 
     */
-
+/*
     // Big ol' print block to see what's available to us
     std::cout << "Printing Muon related quantities" << std::endl;
     std::cout << "isEnergyValid(): " << (*muon).isEnergyValid() << std::endl;
@@ -273,7 +273,7 @@ void MuonsProxyPUBuilder::build (TEveElementList **product)
     std::cout << "Energy in the ecal: " << (*muon).calEnergy().em << std::endl;
     std::cout << "Energy in the hcal: " << (*muon).calEnergy().had << std::endl;
     std::cout << "Energy in the outer hcal: " << (*muon).calEnergy().ho << std::endl;
-
+*/
     /* This isn't quite ready yet.  According to Dima, there's a better way to do things that 
        might necessitate a thorough rewrite of both this, and what is called here:
 
@@ -301,7 +301,7 @@ void MuonsProxyPUBuilder::build (TEveElementList **product)
     }
     
     // add muon segments
-    const std::vector<reco::MuonChamberMatch>& matches = muon->matches();
+    const std::vector<reco::MuonChamberMatch>& matches = muon->getMatches();
     Double_t localTrajectoryPoint[3];
     Double_t globalTrajectoryPoint[3];
     //need to use auto_ptr since the segmentSet may not be passed to muonList

@@ -24,7 +24,7 @@ void DetIdToMatrix::loadGeometry(const char* fileName)
    TFile* f = new TFile(fileName);
    manager_ = 0;
    // load geometry
-   manager_ = (TGeoManager*)f->Get("cmsGeo");
+   manager_ = dynamic_cast<TGeoManager*>(f->Get("cmsGeo"));
    if (!manager_) {
       std::cout << "ERROR: cannot find geometry in the file. Initialization failed." << std::endl;
       return;

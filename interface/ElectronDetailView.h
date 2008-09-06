@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Sun Jan  6 23:42:33 EST 2008
-// $Id: ElectronDetailView.h,v 1.3 2008/05/12 15:43:29 dmytro Exp $
+// $Id: ElectronDetailView.h,v 1.4 2008/07/01 05:03:25 jmuelmen Exp $
 //
 
 // system include files
@@ -26,14 +26,12 @@
 // user include files
 #include "TEveBoxSet.h"
 #include "Fireworks/Core/interface/FWDetailView.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
 // forward declarations
 
 class FWEventItem;
 class TEveElementList;
-namespace reco {
-     class GsfElectron;
-}
 
 class ElectronDetailView : public FWDetailView {
      

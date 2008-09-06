@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Fri Jan  4 10:38:18 EST 2008
-// $Id: FWEventItemsManager.cc,v 1.13 2008/06/13 23:30:23 chrjones Exp $
+// $Id: FWEventItemsManager.cc,v 1.14 2008/08/15 06:38:42 jmuelmen Exp $
 //
 
 // system include files
@@ -208,8 +208,10 @@ FWEventItemsManager::setFrom(const FWConfiguration& iFrom)
       if(conf.version()>1) {
          purpose = (*keyValues)[8].second.value();
       }
+      TClass* className = TClass::GetClass(type.c_str());
+      assert( className );
       FWPhysicsObjectDesc desc(name,
-                               TClass::GetClass(type.c_str()),
+                               className,
                                purpose,
                                disp,
                                moduleLabel,

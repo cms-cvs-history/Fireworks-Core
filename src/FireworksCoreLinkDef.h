@@ -10,7 +10,7 @@
 #include "Fireworks/Core/interface/FWTextView.h"
 #include "Fireworks/Core/src/CSGConnector.h"
 #include "Fireworks/Core/src/CmsShowMain.h"
-#include "Fireworks/Core/src/FWGUIEventDataAdder.h"
+// #include "Fireworks/Core/src/FWGUIEventDataAdder.h"
 #include "Fireworks/Core/src/FWColorSelect.h"
 #include "Fireworks/Core/src/LightTableWidget.h"
 #include "Fireworks/Core/src/FWListWidget.h"
@@ -31,7 +31,7 @@
 #pragma link C++ class LightTableWidget;
 #pragma link C++ class FWTextView;
 #pragma link C++ class FWTextViewPage;
-#pragma link C++ class FWGUIEventDataAdder;
+// #pragma link C++ class FWGUIEventDataAdder;
 #pragma link C++ class FWListWidget;
 
 #pragma link C++ function fwSetInCint(double);

@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
-// $Id: FWGUIManager.cc,v 1.73 2008/08/25 00:08:29 dmytro Exp $
+// $Id: FWGUIManager.cc,v 1.74 2008/08/29 02:33:04 dmytro Exp $
 //
 
 // system include files
@@ -64,8 +64,6 @@
 #include "Fireworks/Core/src/accessMenuBar.h"
 
 #include "Fireworks/Core/interface/CmsShowMainFrame.h"
-
-#include "Fireworks/Core/src/FWGUIEventDataAdder.h"
 
 #include "Fireworks/Core/interface/CSGAction.h"
 #include "Fireworks/Core/interface/CSGNumAction.h"
@@ -317,9 +315,10 @@ FWGUIManager::loadEvent(const fwlite::Event& event) {
   // To be replaced when we can get index from fwlite::Event
   m_cmsShowMainFrame->loadEvent(event);
   m_presentEvent=&event;
-  if(m_dataAdder) {
+/*  if(m_dataAdder) {
      m_dataAdder->update(m_openFile, &event);
   }
+ */
 }
 
 CSGAction*
@@ -442,6 +441,7 @@ FWGUIManager::newItem(const FWEventItem* iItem)
 void 
 FWGUIManager::addData()
 {
+   /*
    if(0==m_dataAdder) {
       m_dataAdder = new FWGUIEventDataAdder(100,100,
                                             m_eiManager,
@@ -451,6 +451,7 @@ FWGUIManager::addData()
                                             m_viewManagerManager->supportedTypesAndPurpose());
    }
    m_dataAdder->show();
+    */
 }
 
 

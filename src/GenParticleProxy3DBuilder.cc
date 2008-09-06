@@ -14,7 +14,7 @@
 //
 // Original Author:  
 //         Created:  Thu Dec  6 18:01:21 PST 2007
-// $Id: GenParticleProxy3DBuilder.cc,v 1.6 2008/07/17 10:04:17 dmytro Exp $
+// $Id: GenParticleProxy3DBuilder.cc,v 1.7 2008/07/20 18:22:00 dmytro Exp $
 //
 
 // system include files
@@ -28,8 +28,7 @@
 #include "Fireworks/Core/interface/FWEventItem.h"
 #include "Fireworks/Core/interface/FWRPZDataProxyBuilder.h"
 
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 #include "Fireworks/Core/interface/GenParticleProxy3DBuilder.h"
 
@@ -64,10 +63,8 @@ void GenParticleProxy3DBuilder::build(const FWEventItem* iItem, TEveElementList*
     }
 
 
-     reco::GenParticleCollection const * genParticles=0;
+     reco::CandidateCollection const * genParticles=0;
      iItem->get(genParticles);
-     //fwlite::Handle<reco::TrackCollection> tracks;
-     //tracks.getByLabel(*iEvent,"ctfWithMaterialTracks");
      
      if(0 == genParticles ) return;
     
@@ -78,15 +75,15 @@ void GenParticleProxy3DBuilder::build(const FWEventItem* iItem, TEveElementList*
     TEveRecTrack t;
 
      t.fBeta = 1.;
-     reco::GenParticleCollection::const_iterator it = genParticles->begin(),
+     reco::CandidateCollection::const_iterator it = genParticles->begin(),
        end = genParticles->end();
      for( ; it != end; ++it,++index) {
       t.fP = TEveVector(it->px(),
                         it->py(),
                         it->pz());
-      t.fV = TEveVector(it->vx(),
-                        it->vy(),
-                        it->vz());
+      t.fV = TEveVector(it->vertex().x(),
+                        it->vertex().y(),
+                        it->vertex().z());
       t.fSign = it->charge();
       TEveTrack* genPart = new TEveTrack(&t,rnrStyle);
       char s[1024];
@@ -108,5 +105,5 @@ void GenParticleProxy3DBuilder::build(const FWEventItem* iItem, TEveElementList*
     
 }
 
-REGISTER_FWRPZDATAPROXYBUILDER(GenParticleProxy3DBuilder,reco::GenParticleCollection,"GenParticles");
+REGISTER_FWRPZDATAPROXYBUILDER(GenParticleProxy3DBuilder,reco::CandidateCollection,"GenParticles");
 
