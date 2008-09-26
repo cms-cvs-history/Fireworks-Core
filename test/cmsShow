@@ -16,7 +16,9 @@ LD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
 export LD_LIBRARY_PATH
 DYLD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
 export DYLD_LIBRARY_PATH
-echo "Loading cmsShow"
+cat $CMSSW_BASE/src/Fireworks/Core/scripts/version.txt
+date -r libCMSDataFormats.so +"Build date of data formats: %b %d, %Y"
+date -r libCMSShow.so +"Build date of the display: %b %d, %Y"
 if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
   export LIBGL_DRIVERS_PATH
