@@ -4,6 +4,7 @@
 #include "TApplication.h"
 #include "Fireworks/Core/src/CmsShowMain.h"
 #include <iostream>
+#include <memory>
 
 int main (int argc, char **argv)
 {
@@ -12,7 +13,7 @@ int main (int argc, char **argv)
    int dummyArgc = 1;
    TApplication app("cmsShow", &dummyArgc, dummyArgv);
    AutoLibraryLoader::enable();
-   new CmsShowMain(argc,argv);
+   std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
    app.Run();
    return 0;
 }
