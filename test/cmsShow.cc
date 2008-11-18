@@ -1,10 +1,13 @@
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "Rtypes.h"
 #include "TROOT.h"
+#include "TSystem.h"
 #include "TApplication.h"
 #include "Fireworks/Core/src/CmsShowMain.h"
 #include <iostream>
 #include <memory>
+
+#include "TEveManager.h"
 
 int main (int argc, char **argv)
 {
@@ -15,5 +18,8 @@ int main (int argc, char **argv)
    AutoLibraryLoader::enable();
    std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
    app.Run();
+   pMain.reset();
+   TEveManager::Terminate();
+   
    return 0;
 }
