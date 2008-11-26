@@ -3,6 +3,8 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TApplication.h"
+#include "TGLSAViewer.h"
+#include "TEveManager.h"
 #include "Fireworks/Core/src/CmsShowMain.h"
 #include <iostream>
 #include <memory>
@@ -19,6 +21,7 @@ int main (int argc, char **argv)
    std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
    app.Run();
    pMain.reset();
+   dynamic_cast<TGLSAViewer*>(gEve->GetGLViewer())->DeleteMenuBar();
    TEveManager::Terminate();
    
    return 0;
