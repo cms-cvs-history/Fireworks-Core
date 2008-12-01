@@ -17,12 +17,38 @@ export LD_LIBRARY_PATH
 DYLD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
 export DYLD_LIBRARY_PATH
 cat $CMSSW_BASE/src/Fireworks/Core/scripts/version.txt
-date -r libCMSDataFormats.so +"Build date of data formats: %b %d, %Y"
-date -r libCMSShow.so +"Build date of the display: %b %d, %Y"
 if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
   export LIBGL_DRIVERS_PATH
 fi
 PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin
 export PATH
-$CMSSW_BASE/cmsShow.exe $@
+if [ "`echo $@ | awk '/\-d/'`" != "" ] ; then
+   echo "set args $@" > gdb.cmd
+   echo "run"        >> gdb.cmd
+   echo "bt"         >> gdb.cmd
+   echo "quit"       >> gdb.cmd
+   gdb -x gdb.cmd $CMSSW_BASE/cmsShow.exe 2>&1 | tee crash.report
+   echo "" >> crash.report
+   echo "System Info" >> crash.report
+   uname -a  >> crash.report
+   glxinfo >> crash.report
+else
+   $CMSSW_BASE/cmsShow.exe $@
+   if [ $? != "0" ] ; then
+      echo ""
+      echo "  ########################################################################"
+      echo "  #                                                                      #"
+      echo "  #                  Abnormal program termination!                       #"
+      echo "  #                                                                      #"
+      echo "  #  We regret that this happened and we would appreciate your help      #"
+      echo "  #  in debugging and reporting this problem. Please try to reproduce    #"
+      echo "  #  the problem by running the program with --debug flag to get         #"
+      echo "  #  a crash report and send its content (saved in ./crash.report file)  #" 
+      echo "  #  to fireworks-support@cern.ch with brief instructions how to         #"
+      echo "  #  reproduce the problem.                                              #"
+      echo "  #                                                                      #"
+      echo "  ########################################################################"
+      echo ""
+   fi
+fi
