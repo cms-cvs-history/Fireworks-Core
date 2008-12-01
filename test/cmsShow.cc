@@ -24,5 +24,9 @@ int main (int argc, char **argv)
    dynamic_cast<TGLSAViewer*>(gEve->GetGLViewer())->DeleteMenuBar();
    TEveManager::Terminate();
    
+   //the handler has a pointer back to TApplication so must be removed
+   TFileHandler* handler = gSystem->RemoveFileHandler(gXDisplay);
+   if(0!=handler) {gXDisplay=0;}
+   delete handler;
    return 0;
 }
