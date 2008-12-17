@@ -1,6 +1,7 @@
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "Rtypes.h"
 #include "TROOT.h"
+#include "TEnv.h"
 #include "TSystem.h"
 #include "TApplication.h"
 #include "TGLSAViewer.h"
@@ -16,6 +17,7 @@ int main (int argc, char **argv)
    std::cout <<" starting"<<std::endl;
    char* dummyArgv[] = {"cmsShow"};
    int dummyArgc = 1;
+   gEnv->SetValue("Gui.BackgroundColor", "#9f9f9f"); 
    TApplication app("cmsShow", &dummyArgc, dummyArgv);
    AutoLibraryLoader::enable();
    std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
