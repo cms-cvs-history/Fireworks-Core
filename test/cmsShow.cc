@@ -17,7 +17,7 @@ int main (int argc, char **argv)
    std::cout <<" starting"<<std::endl;
    char* dummyArgv[] = {"cmsShow"};
    int dummyArgc = 1;
-   gEnv->SetValue("Gui.BackgroundColor", "#9f9f9f"); 
+   gEnv->SetValue("Gui.BackgroundColor", "#9f9f9f");
    TApplication app("cmsShow", &dummyArgc, dummyArgv);
    AutoLibraryLoader::enable();
    std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
@@ -25,7 +25,7 @@ int main (int argc, char **argv)
    pMain.reset();
    dynamic_cast<TGLSAViewer*>(gEve->GetGLViewer())->DeleteMenuBar();
    TEveManager::Terminate();
-   
+
    //the handler has a pointer back to TApplication so must be removed
    TFileHandler* handler = gSystem->RemoveFileHandler(gXDisplay);
    if(0!=handler) {gXDisplay=0;}

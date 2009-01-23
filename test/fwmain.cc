@@ -8,9 +8,9 @@
 
 int main (int argc, char **argv)
 {
-     TApplication app("FireWorks", &argc, argv);
-     ROOT::Cintex::Cintex::Enable();
-     AutoLibraryLoader::enable();
-     RUNME();
-     return 0;
+   TApplication app("FireWorks", &argc, argv);
+   ROOT::Cintex::Cintex::Enable();
+   AutoLibraryLoader::enable();
+   RUNME();
+   return 0;
 }

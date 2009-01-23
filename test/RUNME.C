@@ -17,31 +17,31 @@
 void RUNME(const char* datafile = 0) {
    // get geometry files if they are missing
    TFile* ff = TFile::Open("cmsGeom10.root");
-   if (! ff )
-     gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
+   if (!ff )
+      gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
    else
-     ff->Close();
+      ff->Close();
 
    // load data file
    gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
    if ( datafile )
-     ff = TFile::Open(datafile);
+      ff = TFile::Open(datafile);
    else
-     ff = TFile::Open("data.root");
-     //     ff = TFile::Open("CSA07-CSA07Muon-Chowder-A3-PDMuon-ReReco-100pb-Skims4_0000_08A0A10B-25C5-DC11-BE27-001617C3B6B4.root");
+      ff = TFile::Open("data.root");
+   //     ff = TFile::Open("CSA07-CSA07Muon-Chowder-A3-PDMuon-ReReco-100pb-Skims4_0000_08A0A10B-25C5-DC11-BE27-001617C3B6B4.root");
    gErrorIgnoreLevel = -1;
-   if ( ! ff && ! datafile ) {
+   if ( !ff && !datafile ) {
       gSystem->Exec("wget -O data.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=data.root");
       ff = TFile::Open("data.root");
    }
-   
-   if ( ! ff ) {
-	std::cout << "Failed to load data file" << std::endl;
-	return;
+
+   if ( !ff ) {
+      std::cout << "Failed to load data file" << std::endl;
+      return;
    }
-   
+
    fwlite::Event ev(ff);
-   
+
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
    std::string configFile = "myconfig.fwc";
@@ -49,7 +49,7 @@ void RUNME(const char* datafile = 0) {
 
    FWDisplayEvent ed(configFile,debugMode);
 
-   
+
    FWPhysicsObjectDesc ecal("ECal",
                             TClass::GetClass("CaloTowerCollection"),
                             "ECal",
@@ -61,7 +61,7 @@ void RUNME(const char* datafile = 0) {
                             2);
 
    FWPhysicsObjectDesc hcal("HCal",
-		    TClass::GetClass("CaloTowerCollection"),
+                            TClass::GetClass("CaloTowerCollection"),
                             "HCal",
                             FWDisplayProperties(kBlue),
                             "towerMaker",
@@ -81,44 +81,44 @@ void RUNME(const char* datafile = 0) {
                             3);
 
    FWPhysicsObjectDesc l1EmTrigs("L1EmTrig",
-                            TClass::GetClass("l1extra::L1EmParticleCollection"),
-                            "L1EmTrig",
-                            FWDisplayProperties(kOrange),
-                            "hltL1extraParticles",
-                            "Isolated",
-                            "",
-                            "",
-                            3);
+                                 TClass::GetClass("l1extra::L1EmParticleCollection"),
+                                 "L1EmTrig",
+                                 FWDisplayProperties(kOrange),
+                                 "hltL1extraParticles",
+                                 "Isolated",
+                                 "",
+                                 "",
+                                 3);
 
    FWPhysicsObjectDesc l1MuonTrigs("L1MuonTrig",
-                            TClass::GetClass("l1extra::L1MuonParticleCollection"),
-                            "L1MuonTrig",
-                            FWDisplayProperties(kViolet),
-                            "hltL1extraParticles",
-                            "",
-                            "",
-                            "",
-                            3);
+                                   TClass::GetClass("l1extra::L1MuonParticleCollection"),
+                                   "L1MuonTrig",
+                                   FWDisplayProperties(kViolet),
+                                   "hltL1extraParticles",
+                                   "",
+                                   "",
+                                   "",
+                                   3);
 
    FWPhysicsObjectDesc l1EtMissTrigs("L1EtMissTrig",
-                            TClass::GetClass("l1extra::L1EtMissParticleCollection"),
-                            "L1EtMissTrig",
-                            FWDisplayProperties(kTeal),
-                            "hltL1extraParticles",
-                            "",
-                            "",
-                            "",
-                            3);
+                                     TClass::GetClass("l1extra::L1EtMissParticleCollection"),
+                                     "L1EtMissTrig",
+                                     FWDisplayProperties(kTeal),
+                                     "hltL1extraParticles",
+                                     "",
+                                     "",
+                                     "",
+                                     3);
 
    FWPhysicsObjectDesc l1JetTrigs("L1JetTrig",
-                            TClass::GetClass("l1extra::L1JetParticleCollection"),
-                            "L1JetTrig",
-                            FWDisplayProperties(kMagenta),
-                            "hltL1extraParticles",
-                            "Central",
-                            "",
-                            "",
-                            3);
+                                  TClass::GetClass("l1extra::L1JetParticleCollection"),
+                                  "L1JetTrig",
+                                  FWDisplayProperties(kMagenta),
+                                  "hltL1extraParticles",
+                                  "Central",
+                                  "",
+                                  "",
+                                  3);
 
    FWPhysicsObjectDesc tracks("Tracks",
                               TClass::GetClass("reco::TrackCollection"),
@@ -141,45 +141,45 @@ void RUNME(const char* datafile = 0) {
                              5);
 
    FWPhysicsObjectDesc electrons("Electrons",
-				 TClass::GetClass("reco::GsfElectronCollection"),
+                                 TClass::GetClass("reco::GsfElectronCollection"),
                                  "Electrons",
-				 FWDisplayProperties(kCyan),
-				 "pixelMatchGsfElectrons",
+                                 FWDisplayProperties(kCyan),
+                                 "pixelMatchGsfElectrons",
                                  "",
                                  "",
                                  "$.hadronicOverEm()<0.05",
                                  3);
 
    FWPhysicsObjectDesc mets("METs",
-			    TClass::GetClass("reco::CaloMETCollection"),
-			    "METs",
-			    FWDisplayProperties(kCyan),
-			    "met",
-			    "",
-			    "",
-			    "",
-			    3);
+                            TClass::GetClass("reco::CaloMETCollection"),
+                            "METs",
+                            FWDisplayProperties(kCyan),
+                            "met",
+                            "",
+                            "",
+                            "",
+                            3);
 
    FWPhysicsObjectDesc genParticles("GenParticles",
-				    TClass::GetClass("reco::GenParticleCollection"),
+                                    TClass::GetClass("reco::GenParticleCollection"),
                                     "GenParticles",
-				    FWDisplayProperties(kMagenta),
-				    "genParticles",
-				    "",
-				    "",
-				    "$.pt()>1 && $.status() == 3",
-				    6);
+                                    FWDisplayProperties(kMagenta),
+                                    "genParticles",
+                                    "",
+                                    "",
+                                    "$.pt()>1 && $.status() == 3",
+                                    6);
 
    // Vertices
    FWPhysicsObjectDesc vertices("Vertices",
-				TClass::GetClass("std::vector<reco::Vertex>"),
+                                TClass::GetClass("std::vector<reco::Vertex>"),
                                 "Vertices",
-				FWDisplayProperties(kYellow),
-				"offlinePrimaryVertices",
-				"",
-				"",
-				"",
-				10);
+                                FWDisplayProperties(kYellow),
+                                "offlinePrimaryVertices",
+                                "",
+                                "",
+                                "",
+                                10);
 
    if (configFile.empty()) {
       ed.registerPhysicsObject(ecal);
@@ -201,23 +201,23 @@ void RUNME(const char* datafile = 0) {
 
    TTree* events = (TTree*)ff->Get("Events");
    TEventList* list = new TEventList("list","");
-   
+
 //     const char* selection = "pixelMatchGsfElectrons.pt() > 0"; // " && pixelMatchGsfElectrons.phi() > 0";
    const char* selection = 0;
    if ( selection && events )
-     {
-	events->Draw(">>list",selection);
-	events->SetEventList( list );
-	printf("WANRING: looping over selected events!\n\tselection: \t%s\n",selection);
-     }
+   {
+      events->Draw(">>list",selection);
+      events->SetEventList( list );
+      printf("WANRING: looping over selected events!\n\tselection: \t%s\n",selection);
+   }
    int nEntries = ev.size();
    if ( events && events->GetEventList() ) nEntries = list->GetN();
-   
+
    for( unsigned int i = 0 /*1909*/; i < nEntries; ) {
-      if ( events && events->GetEventList() ) 
-	ev.to( events->GetEntryNumber(i) );
-      else 
-	ev.to(i);
+      if ( events && events->GetEventList() )
+         ev.to( events->GetEntryNumber(i) );
+      else
+         ev.to(i);
       printf("starting to draw event %d...\n", i);
       int code = ed.draw(ev);
       printf("... event %d drawn\n", i);

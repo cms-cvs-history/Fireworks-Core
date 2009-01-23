@@ -5,16 +5,16 @@
 // however, the minimal 'fix' is to just declare the class it already successful talked with!
 class FWDisplayEvent;
 void mc_draw() {
-  //TFile geomF("cmsGeom20.root");
-  
-  TFile f("h_zz_4mu.root");
-  fwlite::Event ev(&f);
-  
-  FWDisplayEvent ed;
-  for(ev.toBegin();
-      !ev.atEnd();
-      ++ev)
-  {
-    ed.draw(ev);
-  }
+   //TFile geomF("cmsGeom20.root");
+
+   TFile f("h_zz_4mu.root");
+   fwlite::Event ev(&f);
+
+   FWDisplayEvent ed;
+   for(ev.toBegin();
+       !ev.atEnd();
+       ++ev)
+   {
+      ed.draw(ev);
+   }
 }

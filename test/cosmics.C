@@ -17,26 +17,26 @@
 void cosmics(const char* datafile = 0) {
    // get geometry files if they are missing
    TFile* ff = TFile::Open("cmsGeom10.root");
-   if (! ff )
-     gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
+   if (!ff )
+      gSystem->Exec("wget -O cmsGeom10.root https://twiki.cern.ch/twiki/bin/viewfile/CMS/PhysicsToolsDevFireworksDistribution?filename=cmsGeom10.root");
    else
-     ff->Close();
+      ff->Close();
 
    // load data file
    gErrorIgnoreLevel = 3000; // suppress warnings about missing dictionaries
    if ( datafile )
-     ff = TFile::Open(datafile);
+      ff = TFile::Open(datafile);
    else
-     ff = TFile::Open("cosmics.root");
+      ff = TFile::Open("cosmics.root");
    gErrorIgnoreLevel = -1;
-   
-   if ( ! ff ) {
-	std::cout << "Failed to load data file" << std::endl;
-	return;
+
+   if ( !ff ) {
+      std::cout << "Failed to load data file" << std::endl;
+      return;
    }
-   
+
    fwlite::Event ev(ff);
-   
+
    Bool_t debugMode = kFALSE;
    if ( gSystem->Getenv("FireworksDebug") ) debugMode = kTRUE;
    std::string configFile = "cosmics.fwc";
@@ -53,7 +53,7 @@ void cosmics(const char* datafile = 0) {
    ed.registerProxyBuilder("Jets","CaloJetProxyEveLegoBuilder");
    ed.registerProxyBuilder("Jets","CaloJetProxyTH2LegoBuilder");
    ed.registerProxyBuilder("Jets","CaloJetSelectedProxyTH2LegoBuilder");
-   
+
    ed.registerProxyBuilder("ECal","ECalCaloTowerProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("HCal","HCalCaloTowerProxyRhoPhiZ2DBuilder");
    // ed.registerProxyBuilder("Jets","CaloJetProxyRhoPhiZ2DBuilder");
@@ -61,13 +61,13 @@ void cosmics(const char* datafile = 0) {
    ed.registerProxyBuilder("Muons","MuonsProxyRhoPhiZ2DBuilder");
    ed.registerProxyBuilder("DTSegments","DTSegmentsProxyRhoPhiZ2DBuilder");
 //       ed.registerProxyBuilder("MuonsPU","MuonsProxyPUBuilder");
-   //   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
-   //   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
-   //   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
-   // ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
-   // ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
+//   ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
+//   ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
+//   ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
+// ed.registerProxyBuilder("ElectronTracks","ElectronsProxy3DBuilder");
+// ed.registerProxyBuilder("Electrons","ElectronsProxyRhoPhiZ2DBuilder");
 //    ed.registerProxyBuilder("ElectronSC","ElectronsProxySCBuilder");
-   //ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
+//ed.registerProxyBuilder("Calo","CaloProxyLegoBuilder");
 //    ed.registerProxyBuilder("TrackHits", "TracksRecHitsProxy3DBuilder");
 
    FWPhysicsObjectDesc ecal("ECal",
@@ -80,7 +80,7 @@ void cosmics(const char* datafile = 0) {
                             2);
 
    FWPhysicsObjectDesc hcal("HCal",
-		    TClass::GetClass("CaloTowerCollection"),
+                            TClass::GetClass("CaloTowerCollection"),
                             FWDisplayProperties(kBlue),
                             "towerMaker",
                             "",
@@ -96,7 +96,7 @@ void cosmics(const char* datafile = 0) {
                             "",
                             "$.pt()>15",
                             3);
-*/
+ */
    FWPhysicsObjectDesc tracks("Tracks",
                               TClass::GetClass("reco::TrackCollection"),
                               FWDisplayProperties(kGreen),
@@ -116,18 +116,18 @@ void cosmics(const char* datafile = 0) {
                              5);
 
    FWPhysicsObjectDesc dtSegments("DTSegments",
-                             TClass::GetClass("DTRecSegment4DCollection"),
-                             FWDisplayProperties(kBlue),
-                             "dt4DSegments",
-                             "",
-                             "",
-                             "",
-                             1);
-   
+                                  TClass::GetClass("DTRecSegment4DCollection"),
+                                  FWDisplayProperties(kBlue),
+                                  "dt4DSegments",
+                                  "",
+                                  "",
+                                  "",
+                                  1);
+
    FWPhysicsObjectDesc electrons("Electrons",
-				 TClass::GetClass("reco::GsfElectronCollection"),
-				 FWDisplayProperties(kCyan),
-				 "pixelMatchGsfElectrons",
+                                 TClass::GetClass("reco::GsfElectronCollection"),
+                                 FWDisplayProperties(kCyan),
+                                 "pixelMatchGsfElectrons",
                                  "",
                                  "",
                                  "$.pt()>0",
@@ -142,29 +142,29 @@ void cosmics(const char* datafile = 0) {
       ed.registerPhysicsObject(dtSegments);
 //      ed.registerPhysicsObject(electrons);
    }
-   
+
 
    //Finished configuration
 
    TTree* events = (TTree*)ff->Get("Events");
    TEventList* list = new TEventList("list","");
-   
+
 //     const char* selection = "pixelMatchGsfElectrons.pt() > 0"; // " && pixelMatchGsfElectrons.phi() > 0";
    const char* selection = 0;
    if ( selection && events )
-     {
-	events->Draw(">>list",selection);
-	events->SetEventList( list );
-	printf("WANRING: looping over selected events!\n\tselection: \t%s\n",selection);
-     }
+   {
+      events->Draw(">>list",selection);
+      events->SetEventList( list );
+      printf("WANRING: looping over selected events!\n\tselection: \t%s\n",selection);
+   }
    int nEntries = ev.size();
    if ( events && events->GetEventList() ) nEntries = list->GetN();
-   
+
    for( unsigned int i = 0 /*1909*/; i < nEntries; ) {
-      if ( events && events->GetEventList() ) 
-	ev.to( events->GetEntryNumber(i) );
-      else 
-	ev.to(i);
+      if ( events && events->GetEventList() )
+         ev.to( events->GetEntryNumber(i) );
+      else
+         ev.to(i);
       printf("starting to draw event %d...\n", i);
       int code = ed.draw(ev);
       printf("... event %d drawn\n", i);

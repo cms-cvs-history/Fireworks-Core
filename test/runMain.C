@@ -3,12 +3,12 @@
 #endif
 
 void runMain() {
-  //  gSystem->Load("libCMSDataFormats.so");
-  //  gSystem->Load("libCMSDataFormats");
-  //  AutoLibraryLoader::enable();
+   //  gSystem->Load("libCMSDataFormats.so");
+   //  gSystem->Load("libCMSDataFormats");
+   //  AutoLibraryLoader::enable();
    std::vector<std::string> args;
    args.push_back("cmsShow");
-   
+
    const char* argEnv = gSystem->Getenv("CMSSHOW_ARGS");
    if(argEnv) {
       std::string argString(argEnv);
@@ -16,14 +16,14 @@ void runMain() {
       int start=0;
       int find = 0;
       do {
-	 find = argString.find(" ",start);
-	 if(find != std::string::npos) {
-	    args.push_back(argString.substr(start,find-start));
-	    start = find+1;
-	 } else {
-	    args.push_back(argString.substr(start));
-	 }
-	 cout <<"'"<<args.back()<<"'"<<endl;
+         find = argString.find(" ",start);
+         if(find != std::string::npos) {
+            args.push_back(argString.substr(start,find-start));
+            start = find+1;
+         } else {
+            args.push_back(argString.substr(start));
+         }
+         cout <<"'"<<args.back()<<"'"<<endl;
       } while(find != std::string::npos) ;
    }
    char* argv[20];
@@ -32,7 +32,7 @@ void runMain() {
       exit(1);
    }
    int argc=0;
-   for(; argc != args.size();++argc) {
+   for(; argc != args.size(); ++argc) {
       argv[argc]=args[argc].c_str();
    }
    new CmsShowMain(argc, argv);
