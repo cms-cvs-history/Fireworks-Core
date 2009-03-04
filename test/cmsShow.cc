@@ -23,7 +23,7 @@ int main (int argc, char **argv)
    std::auto_ptr<CmsShowMain> pMain( new CmsShowMain(argc,argv) );
    app.Run();
    pMain.reset();
-   dynamic_cast<TGLSAViewer*>(gEve->GetGLViewer())->DeleteMenuBar();
+   //dynamic_cast<TGLSAViewer*>(gEve->GetGLViewer())->DeleteMenuBar(); //CDJ: Off for now
    TEveManager::Terminate();
 
    //the handler has a pointer back to TApplication so must be removed
