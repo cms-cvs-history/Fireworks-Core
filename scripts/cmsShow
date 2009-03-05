@@ -8,33 +8,36 @@ if [ ! -n "$SHELLDIR" ] ; then
   SHELLDIR=.
   export SHELLDIR
 fi
-CMSSW_BASE=$SHELLDIR
-export CMSSW_BASE
-ROOTSYS=$CMSSW_BASE/external/root 
-export ROOTSYS
-LD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
-export LD_LIBRARY_PATH
-DYLD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
-export DYLD_LIBRARY_PATH
-cat $CMSSW_BASE/src/Fireworks/Core/scripts/version.txt
+#see if we are running in standalone mode
+if [ ! -n "$CMSSW_BASE" ] ; then
+  CMSSW_BASE=$SHELLDIR
+  export CMSSW_BASE
+  ROOTSYS=$CMSSW_BASE/external/root 
+  export ROOTSYS
+  LD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
+  export LD_LIBRARY_PATH
+  DYLD_LIBRARY_PATH=${CMSSW_BASE}:${CMSSW_BASE}/external/lib:${ROOTSYS}/lib
+  export DYLD_LIBRARY_PATH
+  cat $CMSSW_BASE/src/Fireworks/Core/standalone_build/version.txt
+  PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin
+  export PATH
+fi
 if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
   export LIBGL_DRIVERS_PATH
 fi
-PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin
-export PATH
 if [ "`echo $@ | awk '/\-d/'`" != "" ] ; then
    echo "set args $@" > gdb.cmd
    echo "run"        >> gdb.cmd
    echo "bt"         >> gdb.cmd
    echo "quit"       >> gdb.cmd
-   gdb -x gdb.cmd $CMSSW_BASE/cmsShow.exe 2>&1 | tee crash.report
+   gdb -x gdb.cmd $SHELLDIR/cmsShow.exe 2>&1 | tee crash.report
    echo "" >> crash.report
    echo "System Info" >> crash.report
    uname -a  >> crash.report
    glxinfo >> crash.report
 else
-   $CMSSW_BASE/cmsShow.exe $@
+   $SHELLDIR/cmsShow.exe $@
    if [ $? != "0" ] ; then
       echo ""
       echo "  ########################################################################"

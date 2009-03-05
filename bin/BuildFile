@@ -2,7 +2,5 @@
 <use name=Fireworks/Core>
 <use name=root>
 <use name=rootcintex>
-<use name=DataFormats/TrackReco>
-<bin name=TestFireworksCore file=*.cc>
-  <lib name=boost_unit_test_framework-gcc-mt>
+<bin name=cmsShow.exe file=cmsShow.cc>
 </bin>

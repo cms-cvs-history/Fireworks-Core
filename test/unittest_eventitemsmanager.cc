@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Jan 18 10:19:07 EST 2008
-// $Id: unittest_selectionmanager.cc,v 1.4 2008/01/25 01:54:07 chrjones Exp $
+// $Id: unittest_eventitemsmanager.cc,v 1.1 2008/02/25 21:32:18 chrjones Exp $
 //
 
 // system include files
