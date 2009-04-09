@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.1 2009/04/07 18:01:51 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2 2009/04/08 16:46:44 jmuelmen Exp $
 //
 
 // system include files
@@ -47,12 +47,76 @@
 // constructors and destructor
 //
 FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
-   FWViewManagerBase()
+     FWViewManagerBase()
 {
-   FWGUIManager::ViewBuildFunctor f;
-   f=boost::bind(&FWTableViewManager::buildView,
-                 this, _1);
-   iGUIMgr->registerViewBuilder(FWTableView::staticTypeName(), f);
+     FWGUIManager::ViewBuildFunctor f;
+     f=boost::bind(&FWTableViewManager::buildView,
+		   this, _1);
+     iGUIMgr->registerViewBuilder(FWTableView::staticTypeName(), f);
+
+     // ---------- for some object types, we have default table contents ----------
+     TableEntry muon_table_entries[] = { 
+	  { "pt"				, "pT"			, 1 			},
+	  { "isGlobalMuon"			, "isGlobalMuon"	, TableEntry::BOOL	},
+	  { "isTrackerMuon"			, "isTrackerMuon"	, TableEntry::BOOL	},
+	  { "isStandAloneMuon"			, "isStandAloneMuon"	, TableEntry::BOOL	},
+	  { "isCaloMuon"			, "isCaloMuon"		, TableEntry::BOOL	},
+	  { "track().pt()"			, "tr pt"		, 1 			},
+	  { "eta"				, "eta"			, 3 			},
+	  { "phi"				, "phi"			, 3 			},
+	  { "numberOfMatches(\"Muon::SegmentArbitration\")"	, "matches"	, TableEntry::INT	},
+	  { "track().d0()"			, "d0"			, 3			},
+	  { "track().d0() / track().d0Error()"	, "d0 / d0Err"		, 3			},
+// 	  { "phi"				, "phi"		, 3 	},
+// 	  { "eSuperClusterOverP"		, "E/p"		, 3 	},
+// 	  { "hadronicOverEm"			, "H/E"		, 3 	},
+// 	  { "(trackMomentumAtVtx().R() - trackMomentumOut().R()) / trackMomentumAtVtx().R()"			, "fbrem"	, 3 	},
+// 	  { "deltaEtaSuperClusterTrackAtVtx()"	, "dei"		, 3 	},
+// 	  { "deltaPhiSuperClusterTrackAtVtx()"	, "dpi"		, 3 	} 
+     };
+     TableEntry electron_table_entries[] = { 
+	  { "et"				, "ET"		, 1 	},
+	  { "eta"				, "eta"		, 3 	},
+	  { "phi"				, "phi"		, 3 	},
+	  { "eSuperClusterOverP"		, "E/p"		, 3 	},
+	  { "hadronicOverEm"			, "H/E"		, 3 	},
+	  { "(trackMomentumAtVtx().R() - trackMomentumOut().R()) / trackMomentumAtVtx().R()"			, "fbrem"	, 3 	},
+	  { "deltaEtaSuperClusterTrackAtVtx()"	, "dei"		, 3 	},
+	  { "deltaPhiSuperClusterTrackAtVtx()"	, "dpi"		, 3 	} 
+     };
+     TableEntry genparticle_table_entries[] = { 
+	  { "pt"	, "pT"		, 1 			},
+	  { "eta"	, "eta"		, 3 			},
+	  { "phi"	, "phi"		, 3 			},
+	  { "status"	, "status"	, TableEntry::INT 	},
+	  { "pdgId"	, "pdgId"	, TableEntry::INT 	},
+     };
+     TableEntry jet_table_entries[] = { 
+	  { "et"	, "ET"		, 1 	},
+	  { "eta"	, "eta"		, 3 	},
+	  { "phi"	, "phi"		, 3 	},
+	  { "p4().E() * emEnergyFraction()"		, "ECAL"	, 1 	},
+	  { "p4().E() * energyFractionHadronic()"	, "HCAL"	, 1 	},
+	  { "emEnergyFraction()"			, "emf"		, 3 	},
+     };
+     TableEntry met_table_entries[] = { 
+	  { "et"	, "MET"		, 1 	},
+	  { "phi"	, "phi"		, 3 	},
+	  { "sumEt"	, "sumEt"	, 1 	},
+	  { "mEtSig"	, "mEtSig"	, 3 	},
+     };
+     m_tableFormats["reco::Muon"	].insert(m_tableFormats["reco::Muon"		].end(), muon_table_entries		, muon_table_entries 		+ sizeof(muon_table_entries		) / sizeof(TableEntry));
+     m_tableFormats["reco::GsfElectron"	].insert(m_tableFormats["reco::GsfElectron"	].end(), electron_table_entries		, electron_table_entries 	+ sizeof(electron_table_entries		) / sizeof(TableEntry));
+     m_tableFormats["reco::GenParticle"	].insert(m_tableFormats["reco::GenParticle"	].end(), genparticle_table_entries	, genparticle_table_entries 	+ sizeof(genparticle_table_entries	) / sizeof(TableEntry));
+//      m_tableFormats["reco::CaloJet"	];
+//      m_tableFormats["reco::CaloMET"	];
+//      m_tableFormats["reco::Photon"	];
+//      m_tableFormats["reco::Track"	];
+//      m_tableFormats["reco::Vertex"	];
+//      m_tableFormats["l1extra::L1JetParticle"	];
+//      m_tableFormats["l1extra::L1EtMissParticle"	];
+//      m_tableFormats["l1extra::L1MuonParticle"	];
+//      m_tableFormats["l1extra::L1EmParticle"	];
 }
 
 FWTableViewManager::~FWTableViewManager()
@@ -62,6 +126,12 @@ FWTableViewManager::~FWTableViewManager()
 //
 // member functions
 //
+std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
+FWTableViewManager::tableFormats (std::string key) const
+{
+     return m_tableFormats.find(key);
+}
+
 class FWViewBase*
 FWTableViewManager::buildView(TEveWindowSlot* iParent)
 {
@@ -99,6 +169,7 @@ FWTableViewManager::newItem(const FWEventItem* iItem)
 	      m_views.begin(), itEnd = m_views.end();
 	 it != itEnd; ++it) {
 	  (*it)->updateItems();
+	  (*it)->display();
      }
 }
 
@@ -118,6 +189,7 @@ void FWTableViewManager::destroyItem (const FWEventItem *item)
 	      m_views.begin(), itEnd = m_views.end();
 	 it != itEnd; ++it) {
 	  (*it)->updateItems();
+	  (*it)->display();
      }
 }
 
@@ -125,12 +197,20 @@ void
 FWTableViewManager::modelChangesComing()
 {
    gEve->DisableRedraw();
+   printf("changes coming\n");
 }
 
 void
 FWTableViewManager::modelChangesDone()
 {
-   gEve->EnableRedraw();
+     gEve->EnableRedraw();
+     // tell the views to update their item lists
+     for(std::vector<boost::shared_ptr<FWTableView> >::iterator it=
+	      m_views.begin(), itEnd = m_views.end();
+	 it != itEnd; ++it) {
+	  (*it)->display();
+     }
+     printf("changes done\n");
 }
 
 void

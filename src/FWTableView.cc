@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.3 2009/04/08 15:07:52 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4 2009/04/08 16:46:44 jmuelmen Exp $
 //
 
 // system include files
@@ -69,7 +69,7 @@
 #include "Fireworks/Core/interface/FWEveValueScaler.h"
 #include "Fireworks/Core/interface/FWConfiguration.h"
 #include "Fireworks/Core/interface/BuilderUtils.h"
-
+#include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 
 //
 // constants, enums and typedefs
@@ -84,7 +84,8 @@
 // constructors and destructor
 //
 FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *manager)
-     : m_manager(manager)
+     : m_iColl(-1),
+       m_manager(manager)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
      const int width = 100, height = 100;
@@ -98,6 +99,7 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      m_collection = new TGComboBox(buttons);
      updateItems();
      buttons->AddFrame(m_collection, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY));
+     m_collection->Connect("Selected(Int_t)", "FWTableView", this, "selectCollection(Int_t)");
      
 //      TGTextView *text = new TGTextView(frame, width, height, "Blah blah blah blah blah");
 //      frame->AddFrame(text, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
@@ -159,44 +161,6 @@ FWTableView::setFrom(const FWConfiguration& iFrom)
 {
    // take care of parameters
    FWConfigurableParameterizable::setFrom(iFrom);
-#if 0
-
-   // retrieve camera parameters
-
-   // transformation matrix
-   assert(m_cameraMatrix);
-   std::string matrixName("cameraMatrix");
-   for ( unsigned int i = 0; i < 16; ++i ){
-      std::ostringstream os;
-      os << i;
-      const FWConfiguration* value = iFrom.valueForKey( matrixName + os.str() + "Table" );
-      if (!value ) continue;
-      std::istringstream s(value->value());
-      s>>((*m_cameraMatrix)[i]);
-   }
-
-   // transformation matrix base
-   assert(m_cameraMatrixBase);
-   matrixName = "cameraMatrixBase";
-   for ( unsigned int i = 0; i < 16; ++i ){
-      std::ostringstream os;
-      os << i;
-      const FWConfiguration* value = iFrom.valueForKey( matrixName + os.str() + "Table" );
-      if (!value ) continue;
-      std::istringstream s(value->value());
-      s>>((*m_cameraMatrixBase)[i]);
-   }
-
-   {
-      assert ( m_cameraFOV );
-      const FWConfiguration* value = iFrom.valueForKey( "Table FOV" );
-      if ( value ) {
-         std::istringstream s(value->value());
-         s>>*m_cameraFOV;
-      }
-   }
-   m_viewer->GetGLViewer()->RequestDraw();
-#endif
 }
 
 void
@@ -226,37 +190,6 @@ FWTableView::addTo(FWConfiguration& iTo) const
 {
    // take care of parameters
    FWConfigurableParameterizable::addTo(iTo);
-#if 0
-   // store camera parameters
-
-   // transformation matrix
-   assert(m_cameraMatrix);
-   std::string matrixName("cameraMatrix");
-   for ( unsigned int i = 0; i < 16; ++i ){
-      std::ostringstream osIndex;
-      osIndex << i;
-      std::ostringstream osValue;
-      osValue << (*m_cameraMatrix)[i];
-      iTo.addKeyValue(matrixName+osIndex.str()+"Table",FWConfiguration(osValue.str()));
-   }
-
-   // transformation matrix base
-   assert(m_cameraMatrixBase);
-   matrixName = "cameraMatrixBase";
-   for ( unsigned int i = 0; i < 16; ++i ){
-      std::ostringstream osIndex;
-      osIndex << i;
-      std::ostringstream osValue;
-      osValue << (*m_cameraMatrixBase)[i];
-      iTo.addKeyValue(matrixName+osIndex.str()+"Table",FWConfiguration(osValue.str()));
-   }
-   {
-      assert ( m_cameraFOV );
-      std::ostringstream osValue;
-      osValue << *m_cameraFOV;
-      iTo.addKeyValue("Table FOV",FWConfiguration(osValue.str()));
-   }
-#endif
 }
 
 void
@@ -276,6 +209,52 @@ void FWTableView::updateItems ()
 	  it != itEnd; ++it) {
 	  m_collection->AddEntry((*it)->name().c_str(), it - m_manager->items().begin());
      }
+}
+
+void FWTableView::display ()
+{
+     if (m_iColl == -1) {
+	  printf("what should I do with collection -1?\n");
+	  return;
+     }
+     const FWEventItem *item = m_manager->items()[m_iColl];
+     std::vector<FWExpressionEvaluator> ev;
+     if (m_manager->tableFormats(item->modelType()->GetName()) == 
+	 m_manager->m_tableFormats.end()) {
+	  printf("No table format for objects of this type\n");
+	  return;
+     }
+     for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+	       i = m_manager->tableFormats(item->modelType()->GetName())->second.begin(),
+	       end = m_manager->tableFormats(item->modelType()->GetName())->second.end();
+	  i != end; ++i) {
+	  try {
+	       ev.push_back(FWExpressionEvaluator(i->expression, item->modelType()->GetName()));
+	  } catch (...) {
+	       printf("expression %s is not valid, skipping\n", i->expression.c_str());
+	       ev.push_back(FWExpressionEvaluator("0", item->modelType()->GetName()));
+	  }
+     }
+     printf("Got evaluators\n");
+     for (unsigned int i = 0; i < item->size(); ++i) {
+	  for (unsigned int j = 0; j < ev.size(); ++j) {
+		    printf("%s = %f\t", (*m_manager->tableFormats(item->modelType()->GetName())).second[j].name.c_str(),
+		      ev[j].evalExpression(item->modelData(i)));
+	  }
+	  printf("\n");
+// 	  printf("pt = %f\n", ev.evalExpression(item->modelData(i)));
+     }
+     fflush(stdout);
+}
+
+
+void FWTableView::selectCollection (Int_t i_coll)
+{
+     printf("selected collection %d, ", i_coll);
+     const FWEventItem *item = m_manager->items()[i_coll];
+     printf("%s\n", item->modelType()->GetName());
+     m_iColl = i_coll;
+     display();
 }
 
 //

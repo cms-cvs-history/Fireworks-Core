@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.3 2009/04/08 15:07:53 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4 2009/04/08 16:46:43 jmuelmen Exp $
 //
 
 // system include files
@@ -62,6 +62,8 @@ public:
      virtual void setFrom(const FWConfiguration&);
      void setBackgroundColor(Color_t);
      void updateItems ();
+     void selectCollection (Int_t);
+     void display ();
 
 private:
      FWTableView(const FWTableView&);    // stop default
@@ -70,6 +72,7 @@ private:
      // ---------- member data --------------------------------
      TEveWindowFrame *m_frame;
      TGComboBox *m_collection;
+     int m_iColl;
      const FWTableViewManager *m_manager;
 };
 
