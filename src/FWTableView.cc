@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4 2009/04/08 16:46:44 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.1 2009/04/09 16:57:16 jmuelmen Exp $
 //
 
 // system include files
@@ -70,6 +70,7 @@
 #include "Fireworks/Core/interface/FWConfiguration.h"
 #include "Fireworks/Core/interface/BuilderUtils.h"
 #include "Fireworks/Core/interface/FWExpressionEvaluator.h"
+#include "Fireworks/TableWidget/interface/FWTableWidget.h"
 
 //
 // constants, enums and typedefs
@@ -85,24 +86,32 @@
 //
 FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *manager)
      : m_iColl(-1),
-       m_manager(manager)
+       m_manager(manager),
+       m_tableManager(this),
+       m_tableWidget(0)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
      const int width = 100, height = 100;
 //      TGVerticalFrame *topframe = new TGVerticalFrame(iParent->GetEveFrame(), 100, 100);
      m_frame = iParent->MakeFrame(0);
      TGCompositeFrame *frame = m_frame->GetGUICompositeFrame();
-     TGHorizontalFrame *buttons = new TGHorizontalFrame(frame);
-     frame->AddFrame(buttons, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+     TGVerticalFrame *vert = new TGVerticalFrame(frame);
+     frame->AddFrame(vert, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+     TGHorizontalFrame *buttons = new TGHorizontalFrame(vert);
+     vert->AddFrame(buttons, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
      TGLabel *label = new TGLabel(buttons, "Collection");
      buttons->AddFrame(label, new TGLayoutHints(kLHintsLeft));
      m_collection = new TGComboBox(buttons);
      updateItems();
      buttons->AddFrame(m_collection, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY));
      m_collection->Connect("Selected(Int_t)", "FWTableView", this, "selectCollection(Int_t)");
-     
+     m_collection->Select(8, true);
 //      TGTextView *text = new TGTextView(frame, width, height, "Blah blah blah blah blah");
 //      frame->AddFrame(text, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+     m_tableWidget = new FWTableWidget(&m_tableManager, vert);
+     vert->AddFrame(m_tableWidget, new TGLayoutHints(kLHintsExpandX));
+     vert->MapSubwindows();
+     vert->Layout();
      frame->MapSubwindows();
      frame->Layout();
      frame->MapWindow();
@@ -211,14 +220,15 @@ void FWTableView::updateItems ()
      }
 }
 
-void FWTableView::display ()
+void FWTableView::updateEvaluators ()
 {
      if (m_iColl == -1) {
 	  printf("what should I do with collection -1?\n");
 	  return;
      }
      const FWEventItem *item = m_manager->items()[m_iColl];
-     std::vector<FWExpressionEvaluator> ev;
+     std::vector<FWExpressionEvaluator> &ev = m_evaluators;
+     ev.clear();
      if (m_manager->tableFormats(item->modelType()->GetName()) == 
 	 m_manager->m_tableFormats.end()) {
 	  printf("No table format for objects of this type\n");
@@ -236,9 +246,28 @@ void FWTableView::display ()
 	  }
      }
      printf("Got evaluators\n");
+}
+
+const FWEventItem *FWTableView::item () const
+{
+     if (m_iColl == -1)
+	  return 0;
+     return m_manager->items()[m_iColl];
+}
+
+void FWTableView::display ()
+{
+     if (m_iColl == -1) {
+	  printf("what should I do with collection -1?\n");
+	  return;
+     }
+     const FWEventItem *item = m_manager->items()[m_iColl];
+     updateEvaluators();
+     m_tableManager.dataChanged();
+     std::vector<FWExpressionEvaluator> &ev = m_evaluators;
      for (unsigned int i = 0; i < item->size(); ++i) {
 	  for (unsigned int j = 0; j < ev.size(); ++j) {
-		    printf("%s = %f\t", (*m_manager->tableFormats(item->modelType()->GetName())).second[j].name.c_str(),
+	       printf("%s = %f\t", (*m_manager->tableFormats(item->modelType()->GetName())).second[j].name.c_str(),
 		      ev[j].evalExpression(item->modelData(i)));
 	  }
 	  printf("\n");

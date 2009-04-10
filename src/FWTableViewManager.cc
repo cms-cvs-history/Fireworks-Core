@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2 2009/04/08 16:46:44 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.1 2009/04/09 16:57:16 jmuelmen Exp $
 //
 
 // system include files
@@ -64,7 +64,7 @@ FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
 	  { "track().pt()"			, "tr pt"		, 1 			},
 	  { "eta"				, "eta"			, 3 			},
 	  { "phi"				, "phi"			, 3 			},
-	  { "numberOfMatches(\"Muon::SegmentArbitration\")"	, "matches"	, TableEntry::INT	},
+	  { "numberOfMatches(\"SegmentArbitration\")"	, "matches"	, TableEntry::INT	},
 	  { "track().d0()"			, "d0"			, 3			},
 	  { "track().d0() / track().d0Error()"	, "d0 / d0Err"		, 3			},
 // 	  { "phi"				, "phi"		, 3 	},

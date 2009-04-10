@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4 2009/04/08 16:46:43 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.1 2009/04/09 16:57:15 jmuelmen Exp $
 //
 
 // system include files
@@ -24,6 +24,8 @@
 
 // user include files
 #include "Fireworks/Core/interface/FWViewBase.h"
+#include "Fireworks/Core/interface/FWTableViewTableManager.h"
+#include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 
 // forward declarations
 class TGFrame;
@@ -36,13 +38,16 @@ class TEveScene;
 class TEveElementList;
 class TEveGeoShape;
 class TGLMatrix;
+class FWEventItem;
 class FWTableViewManager;
+class FWTableWidget;
 class FWEveValueScaler;
 class TEveWindowFrame;
 class TEveWindowSlot;
 class FWTableViewManager;
 
 class FWTableView : public FWViewBase {
+     friend class FWTableViewTableManager;
 
 public:
      FWTableView(TEveWindowSlot *, const FWTableViewManager *);
@@ -62,8 +67,10 @@ public:
      virtual void setFrom(const FWConfiguration&);
      void setBackgroundColor(Color_t);
      void updateItems ();
+     void updateEvaluators ();
      void selectCollection (Int_t);
      void display ();
+     const FWEventItem *item () const;
 
 private:
      FWTableView(const FWTableView&);    // stop default
@@ -74,6 +81,9 @@ private:
      TGComboBox *m_collection;
      int m_iColl;
      const FWTableViewManager *m_manager;
+     FWTableViewTableManager m_tableManager;
+     FWTableWidget *m_tableWidget;
+     std::vector<FWExpressionEvaluator> m_evaluators;
 };
 
 
