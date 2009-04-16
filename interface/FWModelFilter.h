@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Fri Feb 29 13:39:51 PST 2008
-// $Id: FWModelFilter.h,v 1.5 2008/11/06 22:05:23 amraktad Exp $
+// $Id: FWModelFilter.h,v 1.6 2009/01/23 21:35:41 amraktad Exp $
 //
 
 // system include files
@@ -24,8 +24,8 @@
 #include <Reflex/Type.h>
 
 // user include files
-#include "PhysicsTools/Utilities/src/SelectorPtr.h"
-#include "PhysicsTools/Utilities/src/SelectorBase.h"
+#include "CommonTools/Utils/src/SelectorPtr.h"
+#include "CommonTools/Utils/src/SelectorBase.h"
 
 
 // forward declarations
