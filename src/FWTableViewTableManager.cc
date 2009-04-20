@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.1 2009/04/10 14:23:57 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.2 2009/04/20 16:33:36 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -59,9 +59,11 @@ int FWTableViewTableManager::unsortedRowNumber(int iSortedRowNumber) const
 
 FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
 {
-     if (m_view->item()->modelData(iSortedRowNumber) != 0) {
+     if (m_view->item()->modelData(iSortedRowNumber) != 0 &&
+	 iCol < m_view->m_evaluators.size()) {
 	  double ret;
 	  try {
+// 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
 	       ret = m_view->m_evaluators[iCol].evalExpression(m_view->item()->modelData(iSortedRowNumber));
 	  } catch (...) {
 	       printf("something bad happened\n");

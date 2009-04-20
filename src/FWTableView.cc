@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.2 2009/04/10 14:23:57 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.3 2009/04/20 16:33:36 jmuelmen Exp $
 //
 
 // system include files
@@ -290,16 +290,15 @@ void FWTableView::display ()
      const FWEventItem *item = m_manager->items()[m_iColl];
      updateEvaluators();
      m_tableManager.dataChanged();
-     std::vector<FWExpressionEvaluator> &ev = m_evaluators;
-     for (unsigned int i = 0; i < item->size(); ++i) {
-	  for (unsigned int j = 0; j < ev.size(); ++j) {
-	       printf("%s = %f\t", (*m_manager->tableFormats(item->modelType()->GetName())).second[j].name.c_str(),
-		      ev[j].evalExpression(item->modelData(i)));
-	  }
-	  printf("\n");
-// 	  printf("pt = %f\n", ev.evalExpression(item->modelData(i)));
-     }
-     fflush(stdout);
+//      std::vector<FWExpressionEvaluator> &ev = m_evaluators;
+//      for (unsigned int i = 0; i < item->size(); ++i) {
+// 	  for (unsigned int j = 0; j < ev.size(); ++j) {
+// 	       printf("%s = %f\t", (*m_manager->tableFormats(item->modelType()->GetName())).second[j].name.c_str(),
+// 		      ev[j].evalExpression(item->modelData(i)));
+// 	  }
+// 	  printf("\n");
+//      }
+//      fflush(stdout);
 }
 
 

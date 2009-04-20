@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.2 2009/04/10 14:23:57 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.3 2009/04/20 16:33:36 jmuelmen Exp $
 //
 
 // system include files
@@ -67,12 +67,6 @@ FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
 	  { "numberOfMatches(\"SegmentArbitration\")"	, "matches"	, TableEntry::INT	},
 	  { "track().d0()"			, "d0"			, 3			},
 	  { "track().d0() / track().d0Error()"	, "d0 / d0Err"		, 3			},
-// 	  { "phi"				, "phi"		, 3 	},
-// 	  { "eSuperClusterOverP"		, "E/p"		, 3 	},
-// 	  { "hadronicOverEm"			, "H/E"		, 3 	},
-// 	  { "(trackMomentumAtVtx().R() - trackMomentumOut().R()) / trackMomentumAtVtx().R()"			, "fbrem"	, 3 	},
-// 	  { "deltaEtaSuperClusterTrackAtVtx()"	, "dei"		, 3 	},
-// 	  { "deltaPhiSuperClusterTrackAtVtx()"	, "dpi"		, 3 	} 
      };
      TableEntry electron_table_entries[] = { 
 	  { "et"				, "ET"		, 1 	},
