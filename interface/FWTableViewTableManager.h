@@ -11,7 +11,7 @@
 //
 // Original Author:  
 //         Created:  Mon Feb  2 16:40:52 EST 2009
-// $Id: FWTableViewTableManager.h,v 1.1.2.1 2009/04/10 14:23:56 jmuelmen Exp $
+// $Id: FWTableViewTableManager.h,v 1.1.2.2 2009/04/20 16:32:36 jmuelmen Exp $
 //
 
 // system include files
@@ -78,7 +78,7 @@ public:
 
      ///Classes which inherit from FWTableViewTableManager must call
      ///this when their underlying data changes
-     // void dataChanged(); //*SIGNAL*
+     void dataChanged(); //*SIGNAL*
       
      ///Classes which inherit from FWTableViewTableManager must call
      ///this when how the data is shown (e.g. color) changes
@@ -90,7 +90,8 @@ protected:
      ///Called by 'sort' method to actually handle the sorting of the
      ///rows. Arguments are the same as 'sort'
      virtual void implSort(int iCol, bool iSortOrder);
-     
+     std::vector<int> m_sortedToUnsortedIndices;
+
 private:
      const FWTableView *m_view;
      TGGC *m_graphicsContext;

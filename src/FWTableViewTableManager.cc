@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.3 2009/04/20 19:48:10 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.4 2009/04/20 21:50:53 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -53,18 +53,23 @@ std::vector<std::string> FWTableViewTableManager::getTitles () const
 
 int FWTableViewTableManager::unsortedRowNumber(int iSortedRowNumber) const
 {
-     // no sort for now
-     return iSortedRowNumber;
+//      printf("%d indices, returning %d (%d)\n", (int)m_sortedToUnsortedIndices.size(),
+// 	    iSortedRowNumber, 
+// 	    iSortedRowNumber < (int)m_sortedToUnsortedIndices.size() ? m_sortedToUnsortedIndices[iSortedRowNumber] : -1);
+     if (iSortedRowNumber >= (int)m_sortedToUnsortedIndices.size())
+	  return 0;
+     return m_sortedToUnsortedIndices[iSortedRowNumber];
 }
 
 FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
 {
-     if (m_view->item()->modelData(iSortedRowNumber) != 0 &&
+     const int realRowNumber = unsortedRowNumber(iSortedRowNumber);
+     if (m_view->item()->modelData(realRowNumber) != 0 &&
 	 iCol < (int)m_view->m_evaluators.size()) {
 	  double ret;
 	  try {
 // 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
-	       ret = m_view->m_evaluators[iCol].evalExpression(m_view->item()->modelData(iSortedRowNumber));
+	       ret = m_view->m_evaluators[iCol].evalExpression(m_view->item()->modelData(realRowNumber));
 	  } catch (...) {
 	       printf("something bad happened\n");
 	       ret = -999;
@@ -88,9 +93,9 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 	       break;
 	  }
  	  m_graphicsContext->
- 	       SetForeground(gVirtualX->GetPixel(m_view->item()->modelInfo(iSortedRowNumber).
+ 	       SetForeground(gVirtualX->GetPixel(m_view->item()->modelInfo(realRowNumber).
  						 displayProperties().color()));
-	  if (not m_view->item()->modelInfo(iSortedRowNumber).isSelected())
+	  if (not m_view->item()->modelInfo(realRowNumber).isSelected())
 	       m_renderer->setGraphicsContext(m_graphicsContext);
 	  else {
 	       static TGGC* s_context = 0;
@@ -102,8 +107,8 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 	       }
 	       m_renderer->setGraphicsContext(s_context);
 	  }
-	  m_renderer->setData(s, m_view->item()->modelInfo(iSortedRowNumber).isSelected());
-// 			      not m_view->item()->modelInfo(iSortedRowNumber).
+	  m_renderer->setData(s, m_view->item()->modelInfo(realRowNumber).isSelected());
+// 			      not m_view->item()->modelInfo(realRowNumber).
 // 			      displayProperties().isVisible());
      } else { 
 	  m_renderer->setData("invalid", false);
@@ -111,15 +116,58 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
      return m_renderer;
 }
 
+namespace {
+     template<typename S>
+     void doSort(const FWEventItem& iItem,
+		 int iCol,
+		 const std::vector<FWExpressionEvaluator> &evaluators,
+		 std::map<double,int,S>& iMap,
+		 std::vector<int>& oNewSort) 
+     {
+	  int size = iItem.size();
+	  for(int index = 0; index < size; ++index) {
+	       double ret;
+	       try {
+// 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
+		    ret = evaluators[iCol].evalExpression(iItem.modelData(index));
+	       } catch (...) {
+		    printf("something bad happened\n");
+		    ret = -999;
+	       }
+	       iMap.insert(std::make_pair(ret, index));
+	  }
+	  std::vector<int>::iterator itVec = oNewSort.begin();
+	  for(typename std::map<double,int,S>::iterator it = iMap.begin(), itEnd = iMap.end();
+	      it != itEnd;
+	      ++it,++itVec) {
+	       *itVec = it->second;
+	  }
+     }
+}
+
 void FWTableViewTableManager::implSort(int iCol, bool iSortOrder)
 {
-     static const bool sort_up = true;
-     printf("sorting %s\n", iSortOrder ? "up" : "down");
-//      if (iSortOrder == sort_up) {
-// 	  std::map<double,int, std::greater<double> > s;
-// 	  doSort(*m_collection, *(m_valueGetters[iCol]), s, m_sortedToUnsortedIndicies);
-//      } else {
-// 	  std::map<double,int, std::less<double> > s;
-// 	  doSort(*m_collection, *(m_valueGetters[iCol]), s, m_sortedToUnsortedIndicies);
-//      }
+     static const bool sort_down = true;
+     if (iCol >= (int)m_view->m_evaluators.size())
+	  return;
+//      printf("sorting %s\n", iSortOrder == sort_down ? "down" : "up");
+     if (iSortOrder == sort_down) {
+	  std::map<double,int, std::greater<double> > s;
+	  doSort(*m_view->item(), iCol, m_view->m_evaluators, s, m_sortedToUnsortedIndices);
+     } else {
+	  std::map<double,int, std::less<double> > s;
+	  doSort(*m_view->item(), iCol, m_view->m_evaluators, s, m_sortedToUnsortedIndices);
+     }
+     m_view->m_tableWidget->dataChanged();
+}
+
+void
+FWTableViewTableManager::dataChanged() 
+{
+     m_sortedToUnsortedIndices.clear();
+     m_sortedToUnsortedIndices.reserve(m_view->item()->size());
+     for(int i=0; i< static_cast<int>(m_view->item()->size()); ++i) {
+	  m_sortedToUnsortedIndices.push_back(i);
+     }
+     FWTableManagerBase::dataChanged();
 }
