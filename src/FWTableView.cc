@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.1 2009/04/09 16:57:16 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.2 2009/04/10 14:23:57 jmuelmen Exp $
 //
 
 // system include files
@@ -63,6 +63,8 @@
 #include "TGeoArb8.h"
 
 // user include files
+#include "Fireworks/Core/interface/FWModelChangeManager.h"
+#include "Fireworks/Core/interface/FWSelectionManager.h"
 #include "Fireworks/Core/interface/FWTableView.h"
 #include "Fireworks/Core/interface/FWTableViewManager.h"
 #include "Fireworks/Core/interface/FWEventItem.h"
@@ -95,24 +97,37 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
 //      TGVerticalFrame *topframe = new TGVerticalFrame(iParent->GetEveFrame(), 100, 100);
      m_frame = iParent->MakeFrame(0);
      TGCompositeFrame *frame = m_frame->GetGUICompositeFrame();
-     TGVerticalFrame *vert = new TGVerticalFrame(frame);
-     frame->AddFrame(vert, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-     TGHorizontalFrame *buttons = new TGHorizontalFrame(vert);
-     vert->AddFrame(buttons, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
-     TGLabel *label = new TGLabel(buttons, "Collection");
-     buttons->AddFrame(label, new TGLayoutHints(kLHintsLeft));
-     m_collection = new TGComboBox(buttons);
+     m_vert = new TGVerticalFrame(frame);
+     frame->AddFrame(m_vert, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+     TGHorizontalFrame *header = new TGHorizontalFrame(m_vert);
+     m_vert->AddFrame(header, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+     TGLabel *label = new TGLabel(header, "Collection");
+     header->AddFrame(label, new TGLayoutHints(kLHintsLeft));
+     m_collection = new TGComboBox(header);
      updateItems();
-     buttons->AddFrame(m_collection, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY));
+     header->AddFrame(m_collection, new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY));
      m_collection->Connect("Selected(Int_t)", "FWTableView", this, "selectCollection(Int_t)");
-     m_collection->Select(8, true);
-//      TGTextView *text = new TGTextView(frame, width, height, "Blah blah blah blah blah");
-//      frame->AddFrame(text, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-     m_tableWidget = new FWTableWidget(&m_tableManager, vert);
-     vert->AddFrame(m_tableWidget, new TGLayoutHints(kLHintsExpandX));
-     vert->MapSubwindows();
-     vert->Layout();
+     m_collection->Select(2, true);
+     m_column_control = new TGVerticalFrame(m_vert);
+     m_vert->AddFrame(m_column_control, new TGLayoutHints(kLHintsExpandX));
+     TGLabel *column_control_label = new TGLabel(m_column_control, "Column editor");
+     m_column_control->AddFrame(column_control_label, new TGLayoutHints(kLHintsExpandX));
+     TGHorizontalFrame *column_control_fields = new TGHorizontalFrame(m_column_control);
+     m_column_control->AddFrame(column_control_fields, new TGLayoutHints(kLHintsExpandX));
+     TGTextEntry *column_name_field = new TGTextEntry(column_control_fields);
+     TGTextEntry *column_expr_field = new TGTextEntry(column_control_fields);
+     TGTextEntry *column_prec_field = new TGTextEntry(column_control_fields);
+     column_control_fields->AddFrame(column_name_field, new TGLayoutHints(kLHintsExpandX));
+     column_control_fields->AddFrame(column_expr_field, new TGLayoutHints(kLHintsExpandX));
+     column_control_fields->AddFrame(column_prec_field, new TGLayoutHints(kLHintsExpandX));
+     m_tableWidget = new FWTableWidget(&m_tableManager, m_vert);
+     m_tableWidget->SetBackgroundColor(gVirtualX->GetPixel(kBlack));
+     m_tableWidget->SetHeaderBackgroundColor(gVirtualX->GetPixel(kWhite));
+     m_tableWidget->Connect("rowClicked(Int_t,Int_t,Int_t)", "FWTableView",
+			    this, "modelSelected(Int_t,Int_t,Int_t)");
+     m_vert->AddFrame(m_tableWidget, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
      frame->MapSubwindows();
+     m_vert->HideFrame(m_column_control);
      frame->Layout();
      frame->MapWindow();
 //      frame->Resize(0,0);
@@ -175,6 +190,7 @@ FWTableView::setFrom(const FWConfiguration& iFrom)
 void
 FWTableView::setBackgroundColor(Color_t iColor) 
 {
+     m_tableWidget->SetBackgroundColor(iColor);
 //    m_viewer->GetGLViewer()->SetClearColor(iColor);
 }
 
@@ -208,6 +224,16 @@ FWTableView::saveImageTo(const std::string& iName) const
 //    if(!succeeded) {
 //       throw std::runtime_error("Unable to save picture");
 //    }
+   static int hide_view = true;
+   printf("blah\n");
+   if (hide_view) {
+	m_vert->HideFrame(m_column_control);
+	m_vert->Layout();
+   } else {
+	m_vert->ShowFrame(m_column_control);
+	m_vert->Layout();
+   }
+   hide_view = not hide_view;
 }
 
 void FWTableView::updateItems ()
@@ -284,6 +310,17 @@ void FWTableView::selectCollection (Int_t i_coll)
      printf("%s\n", item->modelType()->GetName());
      m_iColl = i_coll;
      display();
+}
+
+void FWTableView::modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod)
+{
+     if(iKeyMod & kKeyControlMask) {      
+	  item()->toggleSelect(iRow);
+     } else {
+	  FWChangeSentry sentry(*(item()->changeManager()));
+	  item()->selectionManager()->clearSelection();
+	  item()->select(iRow);
+     }
 }
 
 //

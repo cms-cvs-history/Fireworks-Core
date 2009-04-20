@@ -1,19 +1,25 @@
-// $Id:$
+// $Id: FWTableViewTableManager.cc,v 1.1.2.1 2009/04/10 14:23:57 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
+#include "TGClient.h"
 #include "Fireworks/Core/interface/FWTableViewTableManager.h"
 #include "Fireworks/Core/interface/FWTableViewManager.h"
 #include "Fireworks/Core/interface/FWTableView.h"
 #include "Fireworks/Core/interface/FWEventItem.h"
+#include "Fireworks/TableWidget/interface/FWTableWidget.h"
 
 FWTableViewTableManager::FWTableViewTableManager (const FWTableView *view)
      : m_view(view),
-       m_renderer(&FWTextTableCellRenderer::getDefaultGC(),
-		  &FWTextTableCellRenderer::getHighlightGC(),
-		  FWTextTableCellRenderer::kJustifyRight)
+       m_graphicsContext(0),
+       m_renderer(0)
 {
-
+     GCValues_t gc = *(m_view->m_tableWidget->GetWhiteGC().GetAttributes());
+     m_graphicsContext = gClient->GetResourcePool()->GetGCPool()->GetGC(&gc,kTRUE);
+//      m_graphicsContext = (TGGC *)&FWTextTableCellRenderer::getDefaultGC();
+     m_renderer = new FWTextTableCellRenderer(m_graphicsContext,
+					      &FWTextTableCellRenderer::getHighlightGC(),
+					      FWTextTableCellRenderer::kJustifyRight);
 }
 
 FWTableViewTableManager::~FWTableViewTableManager ()
@@ -79,14 +85,28 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 	       snprintf(s, sizeof(s), fs, ret);
 	       break;
 	  }
-	  m_renderer.setData(s, false);
+ 	  m_graphicsContext->
+ 	       SetForeground(gVirtualX->GetPixel(m_view->item()->modelInfo(iSortedRowNumber).
+ 						 displayProperties().color()));
+ 	  m_renderer->setGraphicsContext(m_graphicsContext);
+	  m_renderer->setData(s, m_view->item()->modelInfo(iSortedRowNumber).isSelected());
+// 			      not m_view->item()->modelInfo(iSortedRowNumber).
+// 			      displayProperties().isVisible());
      } else { 
-	  m_renderer.setData("invalid", false);
+	  m_renderer->setData("invalid", false);
      }
-     return &m_renderer;
+     return m_renderer;
 }
 
 void FWTableViewTableManager::implSort(int iCol, bool iSortOrder)
 {
-
+     static const bool sort_up = true;
+     printf("sorting %s\n", iSortOrder ? "up" : "down");
+//      if (iSortOrder == sort_up) {
+// 	  std::map<double,int, std::greater<double> > s;
+// 	  doSort(*m_collection, *(m_valueGetters[iCol]), s, m_sortedToUnsortedIndicies);
+//      } else {
+// 	  std::map<double,int, std::less<double> > s;
+// 	  doSort(*m_collection, *(m_valueGetters[iCol]), s, m_sortedToUnsortedIndicies);
+//      }
 }

@@ -11,7 +11,7 @@
 //
 // Original Author:  
 //         Created:  Mon Feb  2 16:40:52 EST 2009
-// $Id: FWTableViewTableManager.h,v 1.2 2009/03/04 15:25:03 chrjones Exp $
+// $Id: FWTableViewTableManager.h,v 1.1.2.1 2009/04/10 14:23:56 jmuelmen Exp $
 //
 
 // system include files
@@ -93,7 +93,8 @@ protected:
      
 private:
      const FWTableView *m_view;
-     mutable FWTextTableCellRenderer m_renderer;
+     TGGC *m_graphicsContext;
+     FWTextTableCellRenderer *m_renderer;
      //FWTableViewTableManager(const FWTableViewTableManager&); // stop default
      
      //const FWTableViewTableManager& operator=(const FWTableViewTableManager&); // stop default

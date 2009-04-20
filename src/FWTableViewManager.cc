@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.1 2009/04/09 16:57:16 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.2 2009/04/10 14:23:57 jmuelmen Exp $
 //
 
 // system include files
@@ -108,8 +108,8 @@ FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
      m_tableFormats["reco::Muon"	].insert(m_tableFormats["reco::Muon"		].end(), muon_table_entries		, muon_table_entries 		+ sizeof(muon_table_entries		) / sizeof(TableEntry));
      m_tableFormats["reco::GsfElectron"	].insert(m_tableFormats["reco::GsfElectron"	].end(), electron_table_entries		, electron_table_entries 	+ sizeof(electron_table_entries		) / sizeof(TableEntry));
      m_tableFormats["reco::GenParticle"	].insert(m_tableFormats["reco::GenParticle"	].end(), genparticle_table_entries	, genparticle_table_entries 	+ sizeof(genparticle_table_entries	) / sizeof(TableEntry));
-//      m_tableFormats["reco::CaloJet"	];
-//      m_tableFormats["reco::CaloMET"	];
+     m_tableFormats["reco::CaloJet"	].insert(m_tableFormats["reco::CaloJet"		].end(), jet_table_entries		, jet_table_entries 		+ sizeof(jet_table_entries		) / sizeof(TableEntry));
+     m_tableFormats["reco::CaloMET"	].insert(m_tableFormats["reco::CaloMET"		].end(), met_table_entries		, met_table_entries 		+ sizeof(met_table_entries		) / sizeof(TableEntry));
 //      m_tableFormats["reco::Photon"	];
 //      m_tableFormats["reco::Track"	];
 //      m_tableFormats["reco::Vertex"	];

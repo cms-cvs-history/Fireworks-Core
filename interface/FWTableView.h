@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.1 2009/04/09 16:57:15 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.2 2009/04/10 14:23:56 jmuelmen Exp $
 //
 
 // system include files
@@ -71,14 +71,17 @@ public:
      void selectCollection (Int_t);
      void display ();
      const FWEventItem *item () const;
+     void modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod);
 
 private:
      FWTableView(const FWTableView&);    // stop default
      const FWTableView& operator=(const FWTableView&);    // stop default
 
+protected:
      // ---------- member data --------------------------------
      TEveWindowFrame *m_frame;
      TGComboBox *m_collection;
+     TGCompositeFrame *m_vert, *m_column_control;
      int m_iColl;
      const FWTableViewManager *m_manager;
      FWTableViewTableManager m_tableManager;
