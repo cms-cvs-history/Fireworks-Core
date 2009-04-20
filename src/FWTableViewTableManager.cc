@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.2 2009/04/20 16:33:36 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.3 2009/04/20 19:48:10 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -60,7 +60,7 @@ int FWTableViewTableManager::unsortedRowNumber(int iSortedRowNumber) const
 FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
 {
      if (m_view->item()->modelData(iSortedRowNumber) != 0 &&
-	 iCol < m_view->m_evaluators.size()) {
+	 iCol < (int)m_view->m_evaluators.size()) {
 	  double ret;
 	  try {
 // 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
@@ -90,7 +90,18 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
  	  m_graphicsContext->
  	       SetForeground(gVirtualX->GetPixel(m_view->item()->modelInfo(iSortedRowNumber).
  						 displayProperties().color()));
- 	  m_renderer->setGraphicsContext(m_graphicsContext);
+	  if (not m_view->item()->modelInfo(iSortedRowNumber).isSelected())
+	       m_renderer->setGraphicsContext(m_graphicsContext);
+	  else {
+	       static TGGC* s_context = 0;
+	       if(0==s_context) {
+		    GCValues_t hT = *(gClient->GetResourcePool()->GetSelectedGC()->GetAttributes());
+		    s_context = gClient->GetResourcePool()->GetGCPool()->GetGC(&hT,kTRUE);
+		    s_context->SetForeground(s_context->GetBackground());
+		    //s_context->SetForeground(gVirtualX->GetPixel(kBlue+2));
+	       }
+	       m_renderer->setGraphicsContext(s_context);
+	  }
 	  m_renderer->setData(s, m_view->item()->modelInfo(iSortedRowNumber).isSelected());
 // 			      not m_view->item()->modelInfo(iSortedRowNumber).
 // 			      displayProperties().isVisible());

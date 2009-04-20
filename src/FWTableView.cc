@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.3 2009/04/20 16:33:36 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.4 2009/04/20 19:48:10 jmuelmen Exp $
 //
 
 // system include files
@@ -63,6 +63,7 @@
 #include "TGeoArb8.h"
 
 // user include files
+#include "Fireworks/Core/interface/FWColorManager.h"
 #include "Fireworks/Core/interface/FWModelChangeManager.h"
 #include "Fireworks/Core/interface/FWSelectionManager.h"
 #include "Fireworks/Core/interface/FWTableView.h"
@@ -93,7 +94,7 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
        m_tableWidget(0)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-     const int width = 100, height = 100;
+//      const int width = 100, height = 100;
 //      TGVerticalFrame *topframe = new TGVerticalFrame(iParent->GetEveFrame(), 100, 100);
      m_frame = iParent->MakeFrame(0);
      TGCompositeFrame *frame = m_frame->GetGUICompositeFrame();
@@ -121,7 +122,7 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      column_control_fields->AddFrame(column_expr_field, new TGLayoutHints(kLHintsExpandX));
      column_control_fields->AddFrame(column_prec_field, new TGLayoutHints(kLHintsExpandX));
      m_tableWidget = new FWTableWidget(&m_tableManager, m_vert);
-     m_tableWidget->SetBackgroundColor(gVirtualX->GetPixel(kBlack));
+     resetColors(m_manager->colorManager());
      m_tableWidget->SetHeaderBackgroundColor(gVirtualX->GetPixel(kWhite));
      m_tableWidget->Connect("rowClicked(Int_t,Int_t,Int_t)", "FWTableView",
 			    this, "modelSelected(Int_t,Int_t,Int_t)");
@@ -190,8 +191,25 @@ FWTableView::setFrom(const FWConfiguration& iFrom)
 void
 FWTableView::setBackgroundColor(Color_t iColor) 
 {
-     m_tableWidget->SetBackgroundColor(iColor);
+     m_tableWidget->SetBackgroundColor(gVirtualX->GetPixel(iColor));
+//      m_tableWidget->SetBackgroundColor(TColor::Number2Pixel(iColor));
 //    m_viewer->GetGLViewer()->SetClearColor(iColor);
+}
+
+void FWTableView::resetColors (const FWColorManager &manager)
+{
+     m_tableWidget->SetBackgroundColor(gVirtualX->GetPixel(manager.background()));
+//      m_tableWidget->SetHeaderBackgroundColor(gVirtualX->GetPixel(manager.background()));
+//      switch (manager.foreground()) {
+//      case FWColorManager::kBlackIndex:
+// 	  m_tableWidget->SetHeaderForegroundColor(gVirtualX->GetPixel(kBlack));
+// 	  break;
+//      default:
+// 	  m_tableWidget->SetHeaderForegroundColor(gVirtualX->GetPixel(kWhite));
+// 	  break;
+//      }
+     m_tableWidget->SetLineSeparatorColor(gVirtualX->GetPixel(manager.foreground()));
+//      m_tableWidget->dataChanged();
 }
 
 //
@@ -287,7 +305,7 @@ void FWTableView::display ()
 	  printf("what should I do with collection -1?\n");
 	  return;
      }
-     const FWEventItem *item = m_manager->items()[m_iColl];
+//      const FWEventItem *item = m_manager->items()[m_iColl];
      updateEvaluators();
      m_tableManager.dataChanged();
 //      std::vector<FWExpressionEvaluator> &ev = m_evaluators;

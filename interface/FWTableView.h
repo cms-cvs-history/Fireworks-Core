@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.2 2009/04/10 14:23:56 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.3 2009/04/20 16:30:55 jmuelmen Exp $
 //
 
 // system include files
@@ -66,6 +66,7 @@ public:
      // ---------- member functions ---------------------------
      virtual void setFrom(const FWConfiguration&);
      void setBackgroundColor(Color_t);
+     void resetColors (const class FWColorManager &);
      void updateItems ();
      void updateEvaluators ();
      void selectCollection (Int_t);

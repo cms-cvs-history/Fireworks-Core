@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.3 2009/04/20 16:33:36 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.4 2009/04/20 19:48:10 jmuelmen Exp $
 //
 
 // system include files
@@ -214,7 +214,9 @@ FWTableViewManager::colorsChanged()
        m_views.begin(), itEnd = m_views.end();
        it != itEnd;
        ++it) {
-      (*it)->setBackgroundColor(colorManager().background());
+	(*it)->resetColors(colorManager());
+//       printf("Changed the background color for a table to 0x%x\n", 
+// 	     colorManager().background());
    }
 }
 
