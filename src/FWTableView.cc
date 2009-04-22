@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.4 2009/04/20 19:48:10 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.5 2009/04/20 21:50:53 jmuelmen Exp $
 //
 
 // system include files
@@ -36,6 +36,7 @@
 #include "TColor.h"
 #include "TEveScene.h"
 #include "TGLViewer.h"
+#include "TSystem.h"
 //EVIL, but only way I can avoid a double delete of TGLEmbeddedViewer::fFrame
 #define private public
 #include "TGLEmbeddedViewer.h"
@@ -64,6 +65,7 @@
 
 // user include files
 #include "Fireworks/Core/interface/FWColorManager.h"
+#include "Fireworks/Core/interface/FWCustomIconsButton.h"
 #include "Fireworks/Core/interface/FWModelChangeManager.h"
 #include "Fireworks/Core/interface/FWSelectionManager.h"
 #include "Fireworks/Core/interface/FWTableView.h"
@@ -74,6 +76,147 @@
 #include "Fireworks/Core/interface/BuilderUtils.h"
 #include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 #include "Fireworks/TableWidget/interface/FWTableWidget.h"
+
+// static const TString& coreIcondir() {
+//    static TString s = Form("%s/src/Fireworks/Core/icons/",gSystem->Getenv("CMSSW_BASE"));
+//    return s;
+// }
+
+// static 
+// const TGPicture* filtered(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"filtered-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"filtered-whitebg.png");
+//    return s;
+   
+// }
+
+// static 
+// const TGPicture* filtered_over(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"filtered-whitebg-over.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"filtered-whitebg-over.png");
+//    return s;
+// }
+
+// /*
+// static 
+// const TGPicture* alert_over()
+// {
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"alert-blackbg-over.png");
+//    return s;
+// }
+
+// static 
+// const TGPicture* alert()
+// {
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"alert-blackbg.png");
+//    return s;
+// }
+// */
+// static 
+// const TGPicture* unfiltered(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"unfiltered-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"unfiltered-whitebg.png");
+//    return s;
+// }
+// static 
+// const TGPicture* unfiltered_over(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"unfiltered-blackbg-over.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"unfiltered-whitebg-over.png");
+//    return s;   
+// }
+
+// static
+// const TGPicture* info(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-whitebg.png");
+//    return s;   
+// }
+
+// static
+// const TGPicture* info_over(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-blackbg-over.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-whitebg-over.png");
+//    return s;
+// }
+
+// static
+// const TGPicture* info_disabled(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-blackbg-disabled.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"info2-whitebg-disabled.png");
+//    return s;
+// }
+
+// static
+// const TGPicture* arrow_right(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-white-right-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-black-right-whitebg.png");
+//    return s;
+// }
+
+// static
+// const TGPicture* arrow_right_disabled(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-white-right-disabled-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-black-right-disabled-whitebg.png");
+//    return s;
+// }
+
+// static
+// const TGPicture* arrow_down(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-white-down-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-black-down-whitebg.png");
+//    return s;
+// }
+
+// static
+// const TGPicture* arrow_down_disabled(bool iBackgroundIsBlack)
+// {
+//    if(iBackgroundIsBlack) {
+//       static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-white-down-disabled-blackbg.png");
+//       return s;
+//    }
+//    static const TGPicture* s = gClient->GetPicture(coreIcondir()+"arrow-black-down-disabled-whitebg.png");
+//    return s;
+// }
 
 //
 // constants, enums and typedefs
@@ -91,7 +234,8 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      : m_iColl(-1),
        m_manager(manager),
        m_tableManager(this),
-       m_tableWidget(0)
+       m_tableWidget(0),
+       m_showColumnUI(false)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
 //      const int width = 100, height = 100;
@@ -102,6 +246,14 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      frame->AddFrame(m_vert, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
      TGHorizontalFrame *header = new TGHorizontalFrame(m_vert);
      m_vert->AddFrame(header, new TGLayoutHints(kLHintsTop | kLHintsExpandX));
+//      const bool bgIsBlack = m_manager->colorManager().background() == kBlack;
+//      FWCustomIconsButton *m_columnUIButton = 
+// 	  new FWCustomIconsButton(header, 
+// 				  arrow_right(bgIsBlack),
+// 				  arrow_right_disabled(bgIsBlack),
+// 				  arrow_right_disabled(bgIsBlack));
+//      m_columnUIButton->Connect("Clicked()", "FWTableView", this, "toggleShowHide()");
+//      header->AddFrame(m_columnUIButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft,6,10));
      TGLabel *label = new TGLabel(header, "Collection");
      header->AddFrame(label, new TGLayoutHints(kLHintsLeft));
      m_collection = new TGComboBox(header);
@@ -112,6 +264,9 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      m_column_control = new TGVerticalFrame(m_vert);
      m_vert->AddFrame(m_column_control, new TGLayoutHints(kLHintsExpandX));
      TGLabel *column_control_label = new TGLabel(m_column_control, "Column editor");
+//      column_control_label->SetBackgroundColor(bgIsBlack ? kBlack : kWhite);
+//      column_control_label->SetForegroundColor(bgIsBlack ? kWhite : kBlack);
+//      column_control_label->SetTextColor(bgIsBlack ? kWhite : kBlack);
      m_column_control->AddFrame(column_control_label, new TGLayoutHints(kLHintsExpandX));
      TGHorizontalFrame *column_control_fields = new TGHorizontalFrame(m_column_control);
      m_column_control->AddFrame(column_control_fields, new TGLayoutHints(kLHintsExpandX));
@@ -242,16 +397,19 @@ FWTableView::saveImageTo(const std::string& iName) const
 //    if(!succeeded) {
 //       throw std::runtime_error("Unable to save picture");
 //    }
-   static int hide_view = true;
-   printf("blah\n");
-   if (hide_view) {
-	m_vert->HideFrame(m_column_control);
-	m_vert->Layout();
-   } else {
-	m_vert->ShowFrame(m_column_control);
-	m_vert->Layout();
-   }
-   hide_view = not hide_view;
+}
+
+void
+FWTableView::toggleShowHide () 
+{
+     m_showColumnUI = not m_showColumnUI;
+     if (m_showColumnUI) {
+	  m_vert->HideFrame(m_column_control);
+	  m_vert->Layout();
+     } else {
+	  m_vert->ShowFrame(m_column_control);
+	  m_vert->Layout();
+     }
 }
 
 void FWTableView::updateItems ()
@@ -273,14 +431,15 @@ void FWTableView::updateEvaluators ()
      const FWEventItem *item = m_manager->items()[m_iColl];
      std::vector<FWExpressionEvaluator> &ev = m_evaluators;
      ev.clear();
-     if (m_manager->tableFormats(item->modelType()->GetName()) == 
+     if (m_manager->tableFormats(*item->modelType()) == 
 	 m_manager->m_tableFormats.end()) {
-	  printf("No table format for objects of this type\n");
+	  printf("No table format for objects of this type (%s)\n",
+		 item->modelType()->GetName());
 	  return;
      }
      for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
-	       i = m_manager->tableFormats(item->modelType()->GetName())->second.begin(),
-	       end = m_manager->tableFormats(item->modelType()->GetName())->second.end();
+	       i = m_manager->tableFormats(*item->modelType())->second.begin(),
+	       end = m_manager->tableFormats(*item->modelType())->second.end();
 	  i != end; ++i) {
 	  try {
 	       ev.push_back(FWExpressionEvaluator(i->expression, item->modelType()->GetName()));

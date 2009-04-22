@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.4 2009/04/20 21:50:53 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.5 2009/04/20 23:48:43 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -45,7 +45,7 @@ std::vector<std::string> FWTableViewTableManager::getTitles () const
      std::vector<std::string> ret;
      ret.reserve(n);
      for (unsigned int i = 0; i < n; ++i) {
-	  ret.push_back((*m_view->m_manager->tableFormats(m_view->item()->modelType()->GetName())).second[i].name);
+	  ret.push_back((*m_view->m_manager->tableFormats(*m_view->item()->modelType())).second[i].name);
 // 	  printf("%s\n", ret.back().c_str());
      }
      return ret;
@@ -74,7 +74,7 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 	       printf("something bad happened\n");
 	       ret = -999;
 	  }
-	  int precision = (*m_view->m_manager->tableFormats(m_view->item()->modelType()->GetName())).second[iCol].precision;
+	  int precision = (*m_view->m_manager->tableFormats(*m_view->item()->modelType())).second[iCol].precision;
 	  char s[100];
 	  char fs[100];
 	  switch (precision) {

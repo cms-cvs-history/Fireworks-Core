@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.3 2009/04/20 16:30:55 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.4 2009/04/20 21:50:50 jmuelmen Exp $
 //
 
 // system include files
@@ -73,6 +73,7 @@ public:
      void display ();
      const FWEventItem *item () const;
      void modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod);
+     void toggleShowHide ();
 
 private:
      FWTableView(const FWTableView&);    // stop default
@@ -88,6 +89,7 @@ protected:
      FWTableViewTableManager m_tableManager;
      FWTableWidget *m_tableWidget;
      std::vector<FWExpressionEvaluator> m_evaluators;
+     bool m_showColumnUI;
 };
 
 

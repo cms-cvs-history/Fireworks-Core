@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.4 2009/04/20 19:48:10 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.5 2009/04/20 21:50:53 jmuelmen Exp $
 //
 
 // system include files
@@ -19,6 +19,8 @@
 #include "TList.h"
 #include "TEveManager.h"
 #include "TClass.h"
+#include "Reflex/Base.h"
+#include "Reflex/Type.h"
 
 // user include files
 #include "Fireworks/Core/interface/FWTableViewManager.h"
@@ -102,8 +104,8 @@ FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
      m_tableFormats["reco::Muon"	].insert(m_tableFormats["reco::Muon"		].end(), muon_table_entries		, muon_table_entries 		+ sizeof(muon_table_entries		) / sizeof(TableEntry));
      m_tableFormats["reco::GsfElectron"	].insert(m_tableFormats["reco::GsfElectron"	].end(), electron_table_entries		, electron_table_entries 	+ sizeof(electron_table_entries		) / sizeof(TableEntry));
      m_tableFormats["reco::GenParticle"	].insert(m_tableFormats["reco::GenParticle"	].end(), genparticle_table_entries	, genparticle_table_entries 	+ sizeof(genparticle_table_entries	) / sizeof(TableEntry));
-     m_tableFormats["reco::CaloJet"	].insert(m_tableFormats["reco::CaloJet"		].end(), jet_table_entries		, jet_table_entries 		+ sizeof(jet_table_entries		) / sizeof(TableEntry));
-     m_tableFormats["reco::CaloMET"	].insert(m_tableFormats["reco::CaloMET"		].end(), met_table_entries		, met_table_entries 		+ sizeof(met_table_entries		) / sizeof(TableEntry));
+     m_tableFormats["reco::Jet"		].insert(m_tableFormats["reco::Jet"		].end(), jet_table_entries		, jet_table_entries 		+ sizeof(jet_table_entries		) / sizeof(TableEntry));
+     m_tableFormats["reco::MET"		].insert(m_tableFormats["reco::MET"		].end(), met_table_entries		, met_table_entries 		+ sizeof(met_table_entries		) / sizeof(TableEntry));
 //      m_tableFormats["reco::Photon"	];
 //      m_tableFormats["reco::Track"	];
 //      m_tableFormats["reco::Vertex"	];
@@ -121,9 +123,30 @@ FWTableViewManager::~FWTableViewManager()
 // member functions
 //
 std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
-FWTableViewManager::tableFormats (std::string key) const
+FWTableViewManager::tableFormats (const Reflex::Type &key) const
 {
-     return m_tableFormats.find(key);
+     printf("trying to find a table for %s\n", key.Name(ROOT::Reflex::SCOPED).c_str());
+     std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
+	  ret = m_tableFormats.find(key.Name(ROOT::Reflex::SCOPED));
+     if (ret != m_tableFormats.end())
+	  return ret;
+//      for (Reflex::Base_Iterator it = key.Base_Begin(); it != key.Base_End(); ++i) {
+// 	  ret = m_tableFormats.find(it->Name(ROOT::Reflex::SCOPED));
+// 	  if (ret != m_tableFormats.end())
+// 	       return ret;
+//      }
+     for (Reflex::Base_Iterator it = key.Base_Begin(); it != key.Base_End(); ++it) {
+	  ret = tableFormats(it->ToType());
+ 	  if (ret != m_tableFormats.end())
+ 	       return ret;
+     }
+     return m_tableFormats.end();
+}
+
+std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
+FWTableViewManager::tableFormats (const TClass &key) const
+{
+     return tableFormats(Reflex::Type::ByName(key.GetName()));
 }
 
 class FWViewBase*
