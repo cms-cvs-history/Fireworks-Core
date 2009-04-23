@@ -11,7 +11,7 @@
 //
 // Original Author:  
 //         Created:  Mon Feb  2 16:40:52 EST 2009
-// $Id: FWTableViewTableManager.h,v 1.1.2.2 2009/04/20 16:32:36 jmuelmen Exp $
+// $Id: FWTableViewTableManager.h,v 1.1.2.3 2009/04/20 23:48:42 jmuelmen Exp $
 //
 
 // system include files
@@ -23,11 +23,14 @@
 // user include files
 #include "Fireworks/TableWidget/interface/FWTableManagerBase.h"
 #include "Fireworks/TableWidget/interface/FWTextTableCellRenderer.h"
+#include "Fireworks/Core/interface/FWTableViewManager.h"
+#include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 
 // forward declarations
 class FWTableView;
 
 class FWTableViewTableManager : public FWTableManagerBase {
+     friend class FWTableView;
 public:
      FWTableViewTableManager(const FWTableView *);
      virtual ~FWTableViewTableManager();
@@ -85,6 +88,7 @@ public:
      // void visualPropertiesChanged(); //*SIGNAL*
      
      // ClassDef(FWTableViewTableManager,0);
+     void updateEvaluators ();
 
 protected:
      ///Called by 'sort' method to actually handle the sorting of the
@@ -92,10 +96,11 @@ protected:
      virtual void implSort(int iCol, bool iSortOrder);
      std::vector<int> m_sortedToUnsortedIndices;
 
-private:
      const FWTableView *m_view;
      TGGC *m_graphicsContext;
      FWTextTableCellRenderer *m_renderer;
+     std::vector<FWExpressionEvaluator> m_evaluators;
+     std::vector<FWTableViewManager::TableEntry> m_tableFormats;
      //FWTableViewTableManager(const FWTableViewTableManager&); // stop default
      
      //const FWTableViewTableManager& operator=(const FWTableViewTableManager&); // stop default

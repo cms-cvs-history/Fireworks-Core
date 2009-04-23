@@ -16,7 +16,7 @@
 //
 // Original Author:
 //         Created:  Sat Jan  5 10:29:00 EST 2008
-// $Id: FWTableViewManager.h,v 1.2.2.1 2009/04/09 16:57:15 jmuelmen Exp $
+// $Id: FWTableViewManager.h,v 1.2.2.2 2009/04/22 01:18:33 jmuelmen Exp $
 //
 
 // system include files
@@ -24,10 +24,10 @@
 #include <vector>
 #include <set>
 #include <map>
+#include "Reflex/Type.h"
 
 // user include files
 
-//Needed for gccxml
 #include "Fireworks/Core/interface/FWViewManagerBase.h"
 #include "Fireworks/Core/interface/FWTableView.h"
 #include "Fireworks/Core/interface/FWEveValueScaler.h"
@@ -37,8 +37,8 @@ class FWGUIManager;
 class TEveWindowSlot;
 
 class FWTableViewManager : public FWViewManagerBase {
-
      friend class FWTableView;
+     friend class FWTableViewTableManager;
 
 public:
      FWTableViewManager(FWGUIManager*);

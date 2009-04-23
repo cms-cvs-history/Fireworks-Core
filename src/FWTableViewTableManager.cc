@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.5 2009/04/20 23:48:43 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.6 2009/04/22 01:18:33 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -36,7 +36,7 @@ int FWTableViewTableManager::numberOfRows() const
 
 int FWTableViewTableManager::numberOfColumns() const
 {
-     return m_view->m_evaluators.size();
+     return m_evaluators.size();
 }
 
 std::vector<std::string> FWTableViewTableManager::getTitles () const
@@ -45,7 +45,7 @@ std::vector<std::string> FWTableViewTableManager::getTitles () const
      std::vector<std::string> ret;
      ret.reserve(n);
      for (unsigned int i = 0; i < n; ++i) {
-	  ret.push_back((*m_view->m_manager->tableFormats(*m_view->item()->modelType())).second[i].name);
+	  ret.push_back(m_tableFormats[i].name);
 // 	  printf("%s\n", ret.back().c_str());
      }
      return ret;
@@ -65,16 +65,16 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 {
      const int realRowNumber = unsortedRowNumber(iSortedRowNumber);
      if (m_view->item()->modelData(realRowNumber) != 0 &&
-	 iCol < (int)m_view->m_evaluators.size()) {
+	 iCol < (int)m_evaluators.size()) {
 	  double ret;
 	  try {
-// 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
-	       ret = m_view->m_evaluators[iCol].evalExpression(m_view->item()->modelData(realRowNumber));
+// 	       printf("iCol %d, size %d\n", iCol, m_evaluators.size());
+	       ret = m_evaluators[iCol].evalExpression(m_view->item()->modelData(realRowNumber));
 	  } catch (...) {
 	       printf("something bad happened\n");
 	       ret = -999;
 	  }
-	  int precision = (*m_view->m_manager->tableFormats(*m_view->item()->modelType())).second[iCol].precision;
+	  int precision = m_tableFormats[iCol].precision;
 	  char s[100];
 	  char fs[100];
 	  switch (precision) {
@@ -128,7 +128,7 @@ namespace {
 	  for(int index = 0; index < size; ++index) {
 	       double ret;
 	       try {
-// 	       printf("iCol %d, size %d\n", iCol, m_view->m_evaluators.size());
+// 	       printf("iCol %d, size %d\n", iCol, m_evaluators.size());
 		    ret = evaluators[iCol].evalExpression(iItem.modelData(index));
 	       } catch (...) {
 		    printf("something bad happened\n");
@@ -148,15 +148,15 @@ namespace {
 void FWTableViewTableManager::implSort(int iCol, bool iSortOrder)
 {
      static const bool sort_down = true;
-     if (iCol >= (int)m_view->m_evaluators.size())
+     if (iCol >= (int)m_evaluators.size())
 	  return;
 //      printf("sorting %s\n", iSortOrder == sort_down ? "down" : "up");
      if (iSortOrder == sort_down) {
 	  std::map<double,int, std::greater<double> > s;
-	  doSort(*m_view->item(), iCol, m_view->m_evaluators, s, m_sortedToUnsortedIndices);
+	  doSort(*m_view->item(), iCol, m_evaluators, s, m_sortedToUnsortedIndices);
      } else {
 	  std::map<double,int, std::less<double> > s;
-	  doSort(*m_view->item(), iCol, m_view->m_evaluators, s, m_sortedToUnsortedIndices);
+	  doSort(*m_view->item(), iCol, m_evaluators, s, m_sortedToUnsortedIndices);
      }
      m_view->m_tableWidget->dataChanged();
 }
@@ -170,4 +170,27 @@ FWTableViewTableManager::dataChanged()
 	  m_sortedToUnsortedIndices.push_back(i);
      }
      FWTableManagerBase::dataChanged();
+}
+
+void FWTableViewTableManager::updateEvaluators ()
+{
+     if (m_view->m_iColl == -1) {
+	  printf("what should I do with collection -1?\n");
+	  return;
+     }
+     const FWEventItem *item = m_view->m_manager->items()[m_view->m_iColl];
+     std::vector<FWExpressionEvaluator> &ev = m_evaluators;
+     ev.clear();
+     for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+	       i = m_tableFormats.begin(),
+	       end = m_tableFormats.end();
+	  i != end; ++i) {
+	  try {
+	       ev.push_back(FWExpressionEvaluator(i->expression, item->modelType()->GetName()));
+	  } catch (...) {
+	       printf("expression %s is not valid, skipping\n", i->expression.c_str());
+	       ev.push_back(FWExpressionEvaluator("0", item->modelType()->GetName()));
+	  }
+     }
+     printf("Got evaluators\n");
 }

@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.5 2009/04/20 21:50:53 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.6 2009/04/22 01:18:33 jmuelmen Exp $
 //
 
 // system include files
@@ -59,10 +59,10 @@ FWTableViewManager::FWTableViewManager(FWGUIManager* iGUIMgr) :
      // ---------- for some object types, we have default table contents ----------
      TableEntry muon_table_entries[] = { 
 	  { "pt"				, "pT"			, 1 			},
-	  { "isGlobalMuon"			, "isGlobalMuon"	, TableEntry::BOOL	},
-	  { "isTrackerMuon"			, "isTrackerMuon"	, TableEntry::BOOL	},
-	  { "isStandAloneMuon"			, "isStandAloneMuon"	, TableEntry::BOOL	},
-	  { "isCaloMuon"			, "isCaloMuon"		, TableEntry::BOOL	},
+	  { "isGlobalMuon"			, "global"		, TableEntry::BOOL	},
+	  { "isTrackerMuon"			, "tracker"		, TableEntry::BOOL	},
+	  { "isStandAloneMuon"			, "SA"			, TableEntry::BOOL	},
+	  { "isCaloMuon"			, "calo"		, TableEntry::BOOL	},
 	  { "track().pt()"			, "tr pt"		, 1 			},
 	  { "eta"				, "eta"			, 3 			},
 	  { "phi"				, "phi"			, 3 			},
@@ -125,7 +125,7 @@ FWTableViewManager::~FWTableViewManager()
 std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
 FWTableViewManager::tableFormats (const Reflex::Type &key) const
 {
-     printf("trying to find a table for %s\n", key.Name(ROOT::Reflex::SCOPED).c_str());
+//      printf("trying to find a table for %s\n", key.Name(ROOT::Reflex::SCOPED).c_str());
      std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
 	  ret = m_tableFormats.find(key.Name(ROOT::Reflex::SCOPED));
      if (ret != m_tableFormats.end())

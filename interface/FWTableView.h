@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.4 2009/04/20 21:50:50 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.5 2009/04/22 01:20:23 jmuelmen Exp $
 //
 
 // system include files
@@ -24,8 +24,6 @@
 
 // user include files
 #include "Fireworks/Core/interface/FWViewBase.h"
-#include "Fireworks/Core/interface/FWTableViewTableManager.h"
-#include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 
 // forward declarations
 class TGFrame;
@@ -38,6 +36,7 @@ class TEveScene;
 class TEveElementList;
 class TEveGeoShape;
 class TGLMatrix;
+class TGTextEntry;
 class FWEventItem;
 class FWTableViewManager;
 class FWTableWidget;
@@ -45,6 +44,8 @@ class FWEveValueScaler;
 class TEveWindowFrame;
 class TEveWindowSlot;
 class FWTableViewManager;
+class FWTableViewTableManager;
+class FWCustomIconsButton;
 
 class FWTableView : public FWViewBase {
      friend class FWTableViewTableManager;
@@ -74,6 +75,8 @@ public:
      const FWEventItem *item () const;
      void modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod);
      void toggleShowHide ();
+     void addColumn ();
+     void deleteColumn ();
 
 private:
      FWTableView(const FWTableView&);    // stop default
@@ -86,10 +89,13 @@ protected:
      TGCompositeFrame *m_vert, *m_column_control;
      int m_iColl;
      const FWTableViewManager *m_manager;
-     FWTableViewTableManager m_tableManager;
+     FWTableViewTableManager *m_tableManager;
      FWTableWidget *m_tableWidget;
-     std::vector<FWExpressionEvaluator> m_evaluators;
      bool m_showColumnUI;
+     FWCustomIconsButton *m_columnUIButton;
+     TGTextEntry *m_column_name_field;
+     TGTextEntry *m_column_expr_field;
+     TGTextEntry *m_column_prec_field;
 };
 
 
