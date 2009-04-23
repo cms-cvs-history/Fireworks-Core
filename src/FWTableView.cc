@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.5 2009/04/20 21:50:53 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.7 2009/04/23 00:11:50 jmuelmen Exp $
 //
 
 // system include files
@@ -237,7 +237,8 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
        m_manager(manager),
        m_tableManager(new FWTableViewTableManager(this)),
        m_tableWidget(0),
-       m_showColumnUI(false)
+       m_showColumnUI(false),
+       m_currentColumn(-1)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
 //      const int width = 100, height = 100;
@@ -285,15 +286,20 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
      column_control_fields->AddFrame(m_column_prec_field, new TGLayoutHints(kLHintsExpandX));
      TGTextButton *add_button = new TGTextButton(column_control_fields, "Add");
      TGTextButton *del_button = new TGTextButton(column_control_fields, "Delete");
+     TGTextButton *mod_button = new TGTextButton(column_control_fields, "Modify");
      add_button->Connect("Clicked()", "FWTableView", this, "addColumn()");
      del_button->Connect("Clicked()", "FWTableView", this, "deleteColumn()");
+     mod_button->Connect("Clicked()", "FWTableView", this, "modifyColumn()");
      column_control_fields->AddFrame(add_button, new TGLayoutHints);
      column_control_fields->AddFrame(del_button, new TGLayoutHints);
+     column_control_fields->AddFrame(mod_button, new TGLayoutHints);
      m_tableWidget = new FWTableWidget(m_tableManager, m_vert);
      resetColors(m_manager->colorManager());
      m_tableWidget->SetHeaderBackgroundColor(gVirtualX->GetPixel(kWhite));
      m_tableWidget->Connect("rowClicked(Int_t,Int_t,Int_t)", "FWTableView",
 			    this, "modelSelected(Int_t,Int_t,Int_t)");
+     m_tableWidget->Connect("columnClicked(Int_t,Int_t,Int_t)", "FWTableView",
+			    this, "columnSelected(Int_t,Int_t,Int_t)");
      m_vert->AddFrame(m_tableWidget, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
      frame->MapSubwindows();
      m_vert->HideFrame(m_column_control);
@@ -457,7 +463,7 @@ const FWEventItem *FWTableView::item () const
      return m_manager->items()[m_iColl];
 }
 
-void FWTableView::display ()
+void FWTableView::dataChanged ()
 {
      if (m_iColl == -1) {
 	  printf("what should I do with collection -1?\n");
@@ -491,7 +497,8 @@ void FWTableView::selectCollection (Int_t i_coll)
      } else {
 	  m_tableManager->m_tableFormats = m_manager->tableFormats(*item->modelType())->second;
      }
-     display();
+//      columnSelected(-1, 1, 0);
+     dataChanged();
 }
 
 void FWTableView::modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod)
@@ -502,6 +509,25 @@ void FWTableView::modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod)
 	  FWChangeSentry sentry(*(item()->changeManager()));
 	  item()->selectionManager()->clearSelection();
 	  item()->select(iRow);
+     }
+}
+
+void FWTableView::columnSelected (Int_t iCol, Int_t iButton, Int_t iKeyMod)
+{
+     if (iButton == 1 || iButton == 3)
+	  m_currentColumn = iCol;
+     // update contents of the column editor
+     if (m_currentColumn >= 0 && 
+	 m_currentColumn < (int)m_tableManager->m_tableFormats.size()) {
+	  const FWTableViewManager::TableEntry &entry = 
+	       m_tableManager->m_tableFormats[m_currentColumn];
+	  m_column_name_field->SetText(entry.name.c_str());
+	  m_column_expr_field->SetText(entry.expression.c_str());
+	  m_column_prec_field->SetText(Form("%d", entry.precision));
+     } else {
+	  m_column_name_field->SetText("");
+	  m_column_expr_field->SetText("");
+	  m_column_prec_field->SetText("");
      }
 }
 
@@ -524,12 +550,44 @@ void FWTableView::addColumn ()
 //      m_manager->tableFormats(*item->modelType())
      FWTableViewManager::TableEntry e = { expr, name, prec };
      m_tableManager->m_tableFormats.push_back(e);
-     display();
+     m_currentColumn = (int)m_tableManager->m_tableFormats.size() + 1;
+     dataChanged();
 }
 
 void FWTableView::deleteColumn ()
 {
+     if (m_currentColumn >= 0 && 
+	 m_currentColumn < (int)m_tableManager->m_tableFormats.size()) {
+	  m_tableManager->m_tableFormats.erase(m_tableManager->m_tableFormats.begin() + 
+					       m_currentColumn);
+	  m_column_name_field->SetText("");
+	  m_column_expr_field->SetText("");
+	  m_column_prec_field->SetText("");
+	  m_currentColumn = -1;
+     }
+     dataChanged();
+}
 
+void FWTableView::modifyColumn ()
+{
+     std::string name = m_column_name_field->GetText();
+     std::string expr = m_column_expr_field->GetText();
+     // convert the precision to a long int
+     char *endptr = 0;
+     long int prec = strtol(m_column_prec_field->GetText(), &endptr, 0);
+     if (name == "" || expr == "" || 
+	 m_column_prec_field->GetText() == 0 || *endptr != 0) {
+	  printf("bad input\n");
+	  fflush(stdout);
+	  return;
+     }
+     printf("adding column %s: %s, precision %ld\n", name.c_str(), expr.c_str(), 
+	    prec);
+     fflush(stdout);
+//      m_manager->tableFormats(*item->modelType())
+     FWTableViewManager::TableEntry e = { expr, name, prec };
+     m_tableManager->m_tableFormats[m_currentColumn] = e;
+     dataChanged();
 }
 
 //

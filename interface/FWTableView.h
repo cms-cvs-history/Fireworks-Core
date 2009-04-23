@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.5 2009/04/22 01:20:23 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.6 2009/04/23 00:11:50 jmuelmen Exp $
 //
 
 // system include files
@@ -71,12 +71,14 @@ public:
      void updateItems ();
      void updateEvaluators ();
      void selectCollection (Int_t);
-     void display ();
+     void dataChanged ();
      const FWEventItem *item () const;
      void modelSelected(Int_t iRow,Int_t iButton,Int_t iKeyMod);
+     void columnSelected (Int_t iCol, Int_t iButton, Int_t iKeyMod);
      void toggleShowHide ();
      void addColumn ();
      void deleteColumn ();
+     void modifyColumn ();
 
 private:
      FWTableView(const FWTableView&);    // stop default
@@ -96,6 +98,7 @@ protected:
      TGTextEntry *m_column_name_field;
      TGTextEntry *m_column_expr_field;
      TGTextEntry *m_column_prec_field;
+     int m_currentColumn;
 };
 
 
