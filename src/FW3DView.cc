@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FW3DView.cc,v 1.12 2009/03/11 21:16:20 amraktad Exp $
+// $Id: FW3DView.cc,v 1.13 2009/04/07 14:09:01 chrjones Exp $
 //
 
 // system include files
@@ -72,7 +72,7 @@
 #include "TEveScene.h"
 #include "Fireworks/Core/interface/TEveElementIter.h"
 #include "TEvePolygonSetProjected.h"
-#include "PhysicsTools/Utilities/interface/deltaR.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 //
 // constants, enums and typedefs
