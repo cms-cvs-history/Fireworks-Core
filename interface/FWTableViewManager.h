@@ -16,7 +16,7 @@
 //
 // Original Author:
 //         Created:  Sat Jan  5 10:29:00 EST 2008
-// $Id: FWTableViewManager.h,v 1.2.2.3 2009/04/23 00:11:50 jmuelmen Exp $
+// $Id: FWTableViewManager.h,v 1.2.2.4 2009/04/25 22:39:03 jmuelmen Exp $
 //
 
 // system include files
@@ -31,12 +31,13 @@
 #include "Fireworks/Core/interface/FWViewManagerBase.h"
 #include "Fireworks/Core/interface/FWTableView.h"
 #include "Fireworks/Core/interface/FWEveValueScaler.h"
+#include "Fireworks/Core/interface/FWConfigurable.h"
 
 class FWViewBase;
 class FWGUIManager;
 class TEveWindowSlot;
 
-class FWTableViewManager : public FWViewManagerBase {
+class FWTableViewManager : public FWViewManagerBase, public FWConfigurable {
      friend class FWTableView;
      friend class FWTableViewTableManager;
 
@@ -62,6 +63,9 @@ public:
      const std::vector<const FWEventItem *> &items () const { return m_items; }
      std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const Reflex::Type &key);
      std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const TClass &key);
+     void addTo(FWConfiguration&) const { printf("oooh, someone wants our configuration\n"); }
+     void setFrom(const FWConfiguration&) { printf("oooh, someone wants our configuration\n"); }
+
 
 protected:
      FWTableViewManager();
