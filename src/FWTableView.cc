@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.7 2009/04/23 00:11:50 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.8 2009/04/23 04:16:49 jmuelmen Exp $
 //
 
 // system include files
@@ -223,22 +223,21 @@ const TGPicture* arrow_down_disabled(bool iBackgroundIsBlack)
 //
 // constants, enums and typedefs
 //
-
-//
-// static data member definitions
-//
-//double FWTableView::m_scale = 1;
+static const std::string kTableView = "TableView";
+static const std::string kCollection = "collection";
+static const std::string kColumns = "columns";
 
 //
 // constructors and destructor
 //
-FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *manager)
+FWTableView::FWTableView (TEveWindowSlot* iParent, FWTableViewManager *manager)
      : m_iColl(-1),
        m_manager(manager),
        m_tableManager(new FWTableViewTableManager(this)),
        m_tableWidget(0),
        m_showColumnUI(false),
-       m_currentColumn(-1)
+       m_currentColumn(-1),
+       m_useColumnsFromConfig(false)
 {
 //      TGLayoutHints *tFrameHints = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
 //      const int width = 100, height = 100;
@@ -353,13 +352,7 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, const FWTableViewManager *man
 FWTableView::~FWTableView()
 {
      m_frame->DestroyWindowAndSlot();
-}
-
-void
-FWTableView::setFrom(const FWConfiguration& iFrom)
-{
-   // take care of parameters
-   FWConfigurableParameterizable::setFrom(iFrom);
+     delete m_tableManager;
 }
 
 void
@@ -405,8 +398,81 @@ FWTableView::typeName() const
 void
 FWTableView::addTo(FWConfiguration& iTo) const
 {
-   // take care of parameters
-   FWConfigurableParameterizable::addTo(iTo);
+     FWConfiguration main(1);
+     const std::string &collectionName = m_manager->items()[m_iColl]->name();
+     FWConfiguration collection(collectionName);
+     main.addKeyValue(kCollection, collection);
+     FWConfiguration columns(1);
+     for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+	       i = m_tableManager->m_tableFormats->begin(),
+	       iEnd = m_tableManager->m_tableFormats->end();
+	  i != iEnd; ++i) {
+	  columns.addValue(i->name);
+	  columns.addValue(i->expression);
+	  char prec[100];
+	  snprintf(prec, 100, "%d", i->precision);
+	  columns.addValue(prec);
+     }
+     main.addKeyValue(kColumns, columns);
+     iTo.addKeyValue(kTableView, main);
+     // take care of parameters
+     FWConfigurableParameterizable::addTo(iTo);
+}
+
+void
+FWTableView::setFrom(const FWConfiguration& iFrom)
+{
+     try {
+	  const FWConfiguration *main = iFrom.valueForKey(kTableView);
+	  assert(main != 0);
+	  // use the columns from the config, not the default columns for
+	  // the collection type
+	  m_useColumnsFromConfig = true;
+	  m_tableManager->m_tableFormats->clear();
+	  const FWConfiguration *columns = main->valueForKey(kColumns);
+	  for (FWConfiguration::StringValuesIt it = columns->stringValues()->begin(),
+		    itEnd = columns->stringValues()->end(); it != itEnd; ++it) {
+	       const std::string &name = *it++;
+	       const std::string &expr = *it++;
+	       int prec = atoi(it->c_str());
+	       FWTableViewManager::TableEntry e = { expr, name, prec };
+	       m_tableManager->m_tableFormats->push_back(e);
+	  }
+	  const FWConfiguration *collection = main->valueForKey(kCollection);
+	  const std::string &collectionName = collection->value();
+	  // find item 
+	  for (std::vector<const FWEventItem *>::const_iterator 
+		    it = m_manager->items().begin(), 
+		    itEnd = m_manager->items().end();
+	       it != itEnd; ++it) {
+	       if ((*it)->name() == collectionName) {
+		    m_collection->Select(it - m_manager->items().begin(), true);
+		    break;
+	       }
+	  }
+     } catch (...) {
+	  // configuration doesn't contain info for the table.  Be forgiving.
+	  std::cerr << "This configuration file contains tables, but no column information.  "
+	       "(It is probably old.)  Using defaults." << std::endl;
+     }
+
+//      main.addKeyValue(kCollection, collection);
+//      FWConfiguration columns(1);
+//      for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+// 	       i = m_tableManager->m_tableFormats->begin(),
+// 	       iEnd = m_tableManager->m_tableFormats->end();
+// 	  i != iEnd; ++i) {
+// 	  columns.addValue(i->name);
+// 	  columns.addValue(i->expression);
+// 	  columns.addValue(Form("%d", i->precision));
+//      }
+//      main.addKeyValue(kColumns, columns);
+//      iTo.addKeyValue(kTableView, main);
+//      // take care of parameters
+//      FWConfigurableParameterizable::addTo(iTo);
+
+     // take care of parameters
+     FWConfigurableParameterizable::setFrom(iFrom);
 }
 
 void
@@ -490,12 +556,14 @@ void FWTableView::selectCollection (Int_t i_coll)
      const FWEventItem *item = m_manager->items()[i_coll];
      printf("%s\n", item->modelType()->GetName());
      m_iColl = i_coll;
-     if (m_manager->tableFormats(*item->modelType()) == m_manager->m_tableFormats.end()) {
-	  printf("No table format for objects of this type (%s)\n",
-		 item->modelType()->GetName());
-	  m_tableManager->m_tableFormats.clear();
-     } else {
-	  m_tableManager->m_tableFormats = m_manager->tableFormats(*item->modelType())->second;
+     if (not m_useColumnsFromConfig) {
+	  if (m_manager->tableFormats(*item->modelType()) == m_manager->m_tableFormats.end()) {
+	       printf("No table format for objects of this type (%s)\n",
+		      item->modelType()->GetName());
+	       m_tableManager->m_tableFormats->clear();
+	  } else {
+	       m_tableManager->m_tableFormats = &m_manager->tableFormats(*item->modelType())->second;
+	  }
      }
 //      columnSelected(-1, 1, 0);
      dataChanged();
@@ -518,9 +586,9 @@ void FWTableView::columnSelected (Int_t iCol, Int_t iButton, Int_t iKeyMod)
 	  m_currentColumn = iCol;
      // update contents of the column editor
      if (m_currentColumn >= 0 && 
-	 m_currentColumn < (int)m_tableManager->m_tableFormats.size()) {
+	 m_currentColumn < (int)m_tableManager->m_tableFormats->size()) {
 	  const FWTableViewManager::TableEntry &entry = 
-	       m_tableManager->m_tableFormats[m_currentColumn];
+	       m_tableManager->m_tableFormats->at(m_currentColumn);
 	  m_column_name_field->SetText(entry.name.c_str());
 	  m_column_expr_field->SetText(entry.expression.c_str());
 	  m_column_prec_field->SetText(Form("%d", entry.precision));
@@ -549,23 +617,27 @@ void FWTableView::addColumn ()
      fflush(stdout);
 //      m_manager->tableFormats(*item->modelType())
      FWTableViewManager::TableEntry e = { expr, name, prec };
-     m_tableManager->m_tableFormats.push_back(e);
-     m_currentColumn = (int)m_tableManager->m_tableFormats.size() + 1;
-     dataChanged();
+     m_tableManager->m_tableFormats->push_back(e);
+     m_currentColumn = (int)m_tableManager->m_tableFormats->size() + 1;
+     // change needs to be propagated to all tables, because all
+     // tables displaying objects of this type are affected
+     m_manager->dataChanged();
 }
 
 void FWTableView::deleteColumn ()
 {
      if (m_currentColumn >= 0 && 
-	 m_currentColumn < (int)m_tableManager->m_tableFormats.size()) {
-	  m_tableManager->m_tableFormats.erase(m_tableManager->m_tableFormats.begin() + 
+	 m_currentColumn < (int)m_tableManager->m_tableFormats->size()) {
+	  m_tableManager->m_tableFormats->erase(m_tableManager->m_tableFormats->begin() + 
 					       m_currentColumn);
 	  m_column_name_field->SetText("");
 	  m_column_expr_field->SetText("");
 	  m_column_prec_field->SetText("");
 	  m_currentColumn = -1;
      }
-     dataChanged();
+     // change needs to be propagated to all tables, because all
+     // tables displaying objects of this type are affected
+     m_manager->dataChanged();
 }
 
 void FWTableView::modifyColumn ()
@@ -581,13 +653,15 @@ void FWTableView::modifyColumn ()
 	  fflush(stdout);
 	  return;
      }
-     printf("adding column %s: %s, precision %ld\n", name.c_str(), expr.c_str(), 
+     printf("modifying column %s: %s, precision %ld\n", name.c_str(), expr.c_str(), 
 	    prec);
      fflush(stdout);
 //      m_manager->tableFormats(*item->modelType())
      FWTableViewManager::TableEntry e = { expr, name, prec };
-     m_tableManager->m_tableFormats[m_currentColumn] = e;
-     dataChanged();
+     m_tableManager->m_tableFormats->at(m_currentColumn) = e;
+     // change needs to be propagated to all tables, because all
+     // tables displaying objects of this type are affected
+     m_manager->dataChanged();
 }
 
 //

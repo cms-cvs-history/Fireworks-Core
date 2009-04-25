@@ -1,4 +1,4 @@
-// $Id: FWTableViewTableManager.cc,v 1.1.2.6 2009/04/22 01:18:33 jmuelmen Exp $
+// $Id: FWTableViewTableManager.cc,v 1.1.2.7 2009/04/23 00:11:50 jmuelmen Exp $
 
 #include <math.h>
 #include "TClass.h"
@@ -12,7 +12,8 @@
 FWTableViewTableManager::FWTableViewTableManager (const FWTableView *view)
      : m_view(view),
        m_graphicsContext(0),
-       m_renderer(0)
+       m_renderer(0),
+       m_tableFormats(0)
 {
      GCValues_t gc = *(m_view->m_tableWidget->GetWhiteGC().GetAttributes());
      m_graphicsContext = gClient->GetResourcePool()->GetGCPool()->GetGC(&gc,kTRUE);
@@ -24,7 +25,7 @@ FWTableViewTableManager::FWTableViewTableManager (const FWTableView *view)
 
 FWTableViewTableManager::~FWTableViewTableManager ()
 {
-
+     delete m_renderer;
 }
 
 int FWTableViewTableManager::numberOfRows() const
@@ -45,7 +46,7 @@ std::vector<std::string> FWTableViewTableManager::getTitles () const
      std::vector<std::string> ret;
      ret.reserve(n);
      for (unsigned int i = 0; i < n; ++i) {
-	  ret.push_back(m_tableFormats[i].name);
+	  ret.push_back(m_tableFormats->at(i).name);
 // 	  printf("%s\n", ret.back().c_str());
      }
      return ret;
@@ -74,7 +75,7 @@ FWTableCellRendererBase *FWTableViewTableManager::cellRenderer(int iSortedRowNum
 	       printf("something bad happened\n");
 	       ret = -999;
 	  }
-	  int precision = m_tableFormats[iCol].precision;
+	  int precision = m_tableFormats->at(iCol).precision;
 	  char s[100];
 	  char fs[100];
 	  switch (precision) {
@@ -182,8 +183,8 @@ void FWTableViewTableManager::updateEvaluators ()
      std::vector<FWExpressionEvaluator> &ev = m_evaluators;
      ev.clear();
      for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
-	       i = m_tableFormats.begin(),
-	       end = m_tableFormats.end();
+	       i = m_tableFormats->begin(),
+	       end = m_tableFormats->end();
 	  i != end; ++i) {
 	  try {
 	       ev.push_back(FWExpressionEvaluator(i->expression, item->modelType()->GetName()));

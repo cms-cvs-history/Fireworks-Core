@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.8 2009/04/23 04:16:49 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.9 2009/04/25 18:24:29 jmuelmen Exp $
 //
 
 // system include files
@@ -122,11 +122,11 @@ FWTableViewManager::~FWTableViewManager()
 //
 // member functions
 //
-std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
-FWTableViewManager::tableFormats (const Reflex::Type &key) const
+std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
+FWTableViewManager::tableFormats (const Reflex::Type &key) 
 {
 //      printf("trying to find a table for %s\n", key.Name(ROOT::Reflex::SCOPED).c_str());
-     std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
+     std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
 	  ret = m_tableFormats.find(key.Name(ROOT::Reflex::SCOPED));
      if (ret != m_tableFormats.end())
 	  return ret;
@@ -135,16 +135,25 @@ FWTableViewManager::tableFormats (const Reflex::Type &key) const
 // 	  if (ret != m_tableFormats.end())
 // 	       return ret;
 //      }
+     // if there is no exact match for the type, try the base classes
      for (Reflex::Base_Iterator it = key.Base_Begin(); it != key.Base_End(); ++it) {
 	  ret = tableFormats(it->ToType());
- 	  if (ret != m_tableFormats.end())
- 	       return ret;
+ 	  if (ret != m_tableFormats.end()) {
+	       std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
+		    new_format(key.Name(ROOT::Reflex::SCOPED), ret->second);
+	       std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
+	       return m_tableFormats.insert(new_format).first;
+	  }
      }
-     return m_tableFormats.end();
+     // if there is no match at all, we just start with a blank table
+     std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
+	  new_format(key.Name(ROOT::Reflex::SCOPED), std::vector<FWTableViewManager::TableEntry>());
+     std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
+     return m_tableFormats.insert(new_format).first;
 }
 
-std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::const_iterator 
-FWTableViewManager::tableFormats (const TClass &key) const
+std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
+FWTableViewManager::tableFormats (const TClass &key) 
 {
      return tableFormats(Reflex::Type::ByName(key.GetName()));
 }
@@ -238,6 +247,19 @@ FWTableViewManager::colorsChanged()
        it != itEnd;
        ++it) {
 	(*it)->resetColors(colorManager());
+//       printf("Changed the background color for a table to 0x%x\n", 
+// 	     colorManager().background());
+   }
+}
+
+void
+FWTableViewManager::dataChanged()
+{
+     for(std::vector<boost::shared_ptr<FWTableView> >::iterator it=
+	      m_views.begin(), itEnd = m_views.end();
+	 it != itEnd;
+	 ++it) {
+	  (*it)->dataChanged();
 //       printf("Changed the background color for a table to 0x%x\n", 
 // 	     colorManager().background());
    }

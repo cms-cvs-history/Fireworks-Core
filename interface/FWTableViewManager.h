@@ -16,7 +16,7 @@
 //
 // Original Author:
 //         Created:  Sat Jan  5 10:29:00 EST 2008
-// $Id: FWTableViewManager.h,v 1.2.2.2 2009/04/22 01:18:33 jmuelmen Exp $
+// $Id: FWTableViewManager.h,v 1.2.2.3 2009/04/23 00:11:50 jmuelmen Exp $
 //
 
 // system include files
@@ -60,8 +60,8 @@ public:
      void destroyItem (const FWEventItem *item);
      FWViewBase *buildView (TEveWindowSlot *iParent);
      const std::vector<const FWEventItem *> &items () const { return m_items; }
-     std::map<std::string, std::vector<TableEntry> >::const_iterator tableFormats (const Reflex::Type &key) const;
-     std::map<std::string, std::vector<TableEntry> >::const_iterator tableFormats (const TClass &key) const;
+     std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const Reflex::Type &key);
+     std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const TClass &key);
 
 protected:
      FWTableViewManager();
@@ -70,6 +70,7 @@ protected:
      virtual void modelChangesComing();
      virtual void modelChangesDone();
      virtual void colorsChanged();
+     void dataChanged ();
 
      std::vector<boost::shared_ptr<FWTableView> > m_views;
      std::vector<const FWEventItem *> m_items;

@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.6 2009/04/23 00:11:50 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.7 2009/04/23 04:16:49 jmuelmen Exp $
 //
 
 // system include files
@@ -51,7 +51,7 @@ class FWTableView : public FWViewBase {
      friend class FWTableViewTableManager;
 
 public:
-     FWTableView(TEveWindowSlot *, const FWTableViewManager *);
+     FWTableView(TEveWindowSlot *, FWTableViewManager *);
      virtual ~FWTableView();
 
      // ---------- const member functions ---------------------
@@ -90,7 +90,7 @@ protected:
      TGComboBox *m_collection;
      TGCompositeFrame *m_vert, *m_column_control;
      int m_iColl;
-     const FWTableViewManager *m_manager;
+     FWTableViewManager *m_manager;
      FWTableViewTableManager *m_tableManager;
      FWTableWidget *m_tableWidget;
      bool m_showColumnUI;
@@ -99,6 +99,7 @@ protected:
      TGTextEntry *m_column_expr_field;
      TGTextEntry *m_column_prec_field;
      int m_currentColumn;
+     bool m_useColumnsFromConfig;
 };
 
 
