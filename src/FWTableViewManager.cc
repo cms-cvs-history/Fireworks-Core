@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Sun Jan  6 22:01:27 EST 2008
-// $Id: FWTableViewManager.cc,v 1.2.2.9 2009/04/25 18:24:29 jmuelmen Exp $
+// $Id: FWTableViewManager.cc,v 1.2.2.10 2009/04/25 22:39:03 jmuelmen Exp $
 //
 
 // system include files
@@ -23,6 +23,7 @@
 #include "Reflex/Type.h"
 
 // user include files
+#include "Fireworks/Core/interface/FWConfiguration.h"
 #include "Fireworks/Core/interface/FWTableViewManager.h"
 #include "Fireworks/Core/interface/FWTableView.h"
 #include "Fireworks/Core/interface/FWEventItem.h"
@@ -123,7 +124,7 @@ FWTableViewManager::~FWTableViewManager()
 // member functions
 //
 std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
-FWTableViewManager::tableFormats (const Reflex::Type &key) 
+FWTableViewManager::tableFormatsImpl (const Reflex::Type &key) 
 {
 //      printf("trying to find a table for %s\n", key.Name(ROOT::Reflex::SCOPED).c_str());
      std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
@@ -137,19 +138,33 @@ FWTableViewManager::tableFormats (const Reflex::Type &key)
 //      }
      // if there is no exact match for the type, try the base classes
      for (Reflex::Base_Iterator it = key.Base_Begin(); it != key.Base_End(); ++it) {
-	  ret = tableFormats(it->ToType());
- 	  if (ret != m_tableFormats.end()) {
-	       std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
-		    new_format(key.Name(ROOT::Reflex::SCOPED), ret->second);
-	       std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
-	       return m_tableFormats.insert(new_format).first;
-	  }
+	  ret = tableFormatsImpl(it->ToType());
+ 	  if (ret != m_tableFormats.end()) 
+	       return ret;
      }
      // if there is no match at all, we just start with a blank table
-     std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
-	  new_format(key.Name(ROOT::Reflex::SCOPED), std::vector<FWTableViewManager::TableEntry>());
-     std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
-     return m_tableFormats.insert(new_format).first;
+     return m_tableFormats.end();
+}
+
+std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
+FWTableViewManager::tableFormats (const Reflex::Type &key) 
+{
+     std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
+	  ret = m_tableFormats.find(key.Name(ROOT::Reflex::SCOPED));
+     if (ret != m_tableFormats.end())
+	  return ret;
+     else ret = tableFormatsImpl(key); // recursive search for base classes
+     if (ret != m_tableFormats.end()) {
+	  std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
+	       new_format(key.Name(ROOT::Reflex::SCOPED), ret->second);
+	  std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
+	  return m_tableFormats.insert(new_format).first;
+     } else {
+	  std::pair<std::string, std::vector<FWTableViewManager::TableEntry> > 
+	       new_format(key.Name(ROOT::Reflex::SCOPED), std::vector<FWTableViewManager::TableEntry>());
+	  std::cout << "adding new type " << key.Name(ROOT::Reflex::SCOPED) << std::endl;
+	  return m_tableFormats.insert(new_format).first;
+     }
 }
 
 std::map<std::string, std::vector<FWTableViewManager::TableEntry> >::iterator 
@@ -293,3 +308,74 @@ FWTableViewManager::supportedTypesAndRepresentations() const
    return returnValue;
 }
 
+const std::string FWTableViewManager::kConfigTypeNames = "typeNames";
+
+void FWTableViewManager::addTo (FWConfiguration &iTo) const
+{
+     std::cout << "writing configuration" << std::endl;
+     // if there are views, it's the job of the first view to store
+     // the configuration (this is to avoid ordering problems in the
+     // case of multiple views)
+     if (m_views.size() > 0)
+	  return;
+     // if there are no views, then it's up to us to store the column
+     // formats.  This is done in addToImpl, which can be called by
+     // FWTableView as well
+     addToImpl(iTo);
+}
+     
+void FWTableViewManager::addToImpl (FWConfiguration &iTo) const
+{
+     FWConfiguration typeNames(1);
+     for (std::map<std::string, std::vector<TableEntry> >::const_iterator 
+	       iType = m_tableFormats.begin(),
+	       iType_end = m_tableFormats.end();
+	  iType != iType_end; ++iType) {
+	  typeNames.addValue(iType->first);
+	  FWConfiguration columns(1);
+	  for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+		    i = iType->second.begin(),
+		    iEnd = iType->second.end();
+	       i != iEnd; ++i) {
+	       columns.addValue(i->name);
+	       columns.addValue(i->expression);
+	       char prec[100];
+	       snprintf(prec, 100, "%d", i->precision);
+	       columns.addValue(prec);
+	  }
+	  iTo.addKeyValue(iType->first, columns);
+     }
+     iTo.addKeyValue(kConfigTypeNames, typeNames);
+}
+
+void FWTableViewManager::setFrom(const FWConfiguration &iFrom)
+{
+     try {
+	  const FWConfiguration *typeNames = iFrom.valueForKey(kConfigTypeNames);
+	  assert(typeNames != 0);
+	  m_tableFormats.clear();
+	  for (FWConfiguration::StringValuesIt 
+		    iType = typeNames->stringValues()->begin(),
+		    iTypeEnd = typeNames->stringValues()->end(); 
+	       iType != iTypeEnd; ++iType) {
+	       std::cout << "reading type " << *iType << std::endl;
+	       const FWConfiguration *columns = iFrom.valueForKey(*iType);
+	       assert(columns != 0);
+	       std::vector<TableEntry> &formats = m_tableFormats[*iType];
+	       for (FWConfiguration::StringValuesIt 
+			 it = columns->stringValues()->begin(),
+			 itEnd = columns->stringValues()->end(); 
+		    it != itEnd; ++it) {
+		    const std::string &name = *it++;
+		    const std::string &expr = *it++;
+		    int prec = atoi(it->c_str());
+		    FWTableViewManager::TableEntry e = { expr, name, prec };
+		    formats.push_back(e);
+	       }
+	  }
+     } catch (...) {
+	  // No info about types in the configuration; this is not an
+	  // error, it merely means that the types are handled by the
+	  // first FWTableView.
+     }
+}

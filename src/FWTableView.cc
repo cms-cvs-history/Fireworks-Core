@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.8 2009/04/23 04:16:49 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.9 2009/04/25 22:39:03 jmuelmen Exp $
 //
 
 // system include files
@@ -398,22 +398,30 @@ FWTableView::typeName() const
 void
 FWTableView::addTo(FWConfiguration& iTo) const
 {
+     // are we the first FWTableView to go into the configuration?  If
+     // we are, then we are responsible for writing out the list of
+     // types (which we do by letting FWTableViewManager::addToImpl
+     // write into our configuration)
+     if (this == m_manager->m_views.front().get())
+	  m_manager->addToImpl(iTo);
+     // then there is the stuff we have to do anyway: remember what
+     // collection we display
      FWConfiguration main(1);
      const std::string &collectionName = m_manager->items()[m_iColl]->name();
      FWConfiguration collection(collectionName);
      main.addKeyValue(kCollection, collection);
-     FWConfiguration columns(1);
-     for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
-	       i = m_tableManager->m_tableFormats->begin(),
-	       iEnd = m_tableManager->m_tableFormats->end();
-	  i != iEnd; ++i) {
-	  columns.addValue(i->name);
-	  columns.addValue(i->expression);
-	  char prec[100];
-	  snprintf(prec, 100, "%d", i->precision);
-	  columns.addValue(prec);
-     }
-     main.addKeyValue(kColumns, columns);
+//      FWConfiguration columns(1);
+//      for (std::vector<FWTableViewManager::TableEntry>::const_iterator 
+// 	       i = m_tableManager->m_tableFormats->begin(),
+// 	       iEnd = m_tableManager->m_tableFormats->end();
+// 	  i != iEnd; ++i) {
+// 	  columns.addValue(i->name);
+// 	  columns.addValue(i->expression);
+// 	  char prec[100];
+// 	  snprintf(prec, 100, "%d", i->precision);
+// 	  columns.addValue(prec);
+//      }
+//      main.addKeyValue(kColumns, columns);
      iTo.addKeyValue(kTableView, main);
      // take care of parameters
      FWConfigurableParameterizable::addTo(iTo);
@@ -422,22 +430,24 @@ FWTableView::addTo(FWConfiguration& iTo) const
 void
 FWTableView::setFrom(const FWConfiguration& iFrom)
 {
+     if (this == m_manager->m_views.front().get())
+	  m_manager->setFrom(iFrom);
      try {
 	  const FWConfiguration *main = iFrom.valueForKey(kTableView);
 	  assert(main != 0);
 	  // use the columns from the config, not the default columns for
 	  // the collection type
-	  m_useColumnsFromConfig = true;
-	  m_tableManager->m_tableFormats->clear();
-	  const FWConfiguration *columns = main->valueForKey(kColumns);
-	  for (FWConfiguration::StringValuesIt it = columns->stringValues()->begin(),
-		    itEnd = columns->stringValues()->end(); it != itEnd; ++it) {
-	       const std::string &name = *it++;
-	       const std::string &expr = *it++;
-	       int prec = atoi(it->c_str());
-	       FWTableViewManager::TableEntry e = { expr, name, prec };
-	       m_tableManager->m_tableFormats->push_back(e);
-	  }
+//  	  m_useColumnsFromConfig = true;
+// 	  m_tableManager->m_tableFormats->clear();
+// 	  const FWConfiguration *columns = main->valueForKey(kColumns);
+// 	  for (FWConfiguration::StringValuesIt it = columns->stringValues()->begin(),
+// 		    itEnd = columns->stringValues()->end(); it != itEnd; ++it) {
+// 	       const std::string &name = *it++;
+// 	       const std::string &expr = *it++;
+// 	       int prec = atoi(it->c_str());
+// 	       FWTableViewManager::TableEntry e = { expr, name, prec };
+// 	       m_tableManager->m_tableFormats->push_back(e);
+// 	  }
 	  const FWConfiguration *collection = main->valueForKey(kCollection);
 	  const std::string &collectionName = collection->value();
 	  // find item 

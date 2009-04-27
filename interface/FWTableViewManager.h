@@ -16,7 +16,7 @@
 //
 // Original Author:
 //         Created:  Sat Jan  5 10:29:00 EST 2008
-// $Id: FWTableViewManager.h,v 1.2.2.4 2009/04/25 22:39:03 jmuelmen Exp $
+// $Id: FWTableViewManager.h,v 1.2.2.5 2009/04/25 23:09:50 jmuelmen Exp $
 //
 
 // system include files
@@ -63,9 +63,12 @@ public:
      const std::vector<const FWEventItem *> &items () const { return m_items; }
      std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const Reflex::Type &key);
      std::map<std::string, std::vector<TableEntry> >::iterator tableFormats (const TClass &key);
-     void addTo(FWConfiguration&) const { printf("oooh, someone wants our configuration\n"); }
-     void setFrom(const FWConfiguration&) { printf("oooh, someone wants our configuration\n"); }
+     void addTo(FWConfiguration&) const;
+     void addToImpl (FWConfiguration&) const;
+     void setFrom(const FWConfiguration&);
 
+     static const std::string kConfigTypeNames;
+     static const std::string kConfigColumns;
 
 protected:
      FWTableViewManager();
@@ -82,6 +85,7 @@ protected:
      std::map<std::string, std::vector<TableEntry> > m_tableFormats;
 
 private:
+     std::map<std::string, std::vector<TableEntry> >::iterator tableFormatsImpl (const Reflex::Type &key);
      FWTableViewManager(const FWTableViewManager&);    // stop default
      const FWTableViewManager& operator=(const FWTableViewManager&);    // stop default
 
