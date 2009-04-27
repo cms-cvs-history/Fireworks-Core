@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.9 2009/04/25 22:39:03 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.10 2009/04/27 02:01:41 jmuelmen Exp $
 //
 
 // system include files
@@ -77,6 +77,8 @@
 #include "Fireworks/Core/interface/BuilderUtils.h"
 #include "Fireworks/Core/interface/FWExpressionEvaluator.h"
 #include "Fireworks/Core/interface/FWTableViewTableManager.h"
+#include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
+#include "Fireworks/Core/src/FWExpressionValidator.h"
 #include "Fireworks/TableWidget/interface/FWTableWidget.h"
 
 static const TString& coreIcondir() {
@@ -272,7 +274,10 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, FWTableViewManager *manager)
      TGHorizontalFrame *column_control_fields = new TGHorizontalFrame(m_column_control);
      m_column_control->AddFrame(column_control_fields, new TGLayoutHints(kLHintsExpandX));
      m_column_name_field = new TGTextEntry(column_control_fields);
-     m_column_expr_field = new TGTextEntry(column_control_fields);
+     m_column_expr_field = new FWGUIValidatingTextEntry(column_control_fields);
+//      m_column_expr_field->SetEnabled(kFALSE);
+     m_validator = new FWExpressionValidator;
+     m_column_expr_field->setValidator(m_validator);
      m_column_prec_field = new TGTextEntry(column_control_fields);
      TGLabel *name_label = new TGLabel(column_control_fields, "Title");
      TGLabel *expr_label = new TGLabel(column_control_fields, "Expression");
@@ -566,6 +571,9 @@ void FWTableView::selectCollection (Int_t i_coll)
      const FWEventItem *item = m_manager->items()[i_coll];
      printf("%s\n", item->modelType()->GetName());
      m_iColl = i_coll;
+//      m_validator = new FWExpressionValidator;
+//      m_column_expr_field->setValidator(m_validator);
+     m_validator->setType(ROOT::Reflex::Type::ByTypeInfo(*(item->modelType()->GetTypeInfo())));
      if (not m_useColumnsFromConfig) {
 	  if (m_manager->tableFormats(*item->modelType()) == m_manager->m_tableFormats.end()) {
 	       printf("No table format for objects of this type (%s)\n",

@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:37 EST 2008
-// $Id: FWTableView.h,v 1.4.2.7 2009/04/23 04:16:49 jmuelmen Exp $
+// $Id: FWTableView.h,v 1.4.2.8 2009/04/25 22:39:03 jmuelmen Exp $
 //
 
 // system include files
@@ -46,6 +46,8 @@ class TEveWindowSlot;
 class FWTableViewManager;
 class FWTableViewTableManager;
 class FWCustomIconsButton;
+class FWGUIValidatingTextEntry;
+class FWExpressionValidator;
 
 class FWTableView : public FWViewBase {
      friend class FWTableViewTableManager;
@@ -96,7 +98,8 @@ protected:
      bool m_showColumnUI;
      FWCustomIconsButton *m_columnUIButton;
      TGTextEntry *m_column_name_field;
-     TGTextEntry *m_column_expr_field;
+     FWGUIValidatingTextEntry *m_column_expr_field;
+     FWExpressionValidator *m_validator;
      TGTextEntry *m_column_prec_field;
      int m_currentColumn;
      bool m_useColumnsFromConfig;
