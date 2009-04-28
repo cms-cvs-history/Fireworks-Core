@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.4.2.10 2009/04/27 02:01:41 jmuelmen Exp $
+// $Id: FWTableView.cc,v 1.4.2.11 2009/04/27 20:47:08 jmuelmen Exp $
 //
 
 // system include files
@@ -238,6 +238,7 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, FWTableViewManager *manager)
        m_tableManager(new FWTableViewTableManager(this)),
        m_tableWidget(0),
        m_showColumnUI(false),
+       m_validator(0),
        m_currentColumn(-1),
        m_useColumnsFromConfig(false)
 {
@@ -274,11 +275,13 @@ FWTableView::FWTableView (TEveWindowSlot* iParent, FWTableViewManager *manager)
      TGHorizontalFrame *column_control_fields = new TGHorizontalFrame(m_column_control);
      m_column_control->AddFrame(column_control_fields, new TGLayoutHints(kLHintsExpandX));
      m_column_name_field = new TGTextEntry(column_control_fields);
+     m_column_name_field->SetMaxWidth(10);
      m_column_expr_field = new FWGUIValidatingTextEntry(column_control_fields);
 //      m_column_expr_field->SetEnabled(kFALSE);
      m_validator = new FWExpressionValidator;
      m_column_expr_field->setValidator(m_validator);
      m_column_prec_field = new TGTextEntry(column_control_fields);
+     m_column_prec_field->SetMaxWidth(10);
      TGLabel *name_label = new TGLabel(column_control_fields, "Title");
      TGLabel *expr_label = new TGLabel(column_control_fields, "Expression");
      TGLabel *prec_label = new TGLabel(column_control_fields, "Precision");
@@ -573,7 +576,8 @@ void FWTableView::selectCollection (Int_t i_coll)
      m_iColl = i_coll;
 //      m_validator = new FWExpressionValidator;
 //      m_column_expr_field->setValidator(m_validator);
-     m_validator->setType(ROOT::Reflex::Type::ByTypeInfo(*(item->modelType()->GetTypeInfo())));
+     if (m_validator != 0)
+	  m_validator->setType(ROOT::Reflex::Type::ByTypeInfo(*(item->modelType()->GetTypeInfo())));
      if (not m_useColumnsFromConfig) {
 	  if (m_manager->tableFormats(*item->modelType()) == m_manager->m_tableFormats.end()) {
 	       printf("No table format for objects of this type (%s)\n",
