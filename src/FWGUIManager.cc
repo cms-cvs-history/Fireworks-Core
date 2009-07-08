@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
-// $Id: FWGUIManager.cc,v 1.83 2008/12/11 20:55:42 dmytro Exp $
+// $Id: FWGUIManager.cc,v 1.84 2008/12/18 21:24:52 chrjones Exp $
 //
 
 // system include files
@@ -679,6 +679,7 @@ FWGUIManager::createModelPopup() {
 void 
 FWGUIManager::showModelPopup()
 {
+   createModelPopup();
    m_modelPopup->MapWindow();
 }
 

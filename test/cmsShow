@@ -21,7 +21,7 @@ if [ "`echo $@ | awk '/\-\-soft/'`" != "" ] ; then
   LIBGL_DRIVERS_PATH=/tmp/
   export LIBGL_DRIVERS_PATH
 fi
-PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin
+PATH=${ROOTSYS}/bin:/usr/local/bin:/usr/bin:/bin:/usr/X11/bin
 export PATH
 if [ "`echo $@ | awk '/\-d/'`" != "" ] ; then
    echo "set args $@" > gdb.cmd

@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Tue Feb 19 10:33:25 EST 2008
-// $Id: FWRhoPhiZView.cc,v 1.30 2008/11/14 15:35:20 chrjones Exp $
+// $Id: FWRhoPhiZView.cc,v 1.31 2008/12/09 06:00:17 dmytro Exp $
 //
 
 #define private public
@@ -115,6 +115,7 @@ m_cameraMatrix(0)
 {
    m_projMgr.reset(new TEveProjectionManager);
    m_projMgr->SetProjection(iProjType);
+   m_projMgr->SetImportEmpty(kTRUE);
    //m_projMgr->GetProjection()->SetFixedRadius(700);
    /*
    m_projMgr->GetProjection()->SetDistortion(m_distortion.value()*1e-3);
