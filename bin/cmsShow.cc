@@ -52,11 +52,9 @@ namespace {
          case edm::MessageLoggerQ::JOBREPORT:
          case edm::MessageLoggerQ::JOBMODE:
          case edm::MessageLoggerQ::GROUP_STATS:
-         {
             std::string* string_p = static_cast<std::string*> (operand);
             delete string_p;
             break;
-         }
          default:
             break;
       }
@@ -66,7 +64,8 @@ namespace {
 void run_app(TApplication &app, int argc, char **argv)
 {
    //Remove when FWLite handles the MessageLogger
-   edm::MessageLoggerQ::setMLscribe_ptr(boost::shared_ptr<edm::service::AbstractMLscribe>(new SilentMLscribe));
+   SilentMLscribe scribe;
+   edm::MessageLoggerQ::setMLscribe_ptr(&scribe);
    edm::MessageDrop::instance()->messageLoggerScribeIsRunning = edm::MLSCRIBE_RUNNING_INDICATOR;
    //---------------------
    AutoLibraryLoader::enable();
@@ -83,8 +82,7 @@ void run_app(TApplication &app, int argc, char **argv)
 
 int main (int argc, char **argv)
 {
-   const char* dummyArgvArray[] = {"cmsShow"};
-   char** dummyArgv = const_cast<char**>(dummyArgvArray);
+   char* dummyArgv[] = {"cmsShow"};
    int dummyArgc = 1;
    gEnv->SetValue("Gui.BackgroundColor", "#9f9f9f");
 
