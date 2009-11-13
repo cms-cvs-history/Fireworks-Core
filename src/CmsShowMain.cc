@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.98 2009/11/05 13:54:04 dmytro Exp $
+// $Id: CmsShowMain.cc,v 1.99 2009/11/05 22:06:02 dmytro Exp $
 //
 
 // system include files
@@ -309,6 +309,14 @@ CmsShowMain::CmsShowMain(int argc, char *argv[]) :
       m_startupTasks->addTask(f);
       f=boost::bind(&CmsShowMain::setupConfiguration,this);
       m_startupTasks->addTask(f);
+
+      if (vm.count(kPlayOpt)) {
+         m_playDelay = vm[kPlayOpt].as<float>();
+	 m_isPlaying = true;
+         f=boost::bind(&CSGContinuousAction::switchMode,m_guiManager->playEventsAction());
+         m_startupTasks->addTask(f);
+      }
+
       f=boost::bind(&CmsShowMain::setupDataHandling,this);
       m_startupTasks->addTask(f);
       if (vm.count(kLoopOpt))
@@ -329,11 +337,6 @@ CmsShowMain::CmsShowMain(int argc, char *argv[]) :
          m_startupTasks->addTask(f);
       }
       if(vm.count(kLiveCommandOpt)) m_liveMode = true;
-      if (vm.count(kPlayOpt)) {
-         m_playDelay = vm[kPlayOpt].as<float>();
-         f=boost::bind(&CSGContinuousAction::switchMode,m_guiManager->playEventsAction());
-         m_startupTasks->addTask(f);
-      }
 
       m_startupTasks->startDoingTasks();
    } catch(std::exception& iException) {
@@ -845,6 +848,8 @@ CmsShowMain::notified(TSocket* iSocket)
       }
       else
       {
+	std::cout << __FILE__ << "::" << __LINE__ << std::endl;
+
          if ( m_guiManager->playEventsAction()->isRunning())
          {
             m_navigator->newRemoteFile(fileName);
@@ -874,7 +879,7 @@ CmsShowMain::playForward()
    m_isPlaying=true;
    m_forward=true;
    m_guiManager->setPlayMode(m_isPlaying);
-   m_guiManager->getAction(cmsshow::sNextEvent)->activated();
+   // m_guiManager->getAction(cmsshow::sNextEvent)->activated();
 }
 
 void
@@ -883,7 +888,7 @@ CmsShowMain::playBackward()
    m_isPlaying=true;
    m_forward=false;
    m_guiManager->setPlayMode(m_isPlaying);
-   m_guiManager->getAction(cmsshow::sPreviousEvent)->activated();
+   // m_guiManager->getAction(cmsshow::sPreviousEvent)->activated();
 }
 
 void
@@ -901,48 +906,63 @@ CmsShowMain::stopPlaying()
 }
 
 void
-CmsShowMain::reachedEnd(bool flag)
+CmsShowMain::reachedEnd(bool reached)
 {
-   if (m_rewindMode && m_guiManager->playEventsAction()->isRunning())
-      return;
+  // playEventsAction - move forward as long as we have events to show
+  // m_isPlaying - currently running over events
+  // m_monitor - we are in server mode.
+  // m_rewindMode - never pause
+  // reached - if false means we are not really at the boundary
 
-   if (m_isPlaying && flag)
-   {
-      if ( m_forward ) {
-         if (m_monitor.get())
-         {
-            m_isPlaying=false;
-            m_playTimer->TurnOff();
-         } else {
-            stopPlaying();
-            m_guiManager->disableNext(flag);
-         }
-      }
+  // rewind mode - never pause
+  if (m_rewindMode && m_guiManager->playEventsAction()->isRunning()) return;
+
+   if (not reached) {
+     m_guiManager->disableNext(false);
+     return;
    }
-   else m_guiManager->disableNext(flag);
+   
+   // live mode - playback and pause when no new data is available
+   if (m_forward && m_monitor.get() && m_guiManager->playEventsAction()->isRunning()){
+     m_isPlaying=false;
+     m_playTimer->TurnOff();
+     return;
+   }
+
+   // playback and stop when done
+   if (m_forward && m_isPlaying){
+     stopPlaying();
+   }
+
+   // manual forward navigation
+   m_guiManager->disableNext(true);
 }
 
 void
-CmsShowMain::reachedBeginning(bool flag)
+CmsShowMain::reachedBeginning(bool reached)
 {
-   if (m_rewindMode && m_guiManager->playEventsBackwardsAction()->isRunning())
-      return;
+  // rewind mode - never pause
+  if (m_rewindMode && m_guiManager->playEventsBackwardsAction()->isRunning()) return;
 
-   if (m_isPlaying && flag)
-   {
-      if (!m_forward) {
-
-         if (m_monitor.get())
-         {
-            m_isPlaying=false;
-            m_playBackTimer->TurnOff();
-         } else {
-            stopPlaying();
-            m_guiManager->disablePrevious(flag);
-         }
-      }
+   if (not reached) {
+     m_guiManager->disablePrevious(false);
+     return;
    }
-   else m_guiManager->disablePrevious(flag);
+   
+   // live mode - playback and pause when no new data is available
+   if (!m_forward && m_monitor.get() && m_guiManager->playEventsAction()->isRunning()){
+     m_isPlaying=false;
+     m_playTimer->TurnOff();
+     return;
+   }
+
+   // playback and stop when done
+   if (!m_forward && m_isPlaying){
+     stopPlaying();
+   }
+
+   // manual forward navigation
+   m_guiManager->disablePrevious(true);
 }
 
 void

@@ -2,7 +2,7 @@
 //
 // Package:     newVersion
 // Class  :     CmsShowNavigator
-// $Id: CmsShowNavigator.cc,v 1.42 2009/10/27 01:55:29 dmytro Exp $
+// $Id: CmsShowNavigator.cc,v 1.43 2009/11/05 01:34:09 dmytro Exp $
 //
 
 // hacks
@@ -163,7 +163,7 @@ CmsShowNavigator::nextEvent()
 {
    checkForNewFiles();
    if (m_currentFile == m_files.end()) return;
-
+   if (m_currentEntry == 0 && m_currentEntry == m_lastEntry) return;
    if ( m_currentEntry == m_lastEntry ) {
       ++m_currentFile;
       // first look forward for files with events that pass the selection

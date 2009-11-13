@@ -9,7 +9,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu May 29 20:58:23 CDT 2008
-// $Id: CmsShowMainFrame.cc,v 1.65 2009/10/09 19:58:29 chrjones Exp $
+// $Id: CmsShowMainFrame.cc,v 1.66 2009/10/26 18:08:43 yanjuntu Exp $
 //
 // hacks
 #define private public
@@ -499,7 +499,7 @@ CmsShowMainFrame::enablePrevious(bool enable)
       } else {
          m_previousEvent->disable();
          m_playEventsBack->disable();
-         m_playEventsBack->stop();
+         // m_playEventsBack->stop();
       }
    }
    if (m_goToFirst != 0) {
@@ -522,7 +522,7 @@ CmsShowMainFrame::enableNext(bool enable)
          m_nextEvent->disable();
          m_playEvents->disable();
          m_goToLast->disable();
-         m_playEvents->stop();
+         // m_playEvents->stop();
       }
    }
 }
