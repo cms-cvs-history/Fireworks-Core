@@ -138,10 +138,10 @@ void FWGUIEventFilter::newEntry(const char* text){
     // disconnect the last
     m_cells[0].back()->Disconnect("Toggled(bool)",&m_newEntry, "enable(bool)");
     m_cells[1].back()->Disconnect("TextChanged(char*)", &m_newEntry.selection, "assign(char*)");
-    m_cells[1].back()->Disconnect("TextChanged(char*)", "FWGUIEventFilter",this, "textChanged(char*)");
+    m_cells[1].back()->Disconnect("FWGUIEventFilter", "TextChanged(char*)", this, "textChanged(char*)");
     m_cells[1].back()->Disconnect("TextChanged(char*)", this, "newEntry(char*)");
     m_cells[2].back()->Disconnect("TextChanged(char*)", &m_newEntry.title, "assign(char*)");
-    m_cells[2].back()->Disconnect("TextChanged(char*)", "FWGUIEventFilter",this, "textChanged(char*)");
+    m_cells[2].back()->Disconnect("FWGUIEventFilter", "TextChanged(char*)", this, "textChanged(char*)");
     m_cells[3].back()->Disconnect("Clicked()", &m_newEntry, "remove()");
     m_cells[3].back()->Disconnect("Clicked()", this, "update()");
     ((TGPictureButton*)m_cells[3].back())->SetEnabled(false);

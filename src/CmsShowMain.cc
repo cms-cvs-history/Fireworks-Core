@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.99 2009/11/05 22:06:02 dmytro Exp $
+// $Id: CmsShowMain.cc,v 1.99.2.1 2009/11/13 12:34:46 dmytro Exp $
 //
 
 // system include files
@@ -879,6 +879,10 @@ CmsShowMain::playForward()
    m_isPlaying=true;
    m_forward=true;
    m_guiManager->setPlayMode(m_isPlaying);
+   m_playTimer->Start((Long_t)(m_playDelay*1000), kFALSE);
+   m_guiManager->disablePrevious(true);
+   m_guiManager->disableNext(true);
+
    // m_guiManager->getAction(cmsshow::sNextEvent)->activated();
 }
 
