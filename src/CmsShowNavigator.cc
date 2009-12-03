@@ -2,7 +2,7 @@
 //
 // Package:     newVersion
 // Class  :     CmsShowNavigator
-// $Id: CmsShowNavigator.cc,v 1.43 2009/11/05 01:34:09 dmytro Exp $
+// $Id: CmsShowNavigator.cc,v 1.43.2.1 2009/11/13 12:34:46 dmytro Exp $
 //
 
 // hacks
@@ -72,13 +72,10 @@ CmsShowNavigator::loadFile(const std::string& fileName)
    }
 
    m_files.push_back(newFile);
-   fileChanged_.emit(newFile.file());
 
    m_lastFile = m_files.end();
    --m_lastFile;
-   m_currentFile = m_lastFile;
    filterEvents();
-   // firstEventInTheCurrentFile();
    return true;
 }
 

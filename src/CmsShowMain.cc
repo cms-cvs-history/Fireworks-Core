@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.99.2.1 2009/11/13 12:34:46 dmytro Exp $
+// $Id: CmsShowMain.cc,v 1.99.2.2 2009/11/23 09:42:58 dmytro Exp $
 //
 
 // system include files
@@ -848,8 +848,6 @@ CmsShowMain::notified(TSocket* iSocket)
       }
       else
       {
-	std::cout << __FILE__ << "::" << __LINE__ << std::endl;
-
          if ( m_guiManager->playEventsAction()->isRunning())
          {
             m_navigator->newRemoteFile(fileName);
