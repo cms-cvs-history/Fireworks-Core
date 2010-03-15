@@ -2,38 +2,57 @@
 #  Autors:   Dmytro Kovalskyi
 #            Johannes Muelmenstaedt
 # 
+
+# debug
 ifndef VERBOSE
-  QUIET := @
+  export QUIET := @
 endif
 
+# library extensions
 ifeq ($(shell uname), Linux)
-	SO_EXT := so
+		CC := c++
+		COMPILERFLAGS := -Wall -O2 -m32 -fPIC
+		SO_EXT := so
+		MAKESHAREDLIB := -shared
 else 
 	ifeq ($(shell uname), Darwin)
+		CC := c++-4.0
+		COMPILERFLAGS := -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -arch i386 -Wall -O2 -fPIC
 		SO_EXT := dylib
+		MAKESHAREDLIB := -mmacosx-version-min=10.5 -dynamiclib
 	endif
 endif
 
+export CC
+export COMPILERFLAGS
+export SO_EXT
+export MAKESHAREDLIB
+
+# linker
+export LINKER = $(CC)
+
 DIR := $(shell pwd)
 export FWROOTSYS = ${DIR}/external/root
+export LDLIBRARYPATH := `pwd` `pwd`/external/lib $(FWROOTSYS)/lib
 
-LD_LIBRARY_PATH := ${DIR}/external/gcc/lib:/usr/lib:$(FWROOTSYS)/lib
-export LD_LIBRARY_PATH
-PATH :=	${DIR}/external/gcc/bin:/usr/bin:$(PATH)
-export PATH
+export LinkerOptions := -Wl,-rpath -Wl,
 
+# linux specific, tarball ships compiler
+ifeq ($(shell uname), Linux)
+	export LD_LIBRARY_PATH := ${DIR}/external/gcc/lib:/usr/lib:$(FWROOTSYS)/lib
+	export PATH :=	${DIR}/external/gcc/bin:/usr/bin:$(PATH)
+endif
+##############################################################################
 
-all: display install
+#############################################################################
+
+all: display
 
 core:   Makefile.core
 	$(QUIET) $(MAKE) -f Makefile.core
 
 display: Makefile.project
 	$(QUIET) $(MAKE) -f Makefile.project
-
-install: Makefile.core
-	$(QUIET) $(MAKE) -f Makefile.core install;\
-	echo Done
 
 clean: cleandisplay
 
@@ -45,5 +64,7 @@ cleancore:
 
 cleandisplay: 
 	$(QUIET) echo "removing temporary project objects and output libraries..."; \
-	rm -rf tmp/src; rm libCMSShow.$(SO_EXT); echo "done"
+	rm -rf tmp/src; rm libCMSShow.$(SO_EXT); \
+	if [ $(shell uname) == "Darwin" ]; then rm -rf lib$(LibProject).$(SO_EXT).dSYM; fi; \
+	echo "done"
 
