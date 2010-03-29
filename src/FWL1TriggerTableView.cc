@@ -111,79 +111,25 @@ void FWL1TriggerTableView::dataChanged(void)
 	    m_tableManager->dataChanged();
 	    return;
 	 }
-	 std::ostringstream myCoutStream;
 	  
 	 if(triggerMenuLite.isValid() && triggerRecord.isValid())
 	 {
-	   const std::string& triggerMenuInterface = triggerMenuLite->gtTriggerMenuInterface();
-	   const std::string& triggerMenuName = triggerMenuLite->gtTriggerMenuName();
-	   const std::string& triggerMenuImplementation = triggerMenuLite->gtTriggerMenuImplementation();
-	   const std::string& scaleDbKey = triggerMenuLite->gtScaleDbKey();
+	    const L1GtTriggerMenuLite::L1TriggerMap& algorithmMap = triggerMenuLite->gtAlgorithmMap();
 
-	   const L1GtTriggerMenuLite::L1TriggerMap& algorithmMap = triggerMenuLite->gtAlgorithmMap();
-	   const L1GtTriggerMenuLite::L1TriggerMap& algorithmAliasMap = triggerMenuLite->gtAlgorithmAliasMap();
-	   const L1GtTriggerMenuLite::L1TriggerMap& technicalTriggerMap = triggerMenuLite->gtTechnicalTriggerMap();
-
-	   const std::vector<unsigned int>& triggerMaskAlgoTrig = triggerMenuLite->gtTriggerMaskAlgoTrig();
-	   const std::vector<unsigned int>& triggerMaskTechTrig = triggerMenuLite->gtTriggerMaskTechTrig();
-
-	   const std::vector<std::vector<int> >& prescaleFactorsAlgoTrig = triggerMenuLite->gtPrescaleFactorsAlgoTrig();
-	   const std::vector<std::vector<int> >& prescaleFactorsTechTrig = triggerMenuLite->gtPrescaleFactorsTechTrig();
-
-	   size_t nrDefinedAlgo = algorithmMap.size();
-	   size_t nrDefinedTech = technicalTriggerMap.size();
-
-	   const DecisionWord dWord = triggerRecord->decisionWord();
-
-	   // header for printing algorithms
-	     
-	   myCoutStream << "\n   ********** L1 Trigger Menu - printing   ********** \n"
-			<< "\nL1 Trigger Menu Interface: " << triggerMenuInterface
-			<< "\nL1 Trigger Menu Name:      " << triggerMenuName
-			<< "\nL1 Trigger Menu Implementation: " << triggerMenuImplementation
-			<< "\nAssociated Scale DB Key: " << scaleDbKey << "\n\n"
-			<< "\nL1 Physics Algorithms: " << nrDefinedAlgo << " algorithms defined." << "\n\n"
-			<< "Bit Number "
-			<< std::right << std::setw(35) << "Algorithm Name" << "  "
-			<< std::right << std::setw(35) << "Algorithm Alias" << "  "
-			<< std::right << std::setw(12) << "Trigger Mask";
-	   for(unsigned iSet = 0; iSet < prescaleFactorsAlgoTrig.size(); ++iSet)
-	   {
-	      myCoutStream << std::right << std::setw(10) << "PF Set "
-			   << std::right << std::setw(2)  << iSet;
-	   }
-	     
-	   myCoutStream << std::endl;
-
-	   for(L1GtTriggerMenuLite::CItL1Trig itTrig = algorithmMap.begin(), itTrigEnd = algorithmMap.end();
+	    const DecisionWord dWord = triggerRecord->decisionWord();
+	    for(L1GtTriggerMenuLite::CItL1Trig itTrig = algorithmMap.begin(), itTrigEnd = algorithmMap.end();
 		itTrig != itTrigEnd; ++itTrig)
-	   {
-	     const unsigned int bitNumber = itTrig->first;
-	     const std::string& aName = itTrig->second;
-	     int errorCode = 0;
-	     const bool result = triggerMenuLite->gtTriggerResult(aName, dWord, errorCode);
+	    {
+	       const unsigned int bitNumber = itTrig->first;
+	       const std::string& aName = itTrig->second;
+	       int errorCode = 0;
+	       const bool result = triggerMenuLite->gtTriggerResult(aName, dWord, errorCode);
 
-	     std::string aAlias;
-	     L1GtTriggerMenuLite::CItL1Trig itAlias = algorithmAliasMap.find(bitNumber);
-	     if (itAlias != algorithmAliasMap.end()) {
-	        aAlias = itAlias->second;
-	     }
-	     m_columns.at(0).values.push_back(aName);
-	     m_columns.at(1).values.push_back(Form("%d",result));
-	     m_columns.at(2).values.push_back(Form("%d",bitNumber));
-	    
-	     myCoutStream << std::setw(6) << bitNumber << "     "
-			  << std::right << std::setw(35) << aName << "  "
-			  << std::right << std::setw(35) << aAlias << "  "
-			  << std::right << std::setw(12) << triggerMaskAlgoTrig[bitNumber];
-	     for (unsigned iSet = 0; iSet < prescaleFactorsAlgoTrig.size(); iSet++) {
-	        myCoutStream << std::right << std::setw(12) << prescaleFactorsAlgoTrig[iSet][bitNumber];
-	     }
-	    
-	     myCoutStream << std::endl;
-	   }
+	       m_columns.at(0).values.push_back(aName);
+	       m_columns.at(1).values.push_back(Form("%d",result));
+	       m_columns.at(2).values.push_back(Form("%d",bitNumber));
+	    }
 	 }
-	 std::cout << myCoutStream.str() << std::endl;
       }
    }
    
