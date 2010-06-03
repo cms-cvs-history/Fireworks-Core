@@ -1,7 +1,0 @@
-<use name=boost>
-<use name=Fireworks/Core>
-<use name=root>
-<use name=rootcintex>
-<use name=DataFormats/StdDictionaries>
-<bin name=cmsShow.exe file=cmsShow.cc>
-</bin>
