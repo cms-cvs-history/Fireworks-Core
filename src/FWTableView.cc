@@ -8,11 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-<<<<<<< FWTableView.cc
-// $Id: FWTableView.cc,v 1.26.2.1 2010/06/25 13:20:46 matevz Exp $
-=======
-// $Id: FWTableView.cc,v 1.28 2010/06/25 13:29:54 matevz Exp $
->>>>>>> 1.28
+// $Id: FWTableView.cc,v 1.26.2.2 2010/06/25 13:30:27 matevz Exp $
 //
 
 // system include files
