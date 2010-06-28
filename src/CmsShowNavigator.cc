@@ -2,7 +2,7 @@
 //
 // Package:     newVersion
 // Class  :     CmsShowNavigator
-// $Id: CmsShowNavigator.cc,v 1.86 2010/01/13 11:53:33 amraktad Exp $
+// $Id: CmsShowNavigator.cc,v 1.87 2010/03/26 20:20:20 matevz Exp $
 //
 #define private public
 #include "DataFormats/FWLite/interface/Event.h"
@@ -202,6 +202,9 @@ CmsShowNavigator::goTo(FileQueue_i fi, int event)
 void
 CmsShowNavigator::goToRunEvent(Int_t run, Int_t event)
 {
+/* Comment this out so that this will compile with the latest framework changes.
+ * FileIndex is obsolete, and replaced by IndexIntoFile.
+
    fwlite::Event* fwEvent = 0;
    edm::FileIndex::const_iterator it;
 
@@ -213,6 +216,7 @@ CmsShowNavigator::goToRunEvent(Int_t run, Int_t event)
       if (fwEvent->fileIndex_.end() != it)
          goTo(file, (*file)->getTreeEntryFromEventId(event));
    }
+*/
 }
 
 //______________________________________________________________________________
