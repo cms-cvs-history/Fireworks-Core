@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.166 2010/06/16 14:04:38 matevz Exp $
+// $Id: CmsShowMain.cc,v 1.169 2010/07/06 18:32:08 amraktad Exp $
 //
 
 // system include files
@@ -335,7 +335,7 @@ CmsShowMain::CmsShowMain(int argc, char *argv[]) :
          m_startupTasks->addTask(f);
       }
       if(vm.count(kFieldCommandOpt)) {
-         m_context->getField()->setAutodetect(false);
+         m_context->getField()->setSource(FWMagField::kUser);
          m_context->getField()->setUserField(vm[kFieldCommandOpt].as<double>());
       }
       if(vm.count(kAutoSaveAllViews)) {
@@ -432,6 +432,9 @@ void CmsShowMain::resetInitialization() {
 void CmsShowMain::draw()
 {
    m_guiManager->updateStatus("loading event ...");
+
+   if (context()->getField()->getSource() != FWMagField::kUser)
+      context()->getField()->checkFiledInfo(getCurrentEvent());
 
    m_viewManager->eventBegin();
    m_eiManager->newEvent(m_navigator->getCurrentEvent());
