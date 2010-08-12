@@ -15,6 +15,8 @@ namespace fwlite
 
 class FWMagField: public TEveMagField
 {
+   Float_t GetFieldMag() const;
+
 public:
    enum ESource { kNone, kEvent, kUser };
 

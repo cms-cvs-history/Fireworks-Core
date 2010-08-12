@@ -7,9 +7,9 @@
 //     [Notes on implementation]
 //
 // Original Author:  Alja Mrak-Tadel
-//         Created:  Mon Apr 19 12:48:18 CEST 2010
-// $Id: FWInteractionList.cc,v 1.9 2010/06/14 14:44:42 amraktad Exp $
-//
+// 
+// $Id: FWInteractionList.cc,v 1.12 2010/08/12 19:29:57 amraktad Exp $
+
 
 // user include files
 #include "TEveCompound.h"
@@ -207,9 +207,16 @@ FWInteractionList::itemChanged()
 
       const FWEventItem::ModelInfo& info = m_item->modelInfo(i);
       const FWDisplayProperties &p = info.displayProperties();
-      comp->EnableListElements(p.isVisible(), p.isVisible());
-      comp->SetMainColor(p.color());
-      comp->SetMainTransparency(p.transparency());
+
+      if (p.isVisible() != comp->GetRnrSelf())
+         comp->EnableListElements(p.isVisible(), p.isVisible());
+
+      if (p.color() != comp->GetMainColor())
+         comp->SetMainColor(p.color());
+
+      if (p.transparency() != comp->GetMainTransparency())
+         comp->SetMainTransparency(p.transparency());
+
    }
 }
 

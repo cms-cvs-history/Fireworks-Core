@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.169 2010/07/06 18:32:08 amraktad Exp $
+// $Id: CmsShowMain.cc,v 1.167.2.1 2010/07/07 10:28:08 amraktad Exp $
 //
 
 // system include files
@@ -63,6 +63,9 @@
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
+
+#include <google/heap-profiler.h>
+#include <google/profiler.h>
 //
 // constants, enums and typedefs
 //
@@ -429,8 +432,11 @@ void CmsShowMain::resetInitialization() {
    //printf("Need to reset\n");
 }
 
+int sample = 0;
 void CmsShowMain::draw()
 {
+   //ProfilerStart(Form("draw%d_%d.prof", getpid(),sample++ ));
+
    m_guiManager->updateStatus("loading event ...");
 
    if (context()->getField()->getSource() != FWMagField::kUser)
@@ -447,6 +453,7 @@ void CmsShowMain::draw()
    }
 
    m_guiManager->clearStatus();
+   //   ProfilerStop();
 }
 
 void CmsShowMain::openData()
