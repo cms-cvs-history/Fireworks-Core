@@ -63,9 +63,6 @@
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
-
-#include <google/heap-profiler.h>
-#include <google/profiler.h>
 //
 // constants, enums and typedefs
 //
@@ -432,11 +429,8 @@ void CmsShowMain::resetInitialization() {
    //printf("Need to reset\n");
 }
 
-int sample = 0;
 void CmsShowMain::draw()
 {
-   //ProfilerStart(Form("draw%d_%d.prof", getpid(),sample++ ));
-
    m_guiManager->updateStatus("loading event ...");
 
    if (context()->getField()->getSource() != FWMagField::kUser)
@@ -453,7 +447,6 @@ void CmsShowMain::draw()
    }
 
    m_guiManager->clearStatus();
-   //   ProfilerStop();
 }
 
 void CmsShowMain::openData()
