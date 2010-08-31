@@ -56,15 +56,6 @@ void FWFileEntry::closeFile()
 }
 
 //______________________________________________________________________________
-int FWFileEntry::getTreeEntryFromEventId(int entry)
-{
-   if (!m_eventTree->GetTreeIndex())
-      m_eventTree->BuildIndex("EventAuxiliary.id_.event_");
-
-   return  m_eventTree->GetEntryNumberWithIndex(entry);
-}
-
-//______________________________________________________________________________
 
 bool FWFileEntry::isEventSelected(int tree_entry)
 {
@@ -142,7 +133,7 @@ bool FWFileEntry::hasActiveFilters()
 }
 
 //______________________________________________________________________________
-void FWFileEntry::updateFilters(FWEventItemsManager* eiMng, bool globalOR)
+void FWFileEntry::updateFilters(const FWEventItemsManager* eiMng, bool globalOR)
 {
    if (!m_needUpdate)
       return;
@@ -187,7 +178,7 @@ void FWFileEntry::updateFilters(FWEventItemsManager* eiMng, bool globalOR)
 }
 
 //_____________________________________________________________________________
-void FWFileEntry::runFilter(Filter* filter, FWEventItemsManager* eiMng)
+void FWFileEntry::runFilter(Filter* filter, const FWEventItemsManager* eiMng)
 {
    if (filterEventsWithCustomParser(filter)) return;
     
