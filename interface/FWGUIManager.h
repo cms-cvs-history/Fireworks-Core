@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 10:52:24 EST 2008
-// $Id: FWGUIManager.h,v 1.102 2010/05/10 11:52:16 matevz Exp $
+// $Id: FWGUIManager.h,v 1.103 2010/06/14 18:12:03 matevz Exp $
 //
 
 // system include files
@@ -206,7 +206,7 @@ public:
    sigc::signal<void, const TGWindow*> showEventFilterGUI_;
    sigc::signal<void, const std::string&> writeToConfigurationFile_;
    sigc::signal<void, const std::string&> loadFromConfigurationFile_;
-   sigc::signal<void, int, int> changedEventId_;
+   sigc::signal<void, unsigned int, unsigned int> changedEventId_;
    sigc::signal<void> goingToQuit_;
    sigc::signal<void> writeToPresentConfigurationFile_;
    

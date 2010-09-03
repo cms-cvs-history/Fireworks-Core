@@ -4,7 +4,7 @@
 //
 // Package:     newVersion
 // Class  :     CmsShowNavigator
-// $Id: CmsShowNavigator.h,v 1.49 2010/03/26 20:20:20 matevz Exp $
+// $Id: CmsShowNavigator.h,v 1.50 2010/06/17 20:17:20 amraktad Exp $
 //
 
 // system include files
@@ -92,7 +92,7 @@ public:
    void firstEvent();
    void lastEvent();
    void goTo(FileQueue_i fi, int event);
-   void goToRunEvent(Int_t,Int_t);
+   void goToRunEvent(UInt_t,UInt_t);
 
    void eventFilterEnableCallback(Bool_t);
    void filterEvents();

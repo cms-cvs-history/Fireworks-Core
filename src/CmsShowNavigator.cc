@@ -2,7 +2,7 @@
 //
 // Package:     newVersion
 // Class  :     CmsShowNavigator
-// $Id: CmsShowNavigator.cc,v 1.90 2010/06/18 10:17:14 yana Exp $
+// $Id: CmsShowNavigator.cc,v 1.90.2.1 2010/08/31 18:26:26 matevz Exp $
 //
 
 #include "DataFormats/FWLite/interface/Event.h"
@@ -17,7 +17,6 @@
 #include "TFile.h"
 #include "TError.h"
 #include "TGTextEntry.h"
-#include "TGNumberEntry.h"
 #include "TBranch.h"
 #include "TAxis.h"
 
@@ -207,7 +206,7 @@ CmsShowNavigator::goTo(FileQueue_i fi, int event)
 }
 
 void
-CmsShowNavigator::goToRunEvent(Int_t run, Int_t event)
+CmsShowNavigator::goToRunEvent(UInt_t run, UInt_t event)
 {
    for (FileQueue_i file = m_files.begin(); file != m_files.end(); ++file)
    {

@@ -16,7 +16,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu May 29 18:11:16 CDT 2008
-// $Id: CmsShowMainFrame.h,v 1.35 2009/12/04 18:59:43 amraktad Exp $
+// $Id: CmsShowMainFrame.h,v 1.36 2009/12/04 22:50:06 amraktad Exp $
 //
 
 // system include files
@@ -42,11 +42,11 @@ class CSGContinuousAction;
 class FWGUIManager;
 class TGPopupMenu;
 class TGTextEntry;
-class TGNumberEntryField;
 class TGLabel;
 class TGSlider;
 class FWIntValueListener;
 class FWCustomIconsButton;
+class FWNumberEntryField;
 
 namespace fwlite {
    class Event;
@@ -96,8 +96,8 @@ public:
 protected:
    FWCustomIconsButton* m_filterEnableBtn;
    TGTextButton*        m_filterShowGUIBtn;
-   TGNumberEntryField*  m_runEntry;
-   TGNumberEntryField*  m_eventEntry;
+   FWNumberEntryField*  m_runEntry;
+   FWNumberEntryField*  m_eventEntry;
    FWIntValueListener*  m_delaySliderListener;
    
    const TGPicture*     m_filterIcons[9];

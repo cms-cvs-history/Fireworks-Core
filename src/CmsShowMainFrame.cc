@@ -9,7 +9,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu May 29 20:58:23 CDT 2008
-// $Id: CmsShowMainFrame.cc,v 1.94 2010/06/08 18:30:46 matevz Exp $
+// $Id: CmsShowMainFrame.cc,v 1.95 2010/06/18 10:17:14 yana Exp $
 //
 // hacks
 #include "DataFormats/FWLite/interface/Event.h"
@@ -25,7 +25,6 @@
 #include <TGLabel.h>
 #include <TGTab.h>
 #include <TGStatusBar.h>
-#include <TGNumberEntry.h>
 #include <KeySymbols.h>
 #include <TGTextEntry.h>
 #include <TGSlider.h>
@@ -46,6 +45,7 @@
 #include "Fireworks/Core/interface/FWIntValueListener.h"
 #include "Fireworks/Core/interface/fwLog.h"
 #include "Fireworks/Core/src/FWCheckBoxIcon.h"
+#include "Fireworks/Core/src/FWNumberEntry.h"
 
 #include <fstream>
 
@@ -340,13 +340,13 @@ CmsShowMainFrame::CmsShowMainFrame(const TGWindow *p,UInt_t w,UInt_t h,FWGUIMana
    runInfo->SetBackgroundColor(backgroundColor);
    TGHorizontalFrame *rLeft = new TGHorizontalFrame(runInfo, 200, 20);
    makeFixedSizeLabel(rLeft, "Run", backgroundColor, 0xffffff);
-   m_runEntry = new TGNumberEntryField(rLeft, -1, 0, TGNumberFormat::kNESInteger);
+   m_runEntry = new FWNumberEntryField(rLeft, -1, 0, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive);
    rLeft->AddFrame(m_runEntry, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0,0,0,0));
    runInfo->AddFrame(rLeft, new TGLayoutHints(kLHintsLeft));
 
    TGHorizontalFrame *rRight = new TGHorizontalFrame(runInfo, 200, 20);
    makeFixedSizeLabel(rRight, "Event", backgroundColor, 0xffffff);
-   m_eventEntry = new TGNumberEntryField(rRight, -1, 0, TGNumberFormat::kNESInteger);
+   m_eventEntry = new FWNumberEntryField(rRight, -1, 0, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAPositive);
    rRight->AddFrame(m_eventEntry, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0,2,0,0));
 
    runInfo->AddFrame(rRight, new TGLayoutHints(kLHintsRight));
@@ -504,11 +504,8 @@ CmsShowMainFrame::createNewViewerAction(const std::string& iActionName)
 
 void CmsShowMainFrame::loadEvent(const fwlite::Event& event) {
 
-   if (event.id().run() != static_cast<unsigned int>(m_runEntry->GetIntNumber()))
-      m_runEntry->SetIntNumber(event.id().run());
-
-   if (event.id().event() != static_cast<unsigned int>(m_eventEntry->GetIntNumber()))
-      m_eventEntry->SetIntNumber(event.id().event());
+   m_runEntry->SetUIntNumber(event.id().run());
+   m_eventEntry->SetUIntNumber(event.id().event());
 
    m_timeText->SetText( fw::getLocalTime( event ).c_str() );
    char title[128];

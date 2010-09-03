@@ -9,7 +9,7 @@
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
 
-// $Id: FWGUIManager.cc,v 1.207 2010/06/15 16:28:17 matevz Exp $
+// $Id: FWGUIManager.cc,v 1.208 2010/06/18 10:17:15 yana Exp $
 
 //
 
@@ -23,7 +23,6 @@
 #include "TGButton.h"
 #include "TGLabel.h"
 #include "TGTextEntry.h"
-#include "TGNumberEntry.h"
 #include "TSystem.h"
 #include "TGSplitFrame.h"
 #include "TGLViewer.h"
@@ -56,6 +55,7 @@
 #include "Fireworks/Core/src/CmsShowMain.h"
 
 #include "Fireworks/Core/src/FWGUIEventDataAdder.h"
+#include "Fireworks/Core/src/FWNumberEntry.h"
 
 #include "Fireworks/Core/interface/CSGAction.h"
 
@@ -1327,8 +1327,8 @@ void FWGUIManager::runIdChanged()
 
 void FWGUIManager::eventIdChanged()
 {
-  changedEventId_.emit(m_cmsShowMainFrame->m_runEntry->GetIntNumber(),
-		       m_cmsShowMainFrame->m_eventEntry->GetIntNumber());
+   changedEventId_.emit(m_cmsShowMainFrame->m_runEntry->GetUIntNumber(),
+                        m_cmsShowMainFrame->m_eventEntry->GetUIntNumber());
 }
 
 void
