@@ -1,4 +1,4 @@
-3.8-stable
+3.8-stable-patch1
 DataFormats: 3_8_2
 It works or we fix it for free!
 hn-cms-visualization@cern.ch
