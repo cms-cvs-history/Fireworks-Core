@@ -121,75 +121,88 @@ void FWL1TriggerTableView::dataChanged( void )
    m_columns.at(3).values.clear();
    if(! m_manager->items().empty() && m_manager->items().front() != 0 )
    {
-		if( fwlite::Event* event = const_cast<fwlite::Event*>( m_manager->items().front()->getEvent()))
+      if( fwlite::Event* event = const_cast<fwlite::Event*>( m_manager->items().front()->getEvent()))
       {
-			fwlite::Handle<L1GtTriggerMenuLite> triggerMenuLite;
-			fwlite::Handle<L1GlobalTriggerReadoutRecord> triggerRecord;
+         fwlite::Handle<L1GtTriggerMenuLite> triggerMenuLite;
+         fwlite::Handle<L1GlobalTriggerReadoutRecord> triggerRecord;
 
-			try
-			{
-				// FIXME: Replace magic strings with configurable ones
-				triggerMenuLite.getByLabel( event->getRun(), "l1GtTriggerMenuLite", "", "" );
-				triggerRecord.getByLabel( *event, "gtDigis", "", "" );
-			}
-			catch( cms::Exception& )
-			{
-				fwLog( fwlog::kWarning ) << "FWL1TriggerTableView: no L1Trigger menu is available." << std::endl;
-				m_tableManager->dataChanged();
-				return;
-			}
-	  
-			if( triggerMenuLite.isValid() && triggerRecord.isValid() )
-			{
-				const L1GtTriggerMenuLite::L1TriggerMap& algorithmMap = triggerMenuLite->gtAlgorithmMap();
-				
-				int pfIndexTechTrig = -1;
-				int pfIndexAlgoTrig = -1;
-
-				/// prescale factors
-				std::vector<std::vector<int> > prescaleFactorsAlgoTrig = triggerMenuLite->gtPrescaleFactorsAlgoTrig();
-				std::vector<std::vector<int> > prescaleFactorsTechTrig = triggerMenuLite->gtPrescaleFactorsTechTrig();
-				pfIndexAlgoTrig = ( triggerRecord->gtFdlWord()).gtPrescaleFactorIndexAlgo();
-				pfIndexTechTrig = ( triggerRecord->gtFdlWord()).gtPrescaleFactorIndexTech();
-
-				const DecisionWord dWord = triggerRecord->decisionWord();
-				for( L1GtTriggerMenuLite::CItL1Trig itTrig = algorithmMap.begin(), itTrigEnd = algorithmMap.end();
-					 itTrig != itTrigEnd; ++itTrig )
-				{
-					const unsigned int bitNumber = itTrig->first;
-					const std::string& aName = itTrig->second;
-					int errorCode = 0;
-					const bool result = triggerMenuLite->gtTriggerResult( aName, dWord, errorCode );
-
-					m_columns.at(0).values.push_back( aName );
-					m_columns.at(1).values.push_back( Form( "%d", result ));
-					m_columns.at(2).values.push_back( Form( "%d", bitNumber ));
-					m_columns.at(3).values.push_back( Form( "%d", prescaleFactorsAlgoTrig.at( pfIndexAlgoTrig ).at( bitNumber )));
-				}
-				const TechnicalTriggerWord ttWord = triggerRecord->technicalTriggerWord();
-				
-				int tBitNumber = 0;
-				int tBitResult = 0;
-				for( TechnicalTriggerWord::const_iterator tBitIt = ttWord.begin(), tBitEnd = ttWord.end(); 
-					 tBitIt != tBitEnd; ++tBitIt, ++tBitNumber )
-				{
-					if( *tBitIt )
-						tBitResult = 1;
-					else
-						tBitResult = 0;
-
-					m_columns.at(0).values.push_back( "TechTrigger" );
-					m_columns.at(1).values.push_back( Form( "%d", tBitResult ));
-					m_columns.at(2).values.push_back( Form( "%d", tBitNumber ));
-					m_columns.at(3).values.push_back( Form( "%d", prescaleFactorsTechTrig.at( pfIndexTechTrig ).at( tBitNumber )));
-				}
-			}
-         else
+         try
          {
-				fwLog( fwlog::kWarning ) << "FWL1TriggerTableView: " <<
-				"L1GtTriggerMenuLite.isValid()=" << triggerMenuLite.isValid() << ", " <<
-				"L1GlobalTriggerReadoutRecord.isValid()=" << triggerRecord.isValid() << "." << std::endl;
+            // FIXME: Replace magic strings with configurable ones
+            triggerMenuLite.getByLabel( event->getRun(), "l1GtTriggerMenuLite", "", "" );
+            triggerRecord.getByLabel( *event, "gtDigis", "", "" );
          }
+         catch( cms::Exception& )
+         {
+            fwLog( fwlog::kWarning ) << "FWL1TriggerTableView: no L1Trigger menu is available." << std::endl;
+            m_tableManager->dataChanged();
+            return;
+         }
+	  
+         if( triggerMenuLite.isValid() && triggerRecord.isValid() )
+         {
+            const L1GtTriggerMenuLite::L1TriggerMap& algorithmMap = triggerMenuLite->gtAlgorithmMap();
+				
+            int pfIndexTechTrig = -1;
+            int pfIndexAlgoTrig = -1;
+
+	    /// prescale factors
+	    std::vector<std::vector<int> > prescaleFactorsAlgoTrig = triggerMenuLite->gtPrescaleFactorsAlgoTrig();
+	    std::vector<std::vector<int> > prescaleFactorsTechTrig = triggerMenuLite->gtPrescaleFactorsTechTrig();
+	    pfIndexAlgoTrig = ( triggerRecord->gtFdlWord()).gtPrescaleFactorIndexAlgo();
+	    pfIndexTechTrig = ( triggerRecord->gtFdlWord()).gtPrescaleFactorIndexTech();
+
+            int pfIndexTechTrigValidSize = static_cast<int>(prescaleFactorsAlgoTrig.size());
+            if (pfIndexTechTrigValidSize <=  pfIndexTechTrig)
+               fwLog( fwlog::kError) << Form("FWL1TriggerTableView: Can't get pre-scale factors. Index [%d] larger that table size [%d]\n", pfIndexTechTrig, (int)prescaleFactorsAlgoTrig.size());
+
+	    const DecisionWord dWord = triggerRecord->decisionWord();
+	    for( L1GtTriggerMenuLite::CItL1Trig itTrig = algorithmMap.begin(), itTrigEnd = algorithmMap.end();
+		 itTrig != itTrigEnd; ++itTrig )
+	    {
+	       const unsigned int bitNumber = itTrig->first;
+	       const std::string& aName = itTrig->second;
+	       int errorCode = 0;
+	       const bool result = triggerMenuLite->gtTriggerResult( aName, dWord, errorCode );
+
+	       m_columns.at(0).values.push_back( aName );
+	       m_columns.at(1).values.push_back( Form( "%d", result ));
+	       m_columns.at(2).values.push_back( Form( "%d", bitNumber ));
+
+               if ( pfIndexTechTrig < pfIndexTechTrigValidSize)
+                  m_columns.at(3).values.push_back( Form( "%d", prescaleFactorsTechTrig.at( pfIndexTechTrig ).at( bitNumber )));
+               else
+                  m_columns.at(3).values.push_back( "invalid");
+	    }
+	    const TechnicalTriggerWord ttWord = triggerRecord->technicalTriggerWord();
+
+	    int tBitNumber = 0;
+	    int tBitResult = 0;
+	    for( TechnicalTriggerWord::const_iterator tBitIt = ttWord.begin(), tBitEnd = ttWord.end(); 
+		 tBitIt != tBitEnd; ++tBitIt, ++tBitNumber )
+	    {
+	       if( *tBitIt )
+		  tBitResult = 1;
+	       else
+		  tBitResult = 0;
+
+	       m_columns.at(0).values.push_back( "TechTrigger" );
+	       m_columns.at(1).values.push_back( Form( "%d", tBitResult ));
+	       m_columns.at(2).values.push_back( Form( "%d", tBitNumber ));
+
+               if ( pfIndexTechTrig < pfIndexTechTrigValidSize)
+                  m_columns.at(3).values.push_back( Form( "%d", prescaleFactorsTechTrig.at( pfIndexTechTrig ).at( tBitNumber )));
+               else
+                  m_columns.at(3).values.push_back( Form( "invalid" ));
+	    }
+	 }
+	 else
+	 {
+	    m_columns.at(0).values.push_back( "No L1Trigger menu available." );
+	    m_columns.at(1).values.push_back( " " );
+	    m_columns.at(2).values.push_back( " " );
+	    m_columns.at(3).values.push_back( " " );
+	 }
       }
    }
    
