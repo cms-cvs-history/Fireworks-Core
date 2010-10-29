@@ -1,4 +1,4 @@
-3.9-alpha
-DataFormats: 3_9_0_pre2
+3.9-beta
+DataFormats: 3_9_0
 It works or we fix it for free!
 hn-cms-visualization@cern.ch
