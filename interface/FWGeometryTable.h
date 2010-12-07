@@ -5,6 +5,11 @@
 
 class FWGUIManager;
 class FWTableWidget;
+class FWGeometryTableManager;
+class TFile;
+class TGTextButton;
+class TGeoNode;
+class TGeoVolume;
 
 class FWGeometryTable : public TGMainFrame
 {
@@ -19,12 +24,21 @@ public:
   void newIndexSelected(int,int);
   void windowIsClosing();
 
-private:
-   FWGeometryTable(const FWGeometryTable&);
-   const FWGeometryTable& operator=(const FWGeometryTable&);
+  void openFile();
+  void readFile();
 
-  FWGUIManager  *m_guiManager;
-  FWTableWidget *m_tableWidget;
+private:
+  FWGeometryTable(const FWGeometryTable&);
+  const FWGeometryTable& operator=(const FWGeometryTable&);
+
+  FWGUIManager           *m_guiManager;
+  FWTableWidget          *m_tableWidget;
+  FWGeometryTableManager *m_geometryTable;
+  TFile                  *m_geometryFile;
+  TGTextButton           *m_fileOpen;
+
+  TGeoNode               *m_topNode;
+  TGeoVolume             *m_topVolume;
 
   ClassDef(FWGeometryTable, 0);
 };
