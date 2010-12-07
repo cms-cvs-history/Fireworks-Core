@@ -1,6 +1,50 @@
 <config name="top" version="1">
+ <config name="CommonPreferences" version="1">
+  <config name="backgroundColIdx" version="0">
+    <string>1</string>
+  </config>
+  <config name="brightness" version="0">
+    <string>0</string>
+  </config>
+  <config name="Transparency 2D" version="0">
+    <string>50</string>
+  </config>
+  <config name="Transparency 3D" version="0">
+    <string>90</string>
+  </config>
+  <config name="GeometryColor 0 " version="0">
+    <string>1032</string>
+  </config>
+  <config name="GeometryColor 1 " version="0">
+    <string>1033</string>
+  </config>
+  <config name="GeometryColor 2 " version="0">
+    <string>1026</string>
+  </config>
+  <config name="GeometryColor 3 " version="0">
+    <string>1017</string>
+  </config>
+  <config name="GeometryColor 4 " version="0">
+    <string>1025</string>
+  </config>
+  <config name="GeometryColor 5 " version="0">
+    <string>1022</string>
+  </config>
+  <config name="ScaleMode" version="0">
+    <string>1</string>
+  </config>
+  <config name="EnergyToLength [GeV/m]" version="0">
+    <string>50</string>
+  </config>
+  <config name="MaximumLength [m]" version="0">
+    <string>3</string>
+  </config>
+  <config name="PlotEt" version="0">
+    <string>1</string>
+  </config>
+ </config>
  <config name="EventItems" version="1">
-  <config name="ECal" version="4">
+  <config name="ECal" version="5">
    <config name="type" version="0">
      <string>edm::SortedCollection&lt;CaloTower,edm::StrictWeakOrdering&lt;CaloTower&gt; &gt;</string>
    </config>
@@ -32,7 +76,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="HCal" version="4">
+  <config name="HCal" version="5">
    <config name="type" version="0">
      <string>edm::SortedCollection&lt;CaloTower,edm::StrictWeakOrdering&lt;CaloTower&gt; &gt;</string>
    </config>
@@ -64,7 +108,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Jets" version="4">
+  <config name="Jets" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::CaloJet&gt;</string>
    </config>
@@ -96,7 +140,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Tracks" version="4">
+  <config name="Tracks" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::Track&gt;</string>
    </config>
@@ -128,7 +172,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Muons" version="4">
+  <config name="Muons" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::Muon&gt;</string>
    </config>
@@ -160,7 +204,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Electrons" version="4">
+  <config name="Electrons" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::GsfElectron&gt;</string>
    </config>
@@ -192,7 +236,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Vertices" version="4">
+  <config name="Vertices" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::Vertex&gt;</string>
    </config>
@@ -224,7 +268,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="DT-segments" version="4">
+  <config name="DT-segments" version="5">
    <config name="type" version="0">
      <string>edm::RangeMap&lt;DTChamberId,edm::OwnVector&lt;DTRecSegment4D,edm::ClonePolicy&lt;DTRecSegment4D&gt; &gt;,edm::ClonePolicy&lt;DTRecSegment4D&gt; &gt;</string>
    </config>
@@ -256,7 +300,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="CSC-segments" version="4">
+  <config name="CSC-segments" version="5">
    <config name="type" version="0">
      <string>edm::RangeMap&lt;CSCDetId,edm::OwnVector&lt;CSCSegment,edm::ClonePolicy&lt;CSCSegment&gt; &gt;,edm::ClonePolicy&lt;CSCSegment&gt; &gt;</string>
    </config>
@@ -288,7 +332,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="Photons" version="4">
+  <config name="Photons" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::Photon&gt;</string>
    </config>
@@ -320,7 +364,7 @@
      <string>0</string>
    </config>
   </config>
-  <config name="MET" version="4">
+  <config name="MET" version="5">
    <config name="type" version="0">
      <string>std::vector&lt;reco::MET&gt;</string>
    </config>
@@ -347,6 +391,38 @@
    </config>
    <config name="purpose" version="0">
      <string>recoMET</string>
+   </config>
+   <config name="transparency" version="0">
+     <string>0</string>
+   </config>
+  </config>
+  <config name="OCal" version="5">
+   <config name="type" version="0">
+     <string>edm::SortedCollection&lt;CaloTower,edm::StrictWeakOrdering&lt;CaloTower&gt; &gt;</string>
+   </config>
+   <config name="moduleLabel" version="0">
+     <string>towerMaker</string>
+   </config>
+   <config name="productInstanceLabel" version="0">
+     <string></string>
+   </config>
+   <config name="processName" version="0">
+     <string></string>
+   </config>
+   <config name="filterExpression" version="0">
+     <string></string>
+   </config>
+   <config name="color" version="0">
+     <string>1000</string>
+   </config>
+   <config name="isVisible" version="0">
+     <string>t</string>
+   </config>
+   <config name="layer" version="0">
+     <string>12</string>
+   </config>
+   <config name="purpose" version="0">
+     <string>OCal</string>
    </config>
    <config name="transparency" version="0">
      <string>0</string>
@@ -410,7 +486,7 @@
    </config>
   </config>
   <config name="views" version="1">
-   <config name="Rho Phi" version="2">
+   <config name="Rho Phi" version="6">
     <config name="Overlay Event Info" version="0">
       <string>0</string>
     </config>
@@ -438,6 +514,9 @@
     <config name="Show Camera Guide" version="0">
       <string>0</string>
     </config>
+    <config name="UseGlobalEnergyScale" version="0">
+      <string>1</string>
+    </config>
     <config name="Calo compression" version="0">
       <string>1</string>
     </config>
@@ -450,16 +529,10 @@
     <config name="Compress detectors" version="0">
       <string>0</string>
     </config>
-    <config name="Calo scale (GeV/meter)" version="0">
-      <string>2</string>
-    </config>
-    <config name="Calo auto scale" version="0">
+    <config name="Include EndCaps" version="0">
       <string>1</string>
     </config>
-    <config name="Show calo endcaps" version="0">
-      <string>1</string>
-    </config>
-    <config name="Show HF" version="0">
+    <config name="Include HF" version="0">
       <string>1</string>
     </config>
     <config name="EventInfoTextSize" version="0">
@@ -479,6 +552,18 @@
     </config>
     <config name="LogoPosY" version="0">
       <string>0.98</string>
+    </config>
+    <config name="ScaleMode" version="0">
+      <string>1</string>
+    </config>
+    <config name="EnergyToLength [GeV/m]" version="0">
+      <string>50</string>
+    </config>
+    <config name="MaximumLength [m]" version="0">
+      <string>3</string>
+    </config>
+    <config name="PlotEt" version="0">
+      <string>1</string>
     </config>
     <config name="cameraZoomRho Phi" version="0">
       <string>1.86325</string>
@@ -532,7 +617,7 @@
       <string>1</string>
     </config>
    </config>
-   <config name="Lego" version="4">
+   <config name="Lego" version="6">
     <config name="Overlay Event Info" version="0">
       <string>0</string>
     </config>
@@ -560,7 +645,7 @@
     <config name="Show Camera Guide" version="0">
       <string>0</string>
     </config>
-    <config name="Plot Et" version="0">
+    <config name="UseGlobalEnergyScale" version="0">
       <string>1</string>
     </config>
     <config name="Auto rebin on zoom-out" version="0">
@@ -569,13 +654,7 @@
     <config name="Pixels per bin" version="0">
       <string>10</string>
     </config>
-    <config name="Fix energy scale" version="0">
-      <string>0</string>
-    </config>
-    <config name="Fixed maximum energy (GeV)" version="0">
-      <string>100</string>
-    </config>
-    <config name="ProjectionMode" version="0">
+    <config name="Projection" version="0">
       <string>0</string>
     </config>
     <config name="Cell2DMode" version="0">
@@ -584,7 +663,7 @@
     <config name="Draw Cell2D threshold (pixels)" version="0">
       <string>40</string>
     </config>
-    <config name="Overlay in top view" version="0">
+    <config name="Draw scales" version="0">
       <string>1</string>
     </config>
     <config name="EventInfoTextSize" version="0">
@@ -604,6 +683,18 @@
     </config>
     <config name="LogoPosY" version="0">
       <string>0.98</string>
+    </config>
+    <config name="ScaleMode" version="0">
+      <string>1</string>
+    </config>
+    <config name="EnergyToLength [GeV/m]" version="0">
+      <string>50</string>
+    </config>
+    <config name="MaximumLength [m]" version="0">
+      <string>3</string>
+    </config>
+    <config name="PlotEt" version="0">
+      <string>1</string>
     </config>
     <config name="topViewLego" version="0">
       <string>1</string>
@@ -660,7 +751,7 @@
       <string>1</string>
     </config>
    </config>
-   <config name="Rho Z" version="2">
+   <config name="Rho Z" version="6">
     <config name="Overlay Event Info" version="0">
       <string>0</string>
     </config>
@@ -688,6 +779,9 @@
     <config name="Show Camera Guide" version="0">
       <string>0</string>
     </config>
+    <config name="UseGlobalEnergyScale" version="0">
+      <string>1</string>
+    </config>
     <config name="Calo compression" version="0">
       <string>1</string>
     </config>
@@ -699,12 +793,6 @@
     </config>
     <config name="Compress detectors" version="0">
       <string>0</string>
-    </config>
-    <config name="Calo scale (GeV/meter)" version="0">
-      <string>2</string>
-    </config>
-    <config name="Calo auto scale" version="0">
-      <string>1</string>
     </config>
     <config name="EventInfoTextSize" version="0">
       <string>0.03</string>
@@ -723,6 +811,18 @@
     </config>
     <config name="LogoPosY" version="0">
       <string>0.98</string>
+    </config>
+    <config name="ScaleMode" version="0">
+      <string>1</string>
+    </config>
+    <config name="EnergyToLength [GeV/m]" version="0">
+      <string>50</string>
+    </config>
+    <config name="MaximumLength [m]" version="0">
+      <string>3</string>
+    </config>
+    <config name="PlotEt" version="0">
+      <string>1</string>
     </config>
     <config name="cameraZoomRho Z" version="0">
       <string>2.22975</string>
@@ -776,7 +876,7 @@
       <string>1</string>
     </config>
    </config>
-   <config name="3D" version="2">
+   <config name="3D" version="6">
     <config name="Overlay Event Info" version="0">
       <string>0</string>
     </config>
@@ -804,6 +904,9 @@
     <config name="Show Camera Guide" version="0">
       <string>0</string>
     </config>
+    <config name="UseGlobalEnergyScale" version="0">
+      <string>1</string>
+    </config>
     <config name="Show Muon Barrel" version="0">
       <string>0</string>
     </config>
@@ -825,15 +928,6 @@
     <config name="Show Wire Frame" version="0">
       <string>1</string>
     </config>
-    <config name="Detector Transparency" version="0">
-      <string>85</string>
-    </config>
-    <config name="Calo scale (GeV/meter)" version="0">
-      <string>2</string>
-    </config>
-    <config name="Calo auto scale" version="0">
-      <string>1</string>
-    </config>
     <config name="EventInfoTextSize" version="0">
       <string>0.03</string>
     </config>
@@ -851,6 +945,18 @@
     </config>
     <config name="LogoPosY" version="0">
       <string>0.98</string>
+    </config>
+    <config name="ScaleMode" version="0">
+      <string>1</string>
+    </config>
+    <config name="EnergyToLength [GeV/m]" version="0">
+      <string>50</string>
+    </config>
+    <config name="MaximumLength [m]" version="0">
+      <string>3</string>
+    </config>
+    <config name="PlotEt" version="0">
+      <string>1</string>
     </config>
     <config name="cameraMatrix0Plain3D" version="0">
       <string>0.542235</string>
@@ -1244,7 +1350,7 @@
      </config>
     </config>
    </config>
-   <config name="L1TriggerTable" version="1">
+   <config name="L1 Table" version="1">
     <config name="L1TriggerTableView" version="1">
      <config name="sortColumn" version="4294967295">
      </config>
@@ -1314,7 +1420,7 @@
      </config>
     </config>
    </config>
-   <config name="L1TriggerTable" version="2">
+   <config name="L1 Table" version="2">
     <config name="weight" version="0">
       <string>1</string>
     </config>
@@ -1344,14 +1450,6 @@
    </config>
   </config>
   <config name="controllers" version="1">
-  </config>
-  <config name="color control" version="1">
-   <config name="background color" version="0">
-     <string>black</string>
-   </config>
-   <config name="brightness" version="0">
-     <string>0</string>
-   </config>
   </config>
  </config>
  <config name="L1TriggerTables" version="1">
