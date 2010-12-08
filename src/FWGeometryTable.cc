@@ -16,13 +16,24 @@
 
 #include <iostream>
 
+struct NodeInfo
+{
+  NodeInfo()
+    {}
+  
+  std::string name;
+  std::string title;
+};
+
+
 class FWGeometryTableManager : public FWTableManagerBase
 {
 public:
   FWGeometryTableManager()
     : m_selectedRow(-1)
     { 
-      m_topVolumeRenderer.setGraphicsContext(&fireworks::boldGC());
+      m_renderer.setGraphicsContext(&fireworks::boldGC());
+      m_daughterRenderer.setGraphicsContext(&fireworks::italicGC());
       reset();
     }
 
@@ -50,8 +61,8 @@ public:
     {
       std::vector<std::string> returnValue;
       returnValue.reserve(numberOfColumns());
-      returnValue.push_back("Label");
-      returnValue.push_back("Value");
+      returnValue.push_back("Name");
+      returnValue.push_back("Title");
       return returnValue;
     }
   
@@ -63,7 +74,28 @@ public:
         return &m_renderer;
       }         
 
-      return &m_renderer;
+      FWTextTreeCellRenderer* renderer = &m_renderer;
+      int unsortedRow =  m_row_to_index[iSortedRowNumber];
+      const NodeInfo& data = m_nodeInfo[unsortedRow];
+
+      std::string name;
+      std::string title;
+
+      name = data.name;
+      title = data.title;
+
+      std::cout<<"name, title: "<< name <<"  "<< title <<std::endl;
+
+      if (iCol == 0)
+        renderer->setData(name, false);
+      else if (iCol == 1)
+        renderer->setData(title, false);
+      else
+         renderer->setData(std::string(), false);
+
+
+      renderer->setIndentation(0);
+      return renderer;
    }
 
    void setSelection (int row, int column, int mask) 
@@ -101,13 +133,59 @@ public:
   void reset() 
     {
       changeSelection(-1, -1);
-      //recalculateVisibility();
+      recalculateVisibility();
       dataChanged();
       visualPropertiesChanged();
     }
 
+  void recalculateVisibility()
+    {
+      m_row_to_index.clear();
+        
+      for ( size_t i = 0, e = m_nodeInfo.size(); i != e; ++i )
+          m_row_to_index.push_back(i);
+    } 
+
   std::vector<int> &rowToIndex() { return m_row_to_index; }
   sigc::signal<void,int,int> indexSelected_;
+
+  void fillNodeInfo(TGeoManager* geoManager)
+    {
+      std::cout<<"fillNodeInfo in"<<std::endl;
+     
+      TGeoVolume* topVolume = geoManager->GetTopVolume();
+
+      NodeInfo topNodeInfo;
+      topNodeInfo.name = geoManager->GetTopNode()->GetName();
+      topNodeInfo.title = geoManager->GetTopNode()->GetTitle();
+      m_nodeInfo.push_back(topNodeInfo);
+
+      for ( size_t n = 0, 
+                  ne = topVolume->GetNode(0)->GetNdaughters();
+            n != ne; ++n )
+      {
+        NodeInfo nodeInfo;
+        nodeInfo.name = topVolume->GetNode(0)->GetDaughter(n)->GetName();
+        nodeInfo.title = topVolume->GetNode(0)->GetDaughter(n)->GetTitle();
+        m_nodeInfo.push_back(nodeInfo);
+      }
+
+      /*
+      TObjArray* listOfNodes = geoManager->GetListOfNodes();
+      TGeoNode* node;
+
+      for ( int i = 0; i <= listOfNodes->GetLast(); ++i )
+      {
+        if ( (node = (TGeoNode*)listOfNodes->At(i)) )
+        {
+          node->Print();
+        }
+      }
+      */
+      
+      std::cout<<"fillNodeInfo out"<<std::endl;
+    }
+  
 
 private:
   void changeSelection(int iRow, int iColumn)
@@ -126,8 +204,10 @@ private:
   int               m_selectedRow;
   int               m_selectedColumn;
   
+  std::vector<NodeInfo> m_nodeInfo;
+
   mutable FWTextTreeCellRenderer m_renderer;         
-  mutable FWTextTreeCellRenderer m_topVolumeRenderer;  
+  mutable FWTextTreeCellRenderer m_daughterRenderer;  
 };
 
 FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
@@ -137,7 +217,8 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
     m_geometryFile(0),
     m_fileOpen(0),
     m_topNode(0),
-    m_topVolume(0)
+    m_topVolume(0),
+    m_level(-1)
 {
   std::cout<<"FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager) in"<<std::endl;
 
@@ -149,8 +230,12 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
   FWDialogBuilder builder(this);
   builder.indent(4)
     .spaceDown(10)
-    .addTable(m_geometryTable, &m_tableWidget).expand(true, true)
-    .addTextButton("Open geometry file", &m_fileOpen);       
+    //.addTextButton("Open geometry file", &m_fileOpen) 
+    .addLabel("Filter:").floatLeft(4).expand(false, false)
+    .addTextEntry("", &m_search).expand(true, false)
+    .spaceDown(10)
+    .addTable(m_geometryTable, &m_tableWidget).expand(true, true);
+        
     
   m_tableWidget->SetBackgroundColor(0xffffff);
   m_tableWidget->SetLineSeparatorColor(0x000000);
@@ -159,8 +244,9 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
                          "FWGeometryTable",this,
                          "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
 
-  m_fileOpen->Connect("Clicked()", "FWGeometryTable", this, "openFile()");
-  m_fileOpen->SetEnabled(true);
+  //m_fileOpen->Connect("Clicked()", "FWGeometryTable", this, "openFile()");
+  //m_fileOpen->SetEnabled(true);
+  openFile();
 
   MapSubwindows();
   Layout();
@@ -174,8 +260,8 @@ FWGeometryTable::~FWGeometryTable()
 void 
 FWGeometryTable::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t iKeyMod, Int_t, Int_t)
 {
-   if (iButton != kButton1)
-      return;   
+  if (iButton != kButton1)
+    return;   
 }
 
 void
@@ -188,8 +274,17 @@ FWGeometryTable::windowIsClosing()
 void
 FWGeometryTable::newIndexSelected(int iSelectedRow, int iSelectedColumn)
 {
-   if (iSelectedRow == -1)
-      return;
+  if (iSelectedRow == -1)
+    return;
+}
+
+void 
+FWGeometryTable::handleNode(const TGeoNode* node)
+{
+  for ( size_t d = 0, de = node->GetNdaughters(); d != de; ++d )
+  {
+    handleNode(node->GetDaughter(d));
+  }
 }
 
 void 
@@ -206,29 +301,22 @@ FWGeometryTable::readFile()
   TGeoManager* m_geoManager = (TGeoManager*) m_geometryFile->Get("cmsGeo;1");
 
   /*
-  TObjArray* nodes     = m_geoManager->GetListOfNodes();
-  TObjArray* volumes   = m_geoManager->GetListOfVolumes();
-  TObjArray* shapes    = m_geoManager->GetListOfShapes();
-
-  nodes->Print();
-  volumes->Print();
-  shapes->Print();
-  */
-
   m_topVolume = m_geoManager->GetTopVolume();
   m_topVolume->Print();
 
-  //m_topNode   = m_geoManager->GetTopNode();
-  //m_topNode->Print();
+  m_topNode   = m_geoManager->GetTopNode();
+  m_topNode->Print();
 
-  int n_daughters = m_topVolume->GetNdaughters();
-  std::cout<<"# daughters: "<< n_daughters <<std::endl;
-
-  for ( size_t d = 0, de = n_daughters; d != de; ++d )
+  for ( size_t n = 0, 
+              ne = m_topVolume->GetNode(0)->GetNdaughters();
+        n != ne; ++n )
   {
-    std::cout<< d <<" ";
-    m_topVolume->GetNode(d)->Print();
+    m_topVolume->GetNode(0)->GetDaughter(n)->Print();
   }
+  */
+
+  m_geometryTable->fillNodeInfo(m_geoManager);
+    m_tableWidget->body()->DoRedraw();
 }
 
 void

@@ -10,6 +10,7 @@ class TFile;
 class TGTextButton;
 class TGeoNode;
 class TGeoVolume;
+class TGTextEntry;
 
 class FWGeometryTable : public TGMainFrame
 {
@@ -36,10 +37,15 @@ private:
   FWGeometryTableManager *m_geometryTable;
   TFile                  *m_geometryFile;
   TGTextButton           *m_fileOpen;
+  TGTextEntry            *m_search;
 
   TGeoNode               *m_topNode;
   TGeoVolume             *m_topVolume;
 
+  int m_level;
+
+  void handleNode(const TGeoNode*);
+ 
   ClassDef(FWGeometryTable, 0);
 };
 
