@@ -39,7 +39,7 @@ public:
 
   virtual void implSort(int, bool)
     {
-      return;
+      recalculateVisibility();
     }
 
    virtual int unsortedRowNumber(int unsorted) const
@@ -68,11 +68,14 @@ public:
   
   virtual FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const
     {
+      std::cout<<"m_row_to_index.size(), iSortedRowNumber: "
+               << m_row_to_index.size() <<" "<< iSortedRowNumber <<std::endl;
+
       if (static_cast<int>(m_row_to_index.size()) <= iSortedRowNumber)
       {
-        m_renderer.setData(std::string(), false);
+        m_renderer.setData(std::string("Ack!"), false);
         return &m_renderer;
-      }         
+      }       
 
       FWTextTreeCellRenderer* renderer = &m_renderer;
       int unsortedRow =  m_row_to_index[iSortedRowNumber];
@@ -98,6 +101,16 @@ public:
       return renderer;
    }
 
+  void setExpanded(int row)
+    {
+      if ( row == -1 )
+        return;
+      
+      recalculateVisibility();
+      dataChanged();
+      visualPropertiesChanged();
+    }
+  
    void setSelection (int row, int column, int mask) 
     {
       if(mask == 4) 
@@ -235,7 +248,8 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
     .addTextEntry("", &m_search).expand(true, false)
     .spaceDown(10)
     .addTable(m_geometryTable, &m_tableWidget).expand(true, true);
-        
+
+  openFile();
     
   m_tableWidget->SetBackgroundColor(0xffffff);
   m_tableWidget->SetLineSeparatorColor(0x000000);
@@ -244,10 +258,11 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
                          "FWGeometryTable",this,
                          "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
 
+  
+  
   //m_fileOpen->Connect("Clicked()", "FWGeometryTable", this, "openFile()");
   //m_fileOpen->SetEnabled(true);
-  openFile();
-
+ 
   MapSubwindows();
   Layout();
 
@@ -262,6 +277,9 @@ FWGeometryTable::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t iKe
 {
   if (iButton != kButton1)
     return;   
+
+  m_geometryTable->setExpanded(iRow);
+  m_geometryTable->setSelection(iRow, iColumn, iKeyMod);
 }
 
 void
@@ -276,6 +294,8 @@ FWGeometryTable::newIndexSelected(int iSelectedRow, int iSelectedColumn)
 {
   if (iSelectedRow == -1)
     return;
+
+  m_geometryTable->dataChanged();
 }
 
 void 
@@ -316,7 +336,7 @@ FWGeometryTable::readFile()
   */
 
   m_geometryTable->fillNodeInfo(m_geoManager);
-    m_tableWidget->body()->DoRedraw();
+  //m_tableWidget->body()->DoRedraw();
 }
 
 void
