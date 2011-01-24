@@ -4,8 +4,6 @@
 
     And yes, I know the S in SAX stands for Simple.
     
-    Copyright 2010 Giulio Eulisse. All rights reserved.
-    
     Licensed under GPLv3 license.
     
     TODO: incomplete support for entities.
