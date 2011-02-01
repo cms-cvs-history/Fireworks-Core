@@ -31,7 +31,7 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
   FWDialogBuilder builder(this);
   builder.indent(4)
     .spaceDown(10)
-    //.addTextButton("Open geometry file", &m_fileOpen) 
+    .addTextButton("Open geometry file", &m_fileOpen) 
     .addLabel("Filter:").floatLeft(4).expand(false, false)
     .addTextEntry("", &m_search).expand(true, false)
     .spaceDown(10)
@@ -46,6 +46,8 @@ FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
                          "FWGeometryTable",this,
                          "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
 
+  m_fileOpen->Connect("Clicked()","FWGeometryTable",this,"openFile()");
+  m_fileOpen->SetEnabled();
   MapSubwindows();
   Layout();
 }
@@ -56,11 +58,13 @@ FWGeometryTable::~FWGeometryTable()
 void 
 FWGeometryTable::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t iKeyMod, Int_t, Int_t)
 {
-  if (iButton != kButton1)
-    return;   
+   if (iButton != kButton1)
+      return;   
 
-  m_geometryTable->setExpanded(iRow);
-  m_geometryTable->setSelection(iRow, iColumn, iKeyMod);
+   if (iColumn == 0)
+      m_geometryTable->setExpanded(iRow);
+
+   m_geometryTable->setSelection(iRow, iColumn, iKeyMod);
 }
 
 void
@@ -101,20 +105,6 @@ FWGeometryTable::readFile()
       
    TGeoManager* m_geoManager = (TGeoManager*) m_geometryFile->Get("cmsGeo;1");
 
-   /*
-     m_topVolume = m_geoManager->GetTopVolume();
-     m_topVolume->Print();
-
-     m_topNode   = m_geoManager->GetTopNode();
-     m_topNode->Print();
-
-     for ( size_t n = 0, 
-     ne = m_topVolume->GetNode(0)->GetNdaughters();
-     n != ne; ++n )
-     {
-     m_topVolume->GetNode(0)->GetDaughter(n)->Print();
-     }
-   */
 
    m_geometryTable->fillNodeInfo(m_geoManager);
 }
@@ -124,7 +114,7 @@ FWGeometryTable::openFile()
 {
    std::cout<<"FWGeometryTable::openFile()"<<std::endl;
 
-   if (1)
+   if (0)
    {  
       const char* kRootType[] = {"ROOT files","*.root", 0, 0};
       TGFileInfo fi;
@@ -147,3 +137,4 @@ FWGeometryTable::openFile()
 
    readFile();
 }
+

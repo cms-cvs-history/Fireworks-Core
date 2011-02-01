@@ -16,7 +16,7 @@
 //
 // Original Author:  Thomas McCauley, Alja Mrak-Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id$
+// $Id: FWGeometryTableManager.h,v 1.1 2011/01/27 19:43:28 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -26,6 +26,7 @@
 
 class FWTableCellRendererBase;
 class TGeoManager;
+class TGeoNode;
 
 class FWGeometryTableManager : public FWTableManagerBase
 {
@@ -33,10 +34,17 @@ class FWGeometryTableManager : public FWTableManagerBase
 
    struct NodeInfo
    {
-      NodeInfo()
+      NodeInfo():m_node(0), m_parent(-1), m_level(-1), m_imported(false), m_visible(false), m_expanded(false)
       {}  
-      std::string name;
-      std::string title;
+
+      TGeoNode* m_node;
+      int       m_parent;
+      int       m_level;
+      bool      m_imported;
+      bool      m_visible;
+      bool      m_expanded;
+
+      const char* name() const;
    };
 
 public:
@@ -66,6 +74,9 @@ protected:
    virtual void implSort(int, bool); 
 
 private:
+   typedef std::vector<NodeInfo> Entries_v;
+   typedef Entries_v::iterator Entries_i;
+
    FWGeometryTableManager(const FWGeometryTableManager&); // stop default
    const FWGeometryTableManager& operator=(const FWGeometryTableManager&); // stop default
 
@@ -73,13 +84,15 @@ private:
    void recalculateVisibility();
    void changeSelection(int iRow, int iColumn);
    void fillNodeInfo(TGeoManager* geoManager);
+   void importChildren(int row);
+   void checkHierarchy();
 
    // ---------- member data --------------------------------
    std::vector<int>  m_row_to_index;
    int               m_selectedRow;
    int               m_selectedColumn;
   
-   std::vector<NodeInfo> m_nodeInfo;
+   Entries_v         m_entries;
 
    mutable FWTextTreeCellRenderer m_renderer;         
    mutable FWTextTreeCellRenderer m_daughterRenderer;  
