@@ -1,7 +1,10 @@
+
+#include <boost/shared_ptr.hpp>
 #include "Fireworks/Core/interface/FWGeometryTable.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/Core/src/FWDialogBuilder.h"
 #include "Fireworks/TableWidget/interface/FWTableWidget.h"
+#include "Fireworks/Core/interface/FWParameterSetterBase.h"
 
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
 
@@ -12,44 +15,67 @@
 #include "TGWindow.h"
 
 #include <iostream>
-
+ std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
 FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
-  : TGMainFrame(gClient->GetRoot(), 400, 600),
-    m_guiManager(guiManager),
-    m_geometryTable(new FWGeometryTableManager()),
-    m_geometryFile(0),
-    m_fileOpen(0),
-    m_topNode(0),
-    m_topVolume(0),
-    m_level(-1)
+   : TGMainFrame(gClient->GetRoot(), 600, 500),
+     m_mode(this, "Mode", 0l, 0l, 2l),
+     m_filter(this,"Filter Materials",std::string()),
+     m_guiManager(guiManager),
+     m_geometryTable(new FWGeometryTableManager()),
+     m_geometryFile(0),
+     m_fileOpen(0),
+     m_topNode(0),
+     m_topVolume(0),
+     m_level(-1)
 {
-  gVirtualX->SelectInput(GetId(), kKeyPressMask | kKeyReleaseMask | kExposureMask |
-                         kPointerMotionMask | kStructureNotifyMask | kFocusChangeMask |
-                         kEnterWindowMask | kLeaveWindowMask);
-  this->Connect("CloseWindow()","FWGeometryTable",this,"windowIsClosing()");
+   m_mode.addEntry(0, "Node");
+   m_mode.addEntry(1, "Volume");
+  
+ 
 
-  FWDialogBuilder builder(this);
-  builder.indent(4)
-    .spaceDown(10)
-    .addTextButton("Open geometry file", &m_fileOpen) 
-    .addLabel("Filter:").floatLeft(4).expand(false, false)
-    .addTextEntry("", &m_search).expand(true, false)
-    .spaceDown(10)
-    .addTable(m_geometryTable, &m_tableWidget).expand(true, true);
 
-  openFile();
+
+
+   gVirtualX->SelectInput(GetId(), kKeyPressMask | kKeyReleaseMask | kExposureMask |
+                          kPointerMotionMask | kStructureNotifyMask | kFocusChangeMask |
+                          kEnterWindowMask | kLeaveWindowMask);
+   this->Connect("CloseWindow()","FWGeometryTable",this,"windowIsClosing()");
+
+   boost::shared_ptr<FWParameterSetterBase> ptr( FWParameterSetterBase::makeSetterFor((FWParameterBase*)&m_mode) );
+   ptr->attach((FWParameterBase*)&m_mode, this);
+   TGFrame* pframe = ptr->build(this);
+   AddFrame(pframe, new TGLayoutHints(kLHintsExpandX));
+   m_setters.push_back(ptr);
+
+   FWDialogBuilder builder(this);
+   builder.indent(4)
+      .spaceDown(10)
+      .addTextButton("Open geometry file", &m_fileOpen) 
+
+   
+      .addLabel("Material:").floatLeft(4).expand(false, false)
+      .addTextEntry("", &m_search).expand(true, false)
+      .spaceDown(10)
+      .addTable(m_geometryTable, &m_tableWidget).expand(true, true);
+
+
+  
+
+   openFile();
     
-  m_tableWidget->SetBackgroundColor(0xffffff);
-  m_tableWidget->SetLineSeparatorColor(0x000000);
-  m_tableWidget->SetHeaderBackgroundColor(0xececec);
-  m_tableWidget->Connect("cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)",
-                         "FWGeometryTable",this,
-                         "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
+   m_tableWidget->SetBackgroundColor(0xffffff);
+   m_tableWidget->SetLineSeparatorColor(0x000000);
+   m_tableWidget->SetHeaderBackgroundColor(0xececec);
+   m_tableWidget->Connect("cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)",
+                          "FWGeometryTable",this,
+                          "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
 
-  m_fileOpen->Connect("Clicked()","FWGeometryTable",this,"openFile()");
-  m_fileOpen->SetEnabled();
-  MapSubwindows();
-  Layout();
+   m_fileOpen->Connect("Clicked()","FWGeometryTable",this,"openFile()");
+   m_fileOpen->SetEnabled();
+
+   SetWindowName("Geometry browser");
+   MapSubwindows();
+   Layout();
 }
 
 FWGeometryTable::~FWGeometryTable()

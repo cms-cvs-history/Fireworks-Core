@@ -8,7 +8,7 @@
 //
 // Original Author:  Thomas McCauley, Alja Mrak-Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.1 2011/01/27 19:43:28 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.1.2.1 2011/02/01 19:00:37 amraktad Exp $
 //
 
 // system include files
@@ -17,19 +17,79 @@
 #include <iostream>
 
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
+#include "Fireworks/Core/src/FWColorBoxIcon.h"
 #include "Fireworks/TableWidget/interface/GlobalContexts.h"
+#include "Fireworks/TableWidget/src/FWTabularWidget.h"
+
+#include "TMath.h"
 #include "TGeoManager.h"
+#include "TGeoVolume.h"
+#include "TGeoMatrix.h"
+#include "TGeoShape.h"
+#include "TGeoBBox.h"
 
 const char* FWGeometryTableManager::NodeInfo::name() const
 {
    return m_node->GetName();
 }
 
+FWGeometryTableManager::ColorBoxRenderer::ColorBoxRenderer():
+   FWTableCellRendererBase(),
+   m_width(1),
+   m_height(1),
+   m_color(0xffffff),
+   m_isSelected(false)
+{
+   GCValues_t gval; 
+   gval.fMask       = kGCForeground | kGCBackground | kGCStipple | kGCFillStyle  | kGCGraphicsExposures;
+   gval.fStipple    = gClient->GetResourcePool()->GetCheckeredBitmap();
+   gval.fGraphicsExposures = kFALSE;
+   gval.fBackground = gVirtualX->GetPixel(kGray);
+   m_colorContext = gClient->GetResourcePool()->GetGCPool()->GetGC(&gval,kTRUE);
+}
+
+FWGeometryTableManager::ColorBoxRenderer::~ColorBoxRenderer()
+{
+   gClient->GetResourcePool()->GetGCPool()->FreeGC(m_colorContext->GetGC());
+}
+
+void FWGeometryTableManager::ColorBoxRenderer::setData(Color_t c, bool s)
+{
+   m_color = gVirtualX->GetPixel(c);
+   m_isSelected = s;
+}
+
+
+void FWGeometryTableManager::ColorBoxRenderer::draw(Drawable_t iID, int iX, int iY, unsigned int iWidth, unsigned int iHeight)
+{
+   iX -= FWTabularWidget::kTextBuffer;
+   iY -= FWTabularWidget::kTextBuffer;
+   iWidth += 2*FWTabularWidget::kTextBuffer;
+   iHeight += 2*FWTabularWidget::kTextBuffer;
+
+   m_colorContext->SetFillStyle(kFillSolid);
+   m_colorContext->SetForeground(m_color);
+   gVirtualX->FillRectangle(iID, m_colorContext->GetGC(), iX, iY, iWidth, iHeight);
+
+   if (m_isSelected)
+   {
+     m_colorContext->SetFillStyle(kFillOpaqueStippled);
+     gVirtualX->FillRectangle(iID, m_colorContext->GetGC(), iX, iY, iWidth, iHeight);
+   }
+}
+//==============================================================================
+//==============================================================================
+
 FWGeometryTableManager::FWGeometryTableManager()
-   : m_selectedRow(-1)
+   : m_selectedRow(-1),
+     m_renderer(),
+     m_colorBoxRenderer()
 { 
-   m_renderer.setGraphicsContext(&fireworks::boldGC());
-   m_daughterRenderer.setGraphicsContext(&fireworks::italicGC());
+   setGrowInWidth(false);
+   // m_renderer.setGraphicsContext(&fireworks::boldGC());
+
+   m_colorBoxRenderer.m_width  =  50;
+   m_colorBoxRenderer.m_height =  m_renderer.height();
    reset();
 }
 
@@ -48,9 +108,9 @@ int FWGeometryTableManager::numberOfRows() const
    return m_row_to_index.size();
 }
 
- int FWGeometryTableManager::numberOfColumns() const 
+int FWGeometryTableManager::numberOfColumns() const 
 {
-   return 2;
+   return kNumCol;
 }
    
 
@@ -59,7 +119,12 @@ std::vector<std::string> FWGeometryTableManager::getTitles() const
    std::vector<std::string> returnValue;
    returnValue.reserve(numberOfColumns());
    returnValue.push_back("Name");
-   returnValue.push_back("Title");
+   returnValue.push_back("Color");
+   returnValue.push_back("RnrSelf");
+   returnValue.push_back("RnrChildren");
+   returnValue.push_back("Material");
+   returnValue.push_back("Position");
+   returnValue.push_back("Diagonal");
 
    return returnValue;
 }
@@ -80,6 +145,7 @@ const std::string FWGeometryTableManager::title() const
 {
    return "Geometry";
 }
+//______________________________________________________________________________
 
 int FWGeometryTableManager::selectedRow() const 
 {
@@ -97,10 +163,13 @@ bool FWGeometryTableManager::rowIsSelected(int row) const
 }
 
 void FWGeometryTableManager::changeSelection(int iRow, int iColumn)
-{      
+{     
+   if (iRow < 0) return; 
    if (iRow == m_selectedRow && iColumn == m_selectedColumn)
       return;
       
+   //   int unsortedRow =  m_row_to_index[iRow];
+   //  printf(":changeSelection %s indices [%d]/[%d]\n", m_entries[unsortedRow].name(),iRow ,unsortedRow );
    m_selectedRow = iRow;
    m_selectedColumn = iColumn;
 
@@ -131,12 +200,17 @@ void FWGeometryTableManager::fillNodeInfo(TGeoManager* geoManager)
    topNodeInfo.m_parent = -1;
    m_entries.push_back(topNodeInfo);
 
-   importChildren(0);
-
+   // start with level 2
+   int maxLevel = 3;
+   importChildren(0, 3);
+   maxLevel--;
+   for (Entries_i i = m_entries.begin(); i != m_entries.end(); ++i)
+      if ((*i).m_level < maxLevel) 
+         (*i).m_expanded = true;
    reset();
 }
   
-void FWGeometryTableManager::importChildren(int parent_idx)
+void FWGeometryTableManager::importChildren(int parent_idx, int maxLevel)
 {
    NodeInfo& parent = m_entries[parent_idx];
    TGeoNode* geoNode = parent.m_node; 
@@ -168,7 +242,13 @@ void FWGeometryTableManager::importChildren(int parent_idx)
 
       }
    }
-   checkHierarchy();
+   checkHierarchy(); // debug
+
+   if (level < maxLevel)
+   {
+      for (int n = 0; n != geoNode->GetNdaughters(); ++n)
+         importChildren(parent_idx + n + 1, maxLevel);
+   }
 }
 
 void FWGeometryTableManager::checkHierarchy()
@@ -208,28 +288,67 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
    FWTextTreeCellRenderer* renderer = &m_renderer;
    int unsortedRow =  m_row_to_index[iSortedRowNumber];
    const NodeInfo& data = m_entries[unsortedRow];
+   bool isSelected = (iSortedRowNumber == m_selectedRow);
 
+   TGeoNode& gn = *data.m_node;
 
-   if (iCol == 0)
+   if (iCol == kName)
    {
-      renderer->setData(Form("%s [%d]", data.m_node->GetName(), data.m_node->GetNdaughters()), false);
-      renderer->setIsParent(data.m_node->GetNdaughters() > 0);
+      renderer->setData(Form("%s [%d]", gn.GetName(), gn.GetNdaughters()), isSelected);
+      renderer->setIsParent(gn.GetNdaughters() > 0);
       renderer->setIsOpen(data.m_expanded);
       if (data.m_node->GetNdaughters() == 0)
          renderer->setIndentation(10*data.m_level + FWTextTreeCellRenderer::iconWidth());
       else
          renderer->setIndentation(10*data.m_level);
+
+      return renderer;
    }
-   else 
+   else
    {
       // printf("title %s \n",data.m_node->GetTitle() );
-      renderer->setData(Form("level .. %d", data.m_level), false);
       renderer->setIsParent(false);
       renderer->setIndentation(0);
+      if (iCol == kColor)
+      {
+         //renderer->setData(Form("level .. %d", data.m_level),  isSelected);
+         m_colorBoxRenderer.setData(gn.GetVolume()->GetLineColor(), isSelected);
+         return  &m_colorBoxRenderer;
+      }
+      else if (iCol == kVisSelf )
+      {
+         renderer->setData( gn.IsVisible() ? "on" : "off",  isSelected);
+         return renderer;
+      }
+      else if (iCol == kVisChild )
+      {
+         renderer->setData( gn.IsVisDaughters() ? "on" : "off",  isSelected);
+         return renderer;
+      }
+      else if (iCol == kMaterial )
+      { 
+         TString d  = gn.GetVolume()->GetMaterial()->GetName();
+         d.ReplaceAll("materials:", "");
+         renderer->setData( d.Data(),  isSelected);
+         return renderer;
+      }
+      else if (iCol == kPosition )
+      { 
+         const Double_t* p = gn.GetMatrix()->GetTranslation();
+         renderer->setData(Form("[%.3f, %.3f, %.3f]", p[0], p[1], p[2]),  isSelected);
+         return renderer;
+      }
+      else// if (iCol == kPosition  )
+      { 
+         TGeoBBox* gs = static_cast<TGeoBBox*>( gn.GetVolume()->GetShape());
+         renderer->setData( Form("%f", TMath::Sqrt(gs->GetDX()*gs->GetDX() + gs->GetDY()*gs->GetDY() +gs->GetDZ()*gs->GetDZ() )),  isSelected);
+         return renderer;
+      }
    }
-
-   return renderer;
 }
+//______________________________________________________________________________
+
+
 
 void FWGeometryTableManager:: setExpanded(int row)
 {
@@ -251,7 +370,6 @@ void FWGeometryTableManager:: setExpanded(int row)
    dataChanged();
    visualPropertiesChanged();
 }
-
 
 void FWGeometryTableManager::recalculateVisibility()
 {

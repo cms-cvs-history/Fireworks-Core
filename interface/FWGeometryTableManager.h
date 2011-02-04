@@ -16,7 +16,7 @@
 //
 // Original Author:  Thomas McCauley, Alja Mrak-Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.1 2011/01/27 19:43:28 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.1.2.1 2011/02/01 19:00:37 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -24,9 +24,13 @@
 #include "Fireworks/TableWidget/interface/FWTableManagerBase.h"
 #include "Fireworks/TableWidget/interface/FWTextTreeCellRenderer.h"
 
+#include "Fireworks/TableWidget/interface/FWTextTableCellRenderer.h"
+#include "Fireworks/TableWidget/interface/FWTableCellRendererBase.h"
+
 class FWTableCellRendererBase;
 class TGeoManager;
 class TGeoNode;
+class FWColorBoxIcon;
 
 class FWGeometryTableManager : public FWTableManagerBase
 {
@@ -45,6 +49,26 @@ class FWGeometryTableManager : public FWTableManagerBase
       bool      m_expanded;
 
       const char* name() const;
+   };
+
+   // AMT could be a common base class with FWCollectionSummaryModelCellRenderer ..
+   class ColorBoxRenderer : public FWTableCellRendererBase
+   { 
+   public:
+      ColorBoxRenderer();
+      virtual ~ColorBoxRenderer();
+  
+      virtual UInt_t width() const { return m_width; }
+      virtual UInt_t height() const { return m_height; }
+      void setData(Color_t c, bool);
+      virtual void draw(Drawable_t iID, int iX, int iY, unsigned int iWidth, unsigned int iHeight);
+
+      UInt_t  m_width;
+      UInt_t  m_height;
+      Pixel_t m_color;      
+      bool    m_isSelected;
+      TGGC*   m_colorContext;
+
    };
 
 public:
@@ -74,6 +98,8 @@ protected:
    virtual void implSort(int, bool); 
 
 private:
+   enum   ECol {kName, kColor,  kVisSelf, kVisChild, kMaterial, kPosition, kBBoxSize, kNumCol };
+
    typedef std::vector<NodeInfo> Entries_v;
    typedef Entries_v::iterator Entries_i;
 
@@ -84,7 +110,7 @@ private:
    void recalculateVisibility();
    void changeSelection(int iRow, int iColumn);
    void fillNodeInfo(TGeoManager* geoManager);
-   void importChildren(int row);
+   void importChildren(int row, int level = -1);
    void checkHierarchy();
 
    // ---------- member data --------------------------------
@@ -94,8 +120,8 @@ private:
   
    Entries_v         m_entries;
 
-   mutable FWTextTreeCellRenderer m_renderer;         
-   mutable FWTextTreeCellRenderer m_daughterRenderer;  
+   mutable FWTextTreeCellRenderer m_renderer;  
+   mutable ColorBoxRenderer       m_colorBoxRenderer;         
 
    sigc::signal<void,int,int> indexSelected_;
 };
