@@ -16,7 +16,7 @@
 //
 // Original Author:  Thomas McCauley, Alja Mrak-Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.1.2.1 2011/02/01 19:00:37 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.1.2.2 2011/02/04 20:24:07 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -28,9 +28,11 @@
 #include "Fireworks/TableWidget/interface/FWTableCellRendererBase.h"
 
 class FWTableCellRendererBase;
+class FWGeometryTable;
+
 class TGeoManager;
 class TGeoNode;
-class FWColorBoxIcon;
+
 
 class FWGeometryTableManager : public FWTableManagerBase
 {
@@ -38,16 +40,24 @@ class FWGeometryTableManager : public FWTableManagerBase
 
    struct NodeInfo
    {
-      NodeInfo():m_node(0), m_parent(-1), m_level(-1), m_imported(false), m_visible(false), m_expanded(false)
+      NodeInfo():m_node(0), m_parent(-1), m_level(-1), 
+                 m_imported(false), m_visible(false), m_expanded(false),
+                 m_matches(false), m_childMatches(false)
       {}  
 
       TGeoNode* m_node;
       int       m_parent;
       int       m_level;
+
       bool      m_imported;
       bool      m_visible;
       bool      m_expanded;
 
+      bool      m_matches;
+      bool      m_childMatches;
+
+      // debug 
+      int  m_importOffset;
       const char* name() const;
    };
 
@@ -72,7 +82,7 @@ class FWGeometryTableManager : public FWTableManagerBase
    };
 
 public:
-   FWGeometryTableManager();
+   FWGeometryTableManager(FWGeometryTable*);
    virtual ~FWGeometryTableManager() {}
 
    // const functions
@@ -98,7 +108,7 @@ protected:
    virtual void implSort(int, bool); 
 
 private:
-   enum   ECol {kName, kColor,  kVisSelf, kVisChild, kMaterial, kPosition, kBBoxSize, kNumCol };
+   enum   ECol { kName, kColor,  kVisSelf, kVisChild, kMaterial, kPosition, kBBoxSize, kNumCol };
 
    typedef std::vector<NodeInfo> Entries_v;
    typedef Entries_v::iterator Entries_i;
@@ -113,7 +123,11 @@ private:
    void importChildren(int row, int level = -1);
    void checkHierarchy();
 
+   bool filterOn() const;
+
    // ---------- member data --------------------------------
+   FWGeometryTable*               m_browser;
+
    std::vector<int>  m_row_to_index;
    int               m_selectedRow;
    int               m_selectedColumn;
@@ -122,6 +136,7 @@ private:
 
    mutable FWTextTreeCellRenderer m_renderer;  
    mutable ColorBoxRenderer       m_colorBoxRenderer;         
+
 
    sigc::signal<void,int,int> indexSelected_;
 };

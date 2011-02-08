@@ -6,7 +6,7 @@
 #include "Fireworks/Core/interface/FWConfigurableParameterizable.h"
 #include "Fireworks/Core/interface/FWStringParameter.h"
 #include "Fireworks/Core/interface/FWEnumParameter.h"
-#include "Fireworks/Core/interface/FWParameterSetterEditorBase.h"
+
 
 class FWGUIManager;
 class FWTableWidget;
@@ -16,10 +16,15 @@ class TGTextButton;
 class TGeoNode;
 class TGeoVolume;
 class TGTextEntry;
+class TGComboBox;
 
-class FWGeometryTable : public TGMainFrame, public FWConfigurableParameterizable, public FWParameterSetterEditorBase
+class FWGeometryTable : public TGMainFrame, public FWConfigurableParameterizable
 {
+   friend class FWGeometryTableManager;
+
 public:
+   enum EMode { kNode, kVolume };
+
    FWGeometryTable(FWGUIManager*);
    virtual ~FWGeometryTable();
   
@@ -29,28 +34,34 @@ public:
   
    void newIndexSelected(int,int);
    void windowIsClosing();
+   void updateFilterString(const char *str);   
 
    void openFile();
    void readFile();
+   void modeChanged(Int_t);
 
-   virtual void setFrom(const FWConfiguration&) {}
+   virtual void setFrom(const FWConfiguration&);
 
    // ---------- const member functions --------------------- 
 
-   virtual void addTo(FWConfiguration&) const {}
+   virtual void addTo(FWConfiguration&) const;
+
+protected:
+   FWEnumParameter         m_mode;
+   FWStringParameter       m_searchExp; 
+
 private:
    FWGeometryTable(const FWGeometryTable&);
    const FWGeometryTable& operator=(const FWGeometryTable&);
-
-   FWEnumParameter         m_mode;
-   FWStringParameter       m_filter; 
-
    FWGUIManager           *m_guiManager;
+
    FWTableWidget          *m_tableWidget;
-   FWGeometryTableManager *m_geometryTable;
+   FWGeometryTableManager *m_tableManager;
+
    TFile                  *m_geometryFile;
    TGTextButton           *m_fileOpen;
    TGTextEntry            *m_search;
+   TGComboBox             *m_combo;
 
    TGeoNode               *m_topNode;
    TGeoVolume             *m_topVolume;
