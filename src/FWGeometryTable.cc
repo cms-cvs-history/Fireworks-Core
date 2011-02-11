@@ -2,7 +2,9 @@
 #include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/TableWidget/interface/FWTableWidget.h"
 
+#include "Fireworks/Core/interface/FWParameterSetterBase.h"
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
+#include "Fireworks/Core/interface/fwLog.h"
 
 
 #include "TFile.h"
@@ -12,86 +14,109 @@
 #include "TGLabel.h"
 
 #include <iostream>
-
 FWGeometryTable::FWGeometryTable(FWGUIManager *guiManager)
    : TGMainFrame(gClient->GetRoot(), 600, 500),
-     m_mode(this, "Mode", 0l, 0l, 2l),
-     m_searchExp(this,"Filter Materials",std::string()),
+     m_mode(this, "Mode:", 0l, 0l, 1l),
+     m_filter(this,"Materials:",std::string()),
+     m_maxExpand(this,"MaxExp:", 2l, 0l, 1000l),
+     m_maxDepth(this,"MaxImport:", 100l, 0l, 100l), // debug
+     m_maxDaughters(this,"MaxND:", 999l, 0l, 1000l), // debug
      m_guiManager(guiManager),
      m_tableManager(0),
      m_geometryFile(0),
      m_fileOpen(0),
-     m_topNode(0),
-     m_topVolume(0),
-     m_level(-1)
+     m_settersFrame(0)
 {
-   m_tableManager = new FWGeometryTableManager(this);
-
-   this->Connect("CloseWindow()","FWGeometryTable",this,"windowIsClosing()");
-
-   TGCompositeFrame* vf = this;
+   m_mode.addEntry(0, "Node");
+   m_mode.addEntry(1, "Volume");
    
-   {
-      TGTextButton* m_fileOpen = new TGTextButton (vf, "Open Geometry File");
-      vf->AddFrame(m_fileOpen,  new TGLayoutHints(kLHintsExpandX |kLHintsBottom , 2, 2, 2, 2));
-      m_fileOpen->Connect("Clicked()","FWGeometryTable",this,"openFile()");
-   }
+   
+   m_tableManager = new FWGeometryTableManager(this);
+ 
 
-   {
-      TGCompositeFrame *frame = new TGHorizontalFrame(vf);
-      vf->AddFrame(frame,  new TGLayoutHints(kLHintsExpandX, 2, 2, 4, 2));
-      {
-         frame->AddFrame(new TGLabel(frame, "Mode:"),  new TGLayoutHints(kLHintsLeft, 2, 4, 0, 0));
-         m_combo = new 	TGComboBox(frame);
-         m_combo->AddEntry("Node", 0);
-         m_combo->AddEntry("Volume", 1);
-         m_combo->Resize(100, 20);
-         m_combo->Connect("Selected(Int_t)", "FWGeometryTable", this, "modeChanged(Int_t)");
-         frame->AddFrame(m_combo);
-         m_combo->Select(kNode, false);
-      }
-      {
-         frame->AddFrame(new TGLabel(frame, "FilterMaterials:"),  new TGLayoutHints(kLHintsLeft, 12, 2, 0, 0));
-         TGTextEntry* m_search = new TGTextEntry(frame/*,  "FilerMaterials"*/);
-         m_search->Resize(200, 20);
-         frame->AddFrame(m_search);
-         m_search->Connect("TextChanged(const char *)", "FWGeometryTable", 
-                           this, "updateFilterString(const char *)");
+   // TGCompositeFrame* hf = new TGHorizontalFrame(this);
+   //AddFrame(hf, new TGLayoutHints(kLHintsExpandX|kLHintsTop));
 
-      }
-   }
+   TGTextButton* m_fileOpen = new TGTextButton (this, "Open Geometry File");
+   this->AddFrame(m_fileOpen,  new TGLayoutHints( kLHintsExpandX , 2, 2, 2, 2));
+   m_fileOpen->Connect("Clicked()","FWGeometryTable",this,"browse()");
 
 
-   m_tableWidget = new FWTableWidget(m_tableManager, vf); 
-   vf->AddFrame(m_tableWidget,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,2,2));
+   m_settersFrame = new TGHorizontalFrame(this);
+   this->AddFrame( m_settersFrame);
+   m_settersFrame->SetCleanup(kDeepCleanup);
+
+   m_tableWidget = new FWTableWidget(m_tableManager, this); 
+   AddFrame(m_tableWidget,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY|kLHintsBottom,2,2,2,2));
    m_tableWidget->SetBackgroundColor(0xffffff);
    m_tableWidget->SetLineSeparatorColor(0x000000);
    m_tableWidget->SetHeaderBackgroundColor(0xececec);
    m_tableWidget->Connect("cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)",
                           "FWGeometryTable",this,
                           "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
-
-   openFile();
+   resetSetters();
+   //  openFile();
 
    SetWindowName("Geometry Browser");
+   this->Connect("CloseWindow()","FWGeometryTable",this,"windowIsClosing()");
    MapSubwindows();
-   Layout();
 }
 
 FWGeometryTable::~FWGeometryTable()
 {}
 
 void
-FWGeometryTable::addTo(FWConfiguration& to) const
+FWGeometryTable::resetSetters()
 {
+   if (!m_settersFrame->GetList()->IsEmpty())
+   {
+      m_setters.clear();
+      TGFrameElement *el = (TGFrameElement*) m_settersFrame->GetList()->First();
+      m_settersFrame->RemoveFrame(el->fFrame);
+   }
+   
+   TGHorizontalFrame* frame = new TGHorizontalFrame(m_settersFrame);
+   m_settersFrame->AddFrame(frame);
+   makeSetter(frame, &m_mode);
+   makeSetter(frame, &m_filter);
+   makeSetter(frame, &m_maxDepth);
+   makeSetter(frame, &m_maxExpand);
+   makeSetter(frame, &m_maxDaughters);
+   m_settersFrame->MapSubwindows();
+   Layout();
 }
 
 void
-FWGeometryTable::setFrom(const FWConfiguration& from)
+FWGeometryTable::makeSetter(TGCompositeFrame* frame, FWParameterBase* param) 
 {
-   m_combo->Select(m_mode.value(), false);
+   boost::shared_ptr<FWParameterSetterBase> ptr( FWParameterSetterBase::makeSetterFor(param) );
+   ptr->attach(param, this);
+ 
+   TGFrame* pframe = ptr->build(frame, false);
+   frame->AddFrame(pframe, new TGLayoutHints(kLHintsExpandX));
+   m_setters.push_back(ptr);
+}
+//==============================================================================
+
+
+void
+FWGeometryTable::addTo(FWConfiguration& iTo) const
+{
+   FWConfigurableParameterizable::addTo(iTo);
+}
+  
+void
+FWGeometryTable::setFrom(const FWConfiguration& iFrom)
+{
+   for(const_iterator it =begin(), itEnd = end();
+       it != itEnd;
+       ++it) {
+      (*it)->setFrom(iFrom);      
+   }  
+   resetSetters();
 }
 
+//==============================================================================
 void 
 FWGeometryTable::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t iKeyMod, Int_t, Int_t)
 {
@@ -107,11 +132,27 @@ FWGeometryTable::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t iKe
    }
 }
 
+bool FWGeometryTable::HandleKey(Event_t *event)
+{
+      if (!fBindList) return kFALSE;
+
+      TIter next(fBindList);
+      TGMapKey *m;
+      TGFrame  *w = 0;
+
+      while ((m = (TGMapKey *) next())) {
+         if (m->fKeyCode == event->fCode) {
+            w = (TGFrame *) m->fWindow;
+            if (w->HandleKey(event)) return kTRUE;
+         }
+      }
+      return kFALSE;
+}
+
 void
 FWGeometryTable::windowIsClosing()
 {
   UnmapWindow();
-  DontCallClose();
 }
 
 void
@@ -124,37 +165,35 @@ FWGeometryTable::newIndexSelected(int iSelectedRow, int iSelectedColumn)
 }
 
 void 
-FWGeometryTable::handleNode(const TGeoNode* node)
-{
-  for ( size_t d = 0, de = node->GetNdaughters(); d != de; ++d )
-  {
-    handleNode(node->GetDaughter(d));
-  }
-}
-
-void 
 FWGeometryTable::readFile()
 {
-   if ( ! m_geometryFile )
-   {
-      std::cout<<"FWGeometryTable::readFile() no geometry file!"<< std::endl;
-      return;
-   }
+   try {
+
+      if ( ! m_geometryFile )
+         throw std::runtime_error("No root file.");
   
-   m_geometryFile->ls();
+      m_geometryFile->ls();
       
-   TGeoManager* m_geoManager = (TGeoManager*) m_geometryFile->Get("cmsGeo;1");
+      if ( !m_geometryFile->Get("cmsGeo;1"))
+         throw std::runtime_error("Can't find geomtry in selected file");
 
+      TGeoManager* m_geoManager = (TGeoManager*) m_geometryFile->Get("cmsGeo;1");
+      m_tableManager->fillNodeInfo(m_geoManager);
+      MapRaised();
 
-   m_tableManager->fillNodeInfo(m_geoManager);
+   }
+   catch (std::runtime_error &e)
+   {
+      fwLog(fwlog::kError) << "Bala Bala\n";
+   }
 }
 
 void
-FWGeometryTable::openFile()
+FWGeometryTable::browse()
 {
    std::cout<<"FWGeometryTable::openFile()"<<std::endl;
 
-   if (0)
+   if (1)
    {  
       const char* kRootType[] = {"ROOT files","*.root", 0, 0};
       TGFileInfo fi;
@@ -176,21 +215,4 @@ FWGeometryTable::openFile()
    m_guiManager->clearStatus();
 
    readFile();
-}
-
-void
-FWGeometryTable::modeChanged(Int_t x)
-{
-   printf("set mode %d \n", x);
-   m_mode.set(x);
-   m_tableManager->dataChanged();
-}
- 
-
-void
-FWGeometryTable::updateFilterString(const char *str)
-{
-   //   m_tableManager->sortWithFilter(str);
-   m_searchExp.set(str);
-   m_tableManager->dataChanged();
 }

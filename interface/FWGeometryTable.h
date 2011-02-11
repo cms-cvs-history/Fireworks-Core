@@ -1,12 +1,19 @@
 #ifndef Fireworks_Core_FWGeometryTable_h
 #define Fireworks_Core_FWGeometryTable_h
 
+#ifndef __CINT__
+#include <boost/shared_ptr.hpp>
+#endif
 #include "TGFrame.h"
 
+#ifndef __CINT__
 #include "Fireworks/Core/interface/FWConfigurableParameterizable.h"
 #include "Fireworks/Core/interface/FWStringParameter.h"
 #include "Fireworks/Core/interface/FWEnumParameter.h"
-
+#include "Fireworks/Core/interface/FWLongParameter.h"
+#include "Fireworks/Core/interface/FWParameterSetterBase.h"
+#include "Fireworks/Core/interface/FWParameterSetterEditorBase.h"
+#endif
 
 class FWGUIManager;
 class FWTableWidget;
@@ -18,7 +25,13 @@ class TGeoVolume;
 class TGTextEntry;
 class TGComboBox;
 
-class FWGeometryTable : public TGMainFrame, public FWConfigurableParameterizable
+class FWConfiguration;
+class FWParameterBase;
+
+class FWGeometryTable : public TGMainFrame
+#ifndef __CINT__
+                      , public FWConfigurableParameterizable , public FWParameterSetterEditorBase
+#endif
 {
    friend class FWGeometryTableManager;
 
@@ -34,25 +47,35 @@ public:
   
    void newIndexSelected(int,int);
    void windowIsClosing();
-   void updateFilterString(const char *str);   
+   //   void updateFilterString(const char *str);   
 
-   void openFile();
+   void browse();
    void readFile();
-   void modeChanged(Int_t);
 
    virtual void setFrom(const FWConfiguration&);
-
+   Bool_t HandleKey(Event_t *event);
    // ---------- const member functions --------------------- 
 
    virtual void addTo(FWConfiguration&) const;
+#ifndef __CINT__
+   int maxDepth() { return m_maxDepth.value(); } 
+   int mode()     { return m_mode.value(); } 
+   const char* filer() { return m_filter.value().c_str(); } 
+#endif
 
 protected:
+#ifndef __CINT__
    FWEnumParameter         m_mode;
-   FWStringParameter       m_searchExp; 
+   FWStringParameter       m_filter; 
+   FWLongParameter         m_maxExpand; 
+   FWLongParameter         m_maxDepth; 
+   FWLongParameter         m_maxDaughters; 
+#endif
 
 private:
    FWGeometryTable(const FWGeometryTable&);
    const FWGeometryTable& operator=(const FWGeometryTable&);
+
    FWGUIManager           *m_guiManager;
 
    FWTableWidget          *m_tableWidget;
@@ -60,17 +83,16 @@ private:
 
    TFile                  *m_geometryFile;
    TGTextButton           *m_fileOpen;
-   TGTextEntry            *m_search;
-   TGComboBox             *m_combo;
 
-   TGeoNode               *m_topNode;
-   TGeoVolume             *m_topVolume;
+   TGCompositeFrame       *m_settersFrame;
 
-   int m_level;
+#ifndef __CINT__
+   std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
+#endif
+   void resetSetters();
+   void makeSetter(TGCompositeFrame* frame, FWParameterBase* param);
 
 
-   void handleNode(const TGeoNode*);
- 
    ClassDef(FWGeometryTable, 0);
 };
 

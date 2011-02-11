@@ -14,9 +14,9 @@
 
 */
 //
-// Original Author:  Thomas McCauley, Alja Mrak-Tadel
+// Original Author:  Alja Mrak-Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.1.2.2 2011/02/04 20:24:07 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.1.2.3 2011/02/08 19:30:11 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -26,6 +26,8 @@
 
 #include "Fireworks/TableWidget/interface/FWTextTableCellRenderer.h"
 #include "Fireworks/TableWidget/interface/FWTableCellRendererBase.h"
+
+#include "TGeoNode.h"
 
 class FWTableCellRendererBase;
 class FWGeometryTable;
@@ -45,19 +47,17 @@ class FWGeometryTableManager : public FWTableManagerBase
                  m_matches(false), m_childMatches(false)
       {}  
 
-      TGeoNode* m_node;
-      int       m_parent;
-      int       m_level;
+      TGeoNode*   m_node;
+      Int_t       m_parent;
+      Short_t     m_level;
 
-      bool      m_imported;
-      bool      m_visible;
-      bool      m_expanded;
+      Bool_t      m_imported;
+      Bool_t      m_visible;
+      Bool_t      m_expanded;
 
-      bool      m_matches;
-      bool      m_childMatches;
+      Bool_t      m_matches;
+      Bool_t      m_childMatches;
 
-      // debug 
-      int  m_importOffset;
       const char* name() const;
    };
 
@@ -83,7 +83,7 @@ class FWGeometryTableManager : public FWTableManagerBase
 
 public:
    FWGeometryTableManager(FWGeometryTable*);
-   virtual ~FWGeometryTableManager() {}
+   virtual ~FWGeometryTableManager();
 
    // const functions
    virtual int unsortedRowNumber(int unsorted) const;
@@ -116,29 +116,56 @@ private:
    FWGeometryTableManager(const FWGeometryTableManager&); // stop default
    const FWGeometryTableManager& operator=(const FWGeometryTableManager&); // stop default
 
-   void reset();
+   // internal
+   void refresh(bool rerunFilter = false);
+   void runFilter();
    void recalculateVisibility();
    void changeSelection(int iRow, int iColumn);
+
+
    void fillNodeInfo(TGeoManager* geoManager);
-   void importChildren(int row, int level = -1);
+   void importChildren(int row, bool recurse);
+   void importChildNodes(int parent_idx, bool recurse);
+   void importChildVolumes(int parent_idx, bool recurse);
    void checkHierarchy();
 
+   // utilities
    bool filterOn() const;
+   int getNdaughtersLimited(TGeoNode*) const;
+   void getNNodesTotal(TGeoNode* geoNode, int level,int& off, bool debug) const;
+   void getNVolumesTotal(TGeoNode* geoNode, int level,  int& off, bool debug) const;
+
+   // geometry browser callbacks
+   void updateMode();
+   void updateFilter();
+   void updateMaxExpand();
+   void updateMaxDepth();
 
    // ---------- member data --------------------------------
-   FWGeometryTable*               m_browser;
+   FWGeometryTable*   m_browser;
+   TGeoManager*       m_geoManager;
 
    std::vector<int>  m_row_to_index;
    int               m_selectedRow;
    int               m_selectedColumn;
-  
    Entries_v         m_entries;
+
+   // cached values from browser
+   int               m_maxLevel;
+   int               m_maxDaughters;
 
    mutable FWTextTreeCellRenderer m_renderer;  
    mutable ColorBoxRenderer       m_colorBoxRenderer;         
 
-
    sigc::signal<void,int,int> indexSelected_;
 };
+
+//______________________________________________________________________________
+inline int
+FWGeometryTableManager::getNdaughtersLimited(TGeoNode* geoNode) const
+{
+   // used for debugging of table
+   return TMath::Min(geoNode->GetNdaughters(), m_maxDaughters);
+}
 
 #endif
