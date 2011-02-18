@@ -1,4 +1,0 @@
-3.11-stable
-DataFormats: 3_11_0
-It works or we fix it for free!
-hn-cms-visualization@cern.ch
