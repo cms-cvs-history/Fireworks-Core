@@ -8,7 +8,7 @@
 //
 // Original Author:
 //         Created:  Mon Dec  3 08:38:38 PST 2007
-// $Id: CmsShowMain.cc,v 1.187 2011/02/22 16:22:33 amraktad Exp $
+// $Id: CmsShowMain.cc,v 1.190 2011/06/02 05:20:36 amraktad Exp $
 //
 
 // system include files
@@ -328,7 +328,10 @@ CmsShowMain::CmsShowMain(int argc, char *argv[])
 //
 
 CmsShowMain::~CmsShowMain()
-{}
+{
+   //avoids a seg fault from eve which happens if eve is terminated after the GUI is gone
+   selectionManager()->clearSelection();
+}
 
 class DieTimer : public TTimer
 {
@@ -595,7 +598,6 @@ CmsShowMain::setupDataHandling()
       if (!m_navigator->appendFile(fname, false, false))
       {
          guiManager()->updateStatus("failed to load data file");
-         openData();
       }
       else
       {
