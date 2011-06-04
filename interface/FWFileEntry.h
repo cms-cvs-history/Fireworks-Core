@@ -4,7 +4,7 @@
 //
 // Package:     Core
 // Class  :     FWFileEntry
-// $Id: FWFileEntry.h,v 1.11 2010/08/16 15:33:20 matevz Exp $
+// $Id: FWFileEntry.h,v 1.13 2011/06/03 23:30:50 amraktad Exp $
 //
 
 // system include files
@@ -54,7 +54,7 @@ public:
       }
    };
    
-   FWFileEntry(const std::string& name);
+   FWFileEntry(const std::string& name, bool checkVersion);
    virtual ~FWFileEntry();
       
    TFile*         file()  { return m_file; }
@@ -64,7 +64,7 @@ public:
    
    std::list<Filter*>& filters() { return m_filterEntries; }
    
-   void openFile();
+   void openFile(bool);
    void closeFile();
 
    bool isEventSelected(int event);
