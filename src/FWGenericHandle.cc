@@ -23,14 +23,17 @@ void convert_handle(BasicHandle const& orig,
     result.setWhyFailed(orig.whyFailed());
     return;
   }
-
-  WrapperHolder originalWrap = orig.wrapperHolder();
-  if(!originalWrap.isValid()) {
+  EDProduct const* originalWrap = orig.wrapper();
+  if (originalWrap == 0)
     throw edm::Exception(edm::errors::InvalidReference,"NullPointer")
       << "edm::BasicHandle has null pointer to Wrapper";
-  }
   
-  Reflex::Object wrap(Reflex::Type::ByTypeInfo(originalWrap.wrappedTypeInfo()), const_cast<void*>(originalWrap.wrapper()));
+  //Since a pointer to an EDProduct is not necessarily the same as a pointer to the actual type
+  // (compilers are allowed to offset the two) we must get our object via a two step process
+  Reflex::Object edproductObject(Reflex::Type::ByTypeInfo(typeid(EDProduct)), const_cast<EDProduct*>(originalWrap));
+  assert(edproductObject != Reflex::Object());
+  
+  Reflex::Object wrap(edproductObject.CastObject(edproductObject.DynamicType()));
   assert(wrap != Reflex::Object());
   
   Reflex::Object product(wrap.Get("obj"));
