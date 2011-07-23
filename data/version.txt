@@ -1,4 +1,4 @@
-4.2-2
-DataFormats: CMSSW_4_2_3
+4.2-3
+DataFormats: CMSSW_4_2_7
 It works or we fix it for free!
 hn-cms-visualization@cern.ch
