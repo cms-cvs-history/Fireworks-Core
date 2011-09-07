@@ -1,7 +1,7 @@
 #include "Fireworks/Core/interface/fwPaths.h"
 #include "TString.h"
 #include "TSystem.h"
-#include <stdio>
+//#include <stdio>
 #include <iostream>
 
 namespace fireworks  {
