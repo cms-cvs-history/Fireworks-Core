@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.32 2011/09/12 12:51:08 yana Exp $
+// $Id: FWGeometryTableManager.h,v 1.33 2011/11/18 02:57:07 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -42,7 +42,7 @@ class FWGeometryTableManager : public FWTableManagerBase
    friend class FWGeometryTableView;
 
 public:
-   enum   ECol { kName, kColor,  kVisSelf, kVisChild, kMaterial, kPosX, kPosY, kPosZ /*, kDiagonal*/, kNumCol };
+   enum   ECol { kName, kColor,  kVisSelf, kVisChild, kMaterial/*, kPosX, kPosY, kPosZ, kDiagonal*/, kNumCol };
 
    enum Bits
    {
@@ -53,7 +53,8 @@ public:
 
       kVisNode         =  BIT(4),
       kVisNodeChld     =  BIT(5)
-      //   kVisVol          =  BIT(6),
+
+      //kTableExposed          =  BIT(6)
       //   kVisVolChld      =  BIT(7),
 
    };
@@ -98,7 +99,9 @@ public:
    typedef boost::unordered_map<TGeoVolume*, Match>  Volumes_t;
    typedef Volumes_t::iterator               Volumes_i; 
 
-private: 
+   int m_highlightIdx;
+
+   //private: 
    // AMT: this could be a common base class with FWCollectionSummaryModelCellRenderer ..
    class ColorBoxRenderer : public FWTableCellRendererBase
    { 
@@ -167,12 +170,12 @@ public:
 
    static  void getNNodesTotal(TGeoNode* geoNode, int& off);
 
-private:
+   //private:
    FWGeometryTableManager(const FWGeometryTableManager&); // stop default
    const FWGeometryTableManager& operator=(const FWGeometryTableManager&); // stop default
 
    
-   void firstColumnClicked(int row);
+   bool firstColumnClicked(int row, int xPos);
 
    // table mng
    void changeSelection(int iRow, int iColumn);
@@ -199,11 +202,12 @@ private:
    
    
    // table stuff
+   mutable TGGC* m_highlightContext; 
    mutable FWTextTreeCellRenderer m_renderer;  
    mutable ColorBoxRenderer       m_colorBoxRenderer;  
 
    std::vector<int>  m_row_to_index;
-   int               m_selectedRow;
+   //   int               m_selectedRow;
    int               m_selectedIdx;
    int               m_selectedColumn;
    

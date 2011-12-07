@@ -37,7 +37,6 @@ class FWConfiguration;
 class FWColorPopup;
 class FWColorManager;
 class FWGeoTopNode;
-
 class FWParameterBase;
 class FWViewCombo;
 class FWGUIValidatingTextEntry;
@@ -61,6 +60,7 @@ public:
                     Int_t iGlobalX, Int_t iGlobalY);
   
    void chosenItem(int);
+   void chosenItemFrom3DView(int);
    void selectView(int);
    void filterListCallback();
    void filterTextEntryCallback();
@@ -92,6 +92,8 @@ public:
    void setBackgroundColor();
    void populate3DViewsFromConfig();
 
+   virtual void populateController(ViewerParameterGUI&) const;
+
 private:
    FWGeometryTableView(const FWGeometryTableView&);
    const FWGeometryTableView& operator=(const FWGeometryTableView&);
@@ -100,6 +102,7 @@ private:
 #ifndef __CINT__ 
    FWEnumParameter         m_mode;
    FWStringParameter       m_filter; 
+   FWBoolParameter         m_disableTopNode;
    FWLongParameter         m_autoExpand;
    FWLongParameter         m_visLevel;
    FWBoolParameter         m_visLevelFilter;      

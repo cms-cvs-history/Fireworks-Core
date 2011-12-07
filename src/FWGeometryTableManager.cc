@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.42 2011/10/29 17:33:22 gowdy Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43 2011/11/18 02:57:08 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -113,16 +113,30 @@ void FWGeometryTableManager::ColorBoxRenderer::draw(Drawable_t iID, int iX, int 
 //==============================================================================
 
 FWGeometryTableManager::FWGeometryTableManager(FWGeometryTableView* browser)
-:    m_selectedRow(-1),
-     m_selectedIdx(0),
-     m_selectedColumn(-1),
-     m_browser(browser),
-     m_filterOff(true),
-     m_numVolumesMatched(-1),
-     m_levelOffset(0)
+   :   
+   m_highlightIdx(-1),
+   //   m_renderer(&(FWTextTableCellRenderer::getDefaultGC())),
+   //   m_selectedRow(-1),
+   m_selectedIdx(0),
+   m_selectedColumn(-1),
+   m_browser(browser),
+   m_filterOff(true),
+   m_numVolumesMatched(-1),
+   m_levelOffset(0)
 { 
    m_colorBoxRenderer.m_width  =  50;
    m_colorBoxRenderer.m_height =  m_renderer.height();
+
+   GCValues_t gval;
+   gval.fMask = kGCForeground | kGCBackground | kGCStipple | kGCFillStyle  | kGCGraphicsExposures;
+   gval.fForeground = gVirtualX->GetPixel(kGray);//gClient->GetResourcePool()->GetFrameHiliteColor();
+   gval.fBackground = gVirtualX->GetPixel(kWhite);//gClient->GetResourcePool()->GetFrameBgndColor();
+   gval.fFillStyle  = kFillOpaqueStippled; // kFillTiled;
+   gval.fStipple    = gClient->GetResourcePool()->GetCheckeredBitmap();
+   gval.fGraphicsExposures = kFALSE;
+   m_highlightContext = gClient->GetGC(&gval, kTRUE);
+
+   m_renderer.setHighlightContext( m_highlightContext);
 }
 
 FWGeometryTableManager::~FWGeometryTableManager()
@@ -180,7 +194,7 @@ const std::string FWGeometryTableManager::title() const
 
 int FWGeometryTableManager::selectedRow() const 
 {
-   return m_selectedRow;
+   return m_selectedIdx;
 }
 
 int FWGeometryTableManager::selectedColumn() const 
@@ -190,18 +204,16 @@ int FWGeometryTableManager::selectedColumn() const
  
 bool FWGeometryTableManager::rowIsSelected(int row) const 
 {
-   return m_selectedRow == row;
+   return m_selectedIdx == row;
 }
 
 void FWGeometryTableManager::changeSelection(int iRow, int iColumn)
 {     
    if (iRow < 0) return; 
 
-   m_selectedRow = iRow;
-   m_selectedColumn = iColumn;
-   if (m_row_to_index.size() > 0)   m_selectedIdx = m_row_to_index[iRow];
+   //   m_selectedRow = iRow;
+    m_selectedColumn = iColumn;
 
-   // printf("WGeometryTableManager::changeSelecti row %d index %d \n", m_selectedIdx,  m_selectedIdx );
    visualPropertiesChanged();
 }    
 
@@ -209,7 +221,7 @@ void  FWGeometryTableManager::setBackgroundToWhite(bool iToWhite )
 {
    if(iToWhite) {
       m_renderer.setGraphicsContext(&TGFrame::GetBlackGC());
-      m_renderer.setHighlightContext(&(FWTextTableCellRenderer::getDefaultHighlightGC()));
+      //  m_renderer.setHighlightContext(&(FWTextTableCellRenderer::getDefaultHighlightGC()));
    } else {
       static const TGGC* s_blackHighLight = 0;
       if (!s_blackHighLight) {
@@ -222,7 +234,7 @@ void  FWGeometryTableManager::setBackgroundToWhite(bool iToWhite )
          gval.fGraphicsExposures = kFALSE;
          s_blackHighLight = gClient->GetGC(&gval, kTRUE);
       }
-      m_renderer.setHighlightContext(s_blackHighLight);
+      // m_renderer.setHighlightContext(s_blackHighLight);
       m_renderer.setGraphicsContext(&TGFrame::GetWhiteGC());
    }
    m_renderer.setBlackIcon(iToWhite);
@@ -256,7 +268,25 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
    const NodeInfo& data = m_entries[unsortedRow];
    TGeoNode& gn = *data.m_node;
 
-   bool isSelected = (iCol == kMaterial ) && (!m_filterOff &&  m_volumes[gn.GetVolume()].m_matches);//(m_selectedRow == unsortedRow);
+   bool isSelected = false;
+
+   if (unsortedRow == m_selectedIdx)
+   {
+      isSelected = true;
+      m_highlightContext->SetBackground(0xc86464);
+      // white bg:     m_highlightContext->SetBackground(0xffdcdc);
+   }
+   else if (unsortedRow == m_highlightIdx)
+   {
+      isSelected = true;
+      m_highlightContext->SetBackground(0x6464c8);
+      // white bg:  m_highlightContext->SetBackground(0xc8c8ff);
+   }
+   else if ( (iCol == kMaterial ) && (!m_filterOff &&  m_volumes[gn.GetVolume()].m_matches) )
+   {
+      isSelected = true;
+      m_highlightContext->SetBackground(gVirtualX->GetPixel(kGray));
+   }
 
    if (iCol == kName)
    {
@@ -306,7 +336,7 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
          renderer->setData( gn.GetVolume()->GetMaterial()->GetName(),  isSelected);
          return renderer;
       }
-      
+      /*
       else if (iCol == kPosX || iCol == kPosY || iCol == kPosZ)
       { 
          if (mxCache.row != iSortedRowNumber) { 
@@ -329,7 +359,7 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
          }
 
          return renderer;
-      }
+         }*/
       else
       { 
          TGeoBBox* gs = static_cast<TGeoBBox*>( gn.GetVolume()->GetShape());
@@ -349,19 +379,31 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
 }
 
 //______________________________________________________________________________
-void FWGeometryTableManager::firstColumnClicked(int row)
+bool FWGeometryTableManager::firstColumnClicked(int row, int xPos)
 {
    if (row == -1)
-      return;
+      return false;
 
    int idx = rowToIndex()[row];
    // printf("click %s \n", m_entries[idx].name());
 
-   m_entries[idx].switchBit(kExpanded);
+   int off = 0;
+   if (idx >= 0)
+      off = (m_entries[idx].m_level - m_levelOffset)* 20;
+
+   //   printf("compare %d %d level %d\n" , xPos, off, idx);
+   if (xPos >  off &&  xPos < (off + 20))
+   {
+      m_entries[idx].switchBit(kExpanded);
  
-   recalculateVisibility();
-   dataChanged();
-   visualPropertiesChanged();
+      recalculateVisibility();
+      dataChanged();
+      visualPropertiesChanged();
+      return false;
+   }
+
+   m_selectedIdx = idx;
+   return true;
 }
 
 //______________________________________________________________________________
@@ -393,6 +435,7 @@ void FWGeometryTableManager::recalculateVisibility()
    m_row_to_index.push_back(i);
 
    NodeInfo& data = m_entries[i];
+
    if (!m_filterOff)
       assertNodeFilterCache(data);
 
@@ -762,15 +805,17 @@ void FWGeometryTableManager::setDaughtersSelfVisibility(bool v)
 void FWGeometryTableManager::getNodeMatrix(const NodeInfo& data, TGeoHMatrix& mtx) const
 {
    // utility used by browser and FWGeoNode
-
+   //   printf("================ FWGeometryTableManager::getNodeMatri \n");
    int pIdx  = data.m_parent;
-   int endl =  data.m_level -1;
-   for (int l = 0 ; l < endl ; ++l)
+
+   while (pIdx > 0)
    {
-      pIdx = m_entries.at(pIdx).m_parent;
+      // printf("%s [%d]\n",m_entries.at(pIdx).name(), m_entries.at(pIdx).m_level );
       mtx.MultiplyLeft(m_entries.at(pIdx).m_node->GetMatrix());
+      pIdx = m_entries.at(pIdx).m_parent;
    }
 
+   //   printf("right %s [%d]\n",data.name(), data.m_level );
    mtx.Multiply(data.m_node->GetMatrix());
 }
 //==============================================================================
@@ -804,6 +849,7 @@ void FWGeometryTableManager::setVisibilityChld(NodeInfo& data, bool x)
    else
    {
       data.setBitVal(kVisNodeChld, x);
+      //      printf("set vischi bit  new == %d \n",  data.testBit(kVisNodeChld));
    }
 }
 

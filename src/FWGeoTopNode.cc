@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.18 2011/07/21 00:56:27 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19 2011/08/05 09:38:16 yana Exp $
 //
 
 // system include files
@@ -25,6 +25,7 @@
 #include "TBuffer3DTypes.h"
 #include "TVirtualViewer3D.h"
 #include "TColor.h"
+#include "TGLScenePad.h"
 
 #include "TGeoShape.h"
 #include "TGeoVolume.h"
@@ -53,6 +54,19 @@ FWGeoTopNode::~FWGeoTopNode()
 {
 }
 
+TString  FWGeoTopNode::GetHighlightTooltip()
+{
+   int idx = m_browser->getTableManager()->m_highlightIdx;
+   if (idx > 0)
+   {
+      if (idx < (int)m_entries->size()) {
+         FWGeometryTableManager::NodeInfo& data = m_entries->at(idx);
+         return data.name();
+
+      }
+   }
+   return "error";
+}
 
 //______________________________________________________________________________
 void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
@@ -71,11 +85,10 @@ void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
 //______________________________________________________________________________
 void FWGeoTopNode::Paint(Option_t*)
 {
-
    // workaround for global usage of gGeoManager in TGeoShape
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
-   int topIdx = m_browser->getTopNodeIdx();
+   Int_t topIdx = m_browser->getTopNodeIdx();
    FWGeometryTableManager::Entries_i sit = m_entries->begin(); 
 
    m_maxLevel = m_browser->getVisLevel() + m_browser->getTableManager()->getLevelOffset() -1;
@@ -91,31 +104,34 @@ void FWGeoTopNode::Paint(Option_t*)
       if ( m_filterOff == false)
          m_browser->getTableManager()->assertNodeFilterCache(*sit);
 
-      if ( m_browser->getTableManager()->getVisibility(*sit))
-         paintShape(*sit, mtx);
+      if ((*sit).m_node->GetNdaughters() == 0 && m_browser->getTableManager()->getVisibility(*sit))
+         paintShape(*sit,  topIdx,mtx);
    }
    if (m_entries->size() > 0)
    {
-      if ( m_browser->getTableManager()->getVisibilityChld(*sit))
-         paintChildNodesRecurse( sit, mtx);
+      if ( m_browser->getTableManager()->getVisibilityChld(*sit) && sit->testBit(FWGeometryTableManager::kExpanded) )
+         paintChildNodesRecurse( sit, topIdx, mtx);
    }
 }
 
 // ______________________________________________________________________
 
-void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt, const TGeoHMatrix& parentMtx)
+void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt, Int_t cnt, const TGeoHMatrix& parentMtx)
 { 
    TGeoNode* parentNode =  pIt->m_node;
    int nD = parentNode->GetNdaughters();
 
    int dOff=0;
+
    pIt++;
+   int pcnt = cnt+1;
 
    FWGeometryTableManager::Entries_i it;
    for (int n = 0; n != nD; ++n)
    {
       it =  pIt;
       std::advance(it,n + dOff);
+      cnt = pcnt + n+dOff;
 
       TGeoHMatrix nm = parentMtx;
       nm.Multiply(it->m_node->GetMatrix());
@@ -124,48 +140,65 @@ void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt
       if (m_filterOff)
       {
          if ( m_browser->getTableManager()->getVisibility(*it))
-            paintShape(*it, nm);
+            paintShape(*it, cnt , nm);
 
-         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && it->m_level < m_maxLevel )
-            paintChildNodesRecurse(it, nm);
+         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || it->testBit(FWGeometryTableManager::kExpanded) )) {
+            paintChildNodesRecurse(it,cnt , nm);
+         }
 
       }
       else
       {
          m_browser->getTableManager()->assertNodeFilterCache(*it);
          if ( m_browser->getTableManager()->getVisibility(*it))
-            paintShape(*it, nm);
+            paintShape(*it,cnt , nm);
 
          if ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || m_browser->getIgnoreVisLevelWhenFilter() ))
-            paintChildNodesRecurse(it, nm);
+         {
+            paintChildNodesRecurse(it,cnt , nm);
+         }
       }
 
 
       FWGeometryTableManager::getNNodesTotal(parentNode->GetDaughter(n), dOff);  
    }
 }
-  
+
 // ______________________________________________________________________
-void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data, const TGeoHMatrix& nm)
+void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm)
 { 
    static const TEveException eh("FWGeoTopNode::paintShape ");
-  
+   
+   /*
+   
+   int cnt = 0;
+   for ( FWGeometryTableManager::Entries_i sit = m_entries->begin(); sit  != m_entries->end(); ++sit, ++cnt)
+   {
+      if ( &(*sit) == (&data))
+      {
+         //       printf("%d \n", cnt);
+         break;
+      }
+   }
+
+   if (cnt != idx) printf("ERRROT IDX %d %d \n", cnt, idx);
+   */
+
+   UInt_t phyID = UInt_t(idx+1);
 
    TGeoShape* shape = data.m_node->GetVolume()->GetShape();
    TGeoCompositeShape* compositeShape = dynamic_cast<TGeoCompositeShape*>(shape);
    if (compositeShape)
    {
-      // printf("!!!!!!!!!!!!!!!!!!!! composite shape\n");
+      return;
       Double_t halfLengths[3] = { compositeShape->GetDX(), compositeShape->GetDY(), compositeShape->GetDZ() };
 
       TBuffer3D buff(TBuffer3DTypes::kComposite);
       buff.fID           = data.m_node->GetVolume();
-      //   buff.fColor        = data.m_color;
       buff.fColor        =  m_browser->getVolumeMode() ? data.m_node->GetVolume()->GetLineColor(): data.m_color;
       buff.fTransparency = data.m_node->GetVolume()->GetTransparency(); 
 
-      nm.GetHomogenousMatrix(buff.fLocalMaster);        
-      // RefMainTrans().SetBuffer3D(buff);
+      nm.GetHomogenousMatrix(buff.fLocalMaster);  
       buff.fLocalFrame   = kTRUE; // Always enforce local frame (no geo manager).
       buff.SetAABoundingBox(compositeShape->GetOrigin(), halfLengths);
       buff.SetSectionsValid(TBuffer3D::kCore|TBuffer3D::kBoundingBox);
@@ -173,11 +206,13 @@ void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data, const TGeo
       Bool_t paintComponents = kTRUE;
 
       // Start a composite shape, identified by this buffer
-      if (TBuffer3D::GetCSLevel() == 0)
-         paintComponents = gPad->GetViewer3D()->OpenComposite(buff);
+      if (TBuffer3D::GetCSLevel() == 0) {
+         TGLScenePad* sPad = dynamic_cast<TGLScenePad*>( gPad->GetViewer3D());
+         paintComponents = sPad->OpenCompositeWithPhyID(phyID, buff);
+      }
 
       TBuffer3D::IncCSLevel();
-
+      
       // Paint the boolean node - will add more buffers to viewer
       TGeoHMatrix xxx;
       TGeoMatrix *gst = TGeoShape::GetTransform();
@@ -186,8 +221,7 @@ void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data, const TGeo
       TGeoShape::SetTransform(gst);
       // Close the composite shape
       if (TBuffer3D::DecCSLevel() == 0)
-      gPad->GetViewer3D()->CloseComposite();
-
+         gPad->GetViewer3D()->CloseComposite();
    }
    else
    {
@@ -203,15 +237,14 @@ void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data, const TGeo
       Int_t sections = TBuffer3D::kBoundingBox | TBuffer3D::kShapeSpecific;
       shape->GetBuffer3D(sections, kTRUE);
 
-           
-      Int_t reqSec = gPad->GetViewer3D()->AddObject(buff);
+      Int_t reqSec = gPad->GetViewer3D()->AddObject(phyID, buff);
 
       if (reqSec != TBuffer3D::kNone) {
          // This shouldn't happen, but I suspect it does sometimes.
          if (reqSec & TBuffer3D::kCore)
             Warning(eh, "Core section required again for shape='%s'. This shouldn't happen.", GetName());
          shape->GetBuffer3D(reqSec, kTRUE);
-         reqSec = gPad->GetViewer3D()->AddObject(buff);
+         reqSec = gPad->GetViewer3D()->AddObject(phyID, buff);
       }
 
       if (reqSec != TBuffer3D::kNone)  

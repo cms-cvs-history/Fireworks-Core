@@ -16,7 +16,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.8 2011/07/06 21:02:06 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9 2011/07/08 04:39:58 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
@@ -37,6 +37,7 @@ public:
    virtual ~FWGeoTopNode();
    virtual void Paint(Option_t* option="");
 
+   virtual TString     GetHighlightTooltip() ;
 private:
    FWGeoTopNode(const FWGeoTopNode&); // stop default
    const FWGeoTopNode& operator=(const FWGeoTopNode&); // stop default
@@ -44,8 +45,8 @@ private:
 
    void setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat);
 
-   void paintChildNodesRecurse(FWGeometryTableManager::Entries_i pIt, const TGeoHMatrix& mtx);
-   void  paintShape(FWGeometryTableManager::NodeInfo& nodeInfo, const TGeoHMatrix& nm);
+   void paintChildNodesRecurse(FWGeometryTableManager::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
+   void  paintShape(FWGeometryTableManager::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm);
    FWGeometryTableView       *m_browser;
 
    // cached
