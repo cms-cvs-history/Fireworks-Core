@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.43 2011/11/18 02:57:08 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.1 2011/12/07 22:39:59 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -270,13 +270,15 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
 
    bool isSelected = false;
 
-   if (unsortedRow == m_selectedIdx)
+
+   if ( m_selectedIdx == unsortedRow ||
+       m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == data.m_node->GetVolume()) )
    {
       isSelected = true;
       m_highlightContext->SetBackground(0xc86464);
       // white bg:     m_highlightContext->SetBackground(0xffdcdc);
    }
-   else if (unsortedRow == m_highlightIdx)
+   if (unsortedRow == m_highlightIdx)
    {
       isSelected = true;
       m_highlightContext->SetBackground(0x6464c8);
@@ -287,6 +289,7 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
       isSelected = true;
       m_highlightContext->SetBackground(gVirtualX->GetPixel(kGray));
    }
+
 
    if (iCol == kName)
    {
@@ -337,29 +340,29 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
          return renderer;
       }
       /*
-      else if (iCol == kPosX || iCol == kPosY || iCol == kPosZ)
-      { 
-         if (mxCache.row != iSortedRowNumber) { 
-            mxCache.row = iSortedRowNumber;
-            mxCache.pos[0] = 0; mxCache.pos[1] = 0; mxCache.pos[2] = 0;
-            mxCache.mtx.Clear();
-            getNodeMatrix(data, mxCache.mtx);
-            TGeoBBox* bb = static_cast<TGeoBBox*>(data.m_node->GetVolume()->GetShape());
-            const double* origin = bb->GetOrigin();
-            mxCache.mtx.LocalToMaster(origin, mxCache.pos);
-         }
-         float val =  mxCache.pos[iCol - kPosX];
-         if (val < 0.001)  {
-            renderer->setData(zero, isSelected);
-         }
-         else {
-            snprintf(sval, sizeof(sval), "%.3f", val);
-            renderer->setData(sval, isSelected);
+        else if (iCol == kPosX || iCol == kPosY || iCol == kPosZ)
+        { 
+        if (mxCache.row != iSortedRowNumber) { 
+        mxCache.row = iSortedRowNumber;
+        mxCache.pos[0] = 0; mxCache.pos[1] = 0; mxCache.pos[2] = 0;
+        mxCache.mtx.Clear();
+        getNodeMatrix(data, mxCache.mtx);
+        TGeoBBox* bb = static_cast<TGeoBBox*>(data.m_node->GetVolume()->GetShape());
+        const double* origin = bb->GetOrigin();
+        mxCache.mtx.LocalToMaster(origin, mxCache.pos);
+        }
+        float val =  mxCache.pos[iCol - kPosX];
+        if (val < 0.001)  {
+        renderer->setData(zero, isSelected);
+        }
+        else {
+        snprintf(sval, sizeof(sval), "%.3f", val);
+        renderer->setData(sval, isSelected);
 
-         }
+        }
 
-         return renderer;
-         }*/
+        return renderer;
+        }*/
       else
       { 
          TGeoBBox* gs = static_cast<TGeoBBox*>( gn.GetVolume()->GetShape());

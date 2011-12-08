@@ -14,9 +14,9 @@
 #include "Fireworks/Core/src/FWColorSelect.h"
 #include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
 #include "Fireworks/Core/src/FWValidatorBase.h"
-#include "Fireworks/Core/src/FWGUIManager.h"
+#include "Fireworks/Core/interface/FWGUIManager.h"
 
-#include "Fireworks/Core/src/CmsShowViewPopup.h"
+#include "Fireworks/Core/interface/CmsShowViewPopup.h"
 #include "Fireworks/Core/interface/fwLog.h"
 
 #include "TGFileDialog.h"
@@ -59,6 +59,8 @@ enum GeoMenuOptions {
 
 class PipiScene :public TEveScene
 {
+   friend class FWGeometryTableView;
+
 public:
    PipiScene(FWGeometryTableView* v, const char* n="TEveScene", const char* t=""):TEveScene(n,t), m_GeoViewer(v) 
    { fUseEveSelection = kFALSE; }
@@ -66,7 +68,7 @@ public:
 
    FWGeometryTableView* m_GeoViewer;
 
-
+   std::set<UInt_t>& RefSelected() { return fSelectPhyIDs; }
    virtual   void MouseOverPhysical(UInt_t x) 
    {
       TEveScene::MouseOverPhysical(x);
@@ -93,15 +95,16 @@ public:
 
    virtual   void ClickedPhysical(UInt_t x, UInt_t button,  UInt_t state) 
    {
-      // printf("clicked physical %d \n", x);
+      // printf("clicked physical %d button %d state %d \n", x, button, state);
       if (button >= 1)
       {
-         if (x == fSelectPhyID) {
-            fSelectPhyID = 0;
+         if (IsPhySelected(x) ) {
+            if(state) fSelectPhyIDs.clear();
             fHighlightPhyID = 0;
          }
          else {
-            fSelectPhyID = x;
+            if(state) fSelectPhyIDs.clear();
+            fSelectPhyIDs.insert(x);
          }
          m_GeoViewer->getTableManager()->m_selectedIdx = x -1;
          m_GeoViewer->getTableManager()->dataChanged();
@@ -595,7 +598,31 @@ FWGeometryTableView::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t
                for (TEveElement::List_i si = v->BeginChildren(); si != v->EndChildren(); ++si )
                {
                   TEveSceneInfo* xs = dynamic_cast<TEveSceneInfo*>(*si);
-                  if (xs->GetScene()->GetUseEveSelection() == kFALSE) xs->GetScene()->ClickedPhysical(idx+1, 1, 0);
+                  if (xs->GetScene()->GetUseEveSelection() == kFALSE)
+                  {
+                     // check volume mode
+                     if (m_mode.value())
+                     {
+
+                        ((PipiScene*)xs->GetScene())->RefSelected().clear();
+                        TGeoVolume* v = ni.m_node->GetVolume();
+                        int cnt = 0;
+                        for (FWGeometryTableManager::Entries_i j = m_tableManager->refEntries().begin(); j != m_tableManager->refEntries().end(); ++j, ++cnt)
+                        {
+                           if (j->m_node->GetVolume() == v)
+                           {
+                              ((PipiScene*)xs->GetScene())->RefSelected().insert(cnt+1);
+                           }
+                        }
+                        xs->GetScene()->ClickedPhysical(idx+1, 1, 0);
+                     }
+
+
+                     else
+                     {
+                        xs->GetScene()->ClickedPhysical(idx+1, 1, 1);
+                     }
+                  }
                }
             }
          }
@@ -615,7 +642,7 @@ FWGeometryTableView::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t
             m_colorPopup->InitContent("", colors);
             m_colorPopup->Connect("ColorSelected(Color_t)","FWGeometryTableView", const_cast<FWGeometryTableView*>(this), "nodeColorChangeRequested(Color_t");
          }
-            colorHackRowIdx = idx;
+         colorHackRowIdx = idx;
          m_colorPopup->SetName("Selected");
          m_colorPopup->ResetColors(colors, m_colorManager->backgroundColorIndex()==FWColorManager::kBlackIndex);
          m_colorPopup->PlacePopup(x, y, m_colorPopup->GetDefaultWidth(), m_colorPopup->GetDefaultHeight());
@@ -938,7 +965,6 @@ void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
 
    gui.requestTab("Style").
       addParam(&m_disableTopNode).
-      addParam(&m_visLevelFilter).
       addParam(&m_mode).
       addParam(&m_autoExpand).
       addParam(&m_visLevel).
