@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.43.2.1 2011/12/07 22:39:59 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.2 2011/12/08 01:26:10 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -221,20 +221,7 @@ void  FWGeometryTableManager::setBackgroundToWhite(bool iToWhite )
 {
    if(iToWhite) {
       m_renderer.setGraphicsContext(&TGFrame::GetBlackGC());
-      //  m_renderer.setHighlightContext(&(FWTextTableCellRenderer::getDefaultHighlightGC()));
    } else {
-      static const TGGC* s_blackHighLight = 0;
-      if (!s_blackHighLight) {
-         GCValues_t gval;
-         gval.fMask = kGCForeground | kGCBackground | kGCStipple | kGCFillStyle  | kGCGraphicsExposures;
-         gval.fForeground = 0xbbbbbb;
-         gval.fBackground = 0x000000;
-         gval.fFillStyle  = kFillOpaqueStippled;
-         gval.fStipple    = gClient->GetResourcePool()->GetCheckeredBitmap();
-         gval.fGraphicsExposures = kFALSE;
-         s_blackHighLight = gClient->GetGC(&gval, kTRUE);
-      }
-      // m_renderer.setHighlightContext(s_blackHighLight);
       m_renderer.setGraphicsContext(&TGFrame::GetWhiteGC());
    }
    m_renderer.setBlackIcon(iToWhite);
@@ -249,7 +236,6 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
       TGeoHMatrix mtx;
       double pos[3];
       int row;
-
    };
 
    static Cache mxCache;
@@ -271,18 +257,23 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
    bool isSelected = false;
 
 
+
    if ( m_selectedIdx == unsortedRow ||
-       m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == data.m_node->GetVolume()) )
+        m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == data.m_node->GetVolume()) )
    {
       isSelected = true;
-      m_highlightContext->SetBackground(0xc86464);
-      // white bg:     m_highlightContext->SetBackground(0xffdcdc);
+      if (m_renderer.graphicsContext()->GetForeground() == 0xffffff) 
+         m_highlightContext->SetBackground(0xc86464);
+      else
+         m_highlightContext->SetBackground(0xffdcdc);
    }
    if (unsortedRow == m_highlightIdx)
    {
       isSelected = true;
-      m_highlightContext->SetBackground(0x6464c8);
-      // white bg:  m_highlightContext->SetBackground(0xc8c8ff);
+      if (m_renderer.graphicsContext()->GetForeground() == 0xffffff) 
+         m_highlightContext->SetBackground(0x6464c8);
+      else
+         m_highlightContext->SetBackground(0xc8c8ff);
    }
    else if ( (iCol == kMaterial ) && (!m_filterOff &&  m_volumes[gn.GetVolume()].m_matches) )
    {
