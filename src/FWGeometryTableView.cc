@@ -310,7 +310,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
    : FWViewBase(FWViewType::kGeometryTable),
      m_mode(this, "Mode:", 0l, 0l, 1l),
      m_filter(this,"Materials:",std::string()),
-     m_disableTopNode(this,"DisableTopNode", true),
+     m_disableTopNode(this,"HideTopNode", true),
      m_autoExpand(this,"ExpandList:", 1l, 0l, 100l),
      m_visLevel(this,"VisLevel:", 3l, 1l, 100l),
      m_visLevelFilter(this,"IgnoreVisLevelOnFilter", true),
@@ -338,8 +338,10 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
    m_tableManager = new FWGeometryTableManager(this);
    m_mode.changed_.connect(boost::bind(&FWGeometryTableView::modeChanged,this));
    m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::autoExpandChanged, this));
-   m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
-   m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+  m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+  m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+  
+  m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
 
    // top row

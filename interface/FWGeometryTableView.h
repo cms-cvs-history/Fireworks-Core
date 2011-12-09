@@ -94,6 +94,8 @@ public:
 
    virtual void populateController(ViewerParameterGUI&) const;
 
+  bool drawTopNode() const { return !m_disableTopNode.value(); }
+  
 private:
    FWGeometryTableView(const FWGeometryTableView&);
    const FWGeometryTableView& operator=(const FWGeometryTableView&);

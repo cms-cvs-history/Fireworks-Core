@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19 2011/08/05 09:38:16 yana Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.1 2011/12/07 22:39:59 amraktad Exp $
 //
 
 // system include files
@@ -104,7 +104,7 @@ void FWGeoTopNode::Paint(Option_t*)
       if ( m_filterOff == false)
          m_browser->getTableManager()->assertNodeFilterCache(*sit);
 
-      if ((*sit).m_node->GetNdaughters() == 0 && m_browser->getTableManager()->getVisibility(*sit))
+      if (m_browser->drawTopNode() && m_browser->getTableManager()->getVisibility(*sit))
          paintShape(*sit,  topIdx,mtx);
    }
    if (m_entries->size() > 0)
@@ -190,7 +190,6 @@ void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data,  Int_t idx
    TGeoCompositeShape* compositeShape = dynamic_cast<TGeoCompositeShape*>(shape);
    if (compositeShape)
    {
-      return;
       Double_t halfLengths[3] = { compositeShape->GetDX(), compositeShape->GetDY(), compositeShape->GetDZ() };
 
       TBuffer3D buff(TBuffer3DTypes::kComposite);
