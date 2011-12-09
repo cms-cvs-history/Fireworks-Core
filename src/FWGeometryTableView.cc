@@ -890,14 +890,10 @@ void FWGeometryTableView::filterTextEntryCallback()
 void FWGeometryTableView::filterListCallback()
 { 
    //   std::cout << "list click ed \n" ;
-   TGListBox* list =   m_filterEntry->getListBox();
-   TList selected;
-   list->GetSelectedEntries(&selected);
-   if (selected.GetEntries() == 1)
-   {
-      const TGLBEntry* entry = dynamic_cast<TGLBEntry*> (selected.First());
-      updateFilter( m_filterValidator->m_list[ entry->EntryId()].n);
-   } 
+
+   std::string exp = m_filterEntry->GetText();
+   updateFilter(exp);
+
 }
 
 
