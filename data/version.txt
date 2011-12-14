@@ -1,2 +1,2 @@
 4.4
-DataFormats: CMSSW_4_4_0
+DataFormats: CMSSW_4_4_2
