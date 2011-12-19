@@ -71,18 +71,20 @@ public:
    std::set<UInt_t>& RefSelected() { return fSelectPhyIDs; }
    virtual   void MouseOverPhysical(UInt_t x) 
    {
-      TEveScene::MouseOverPhysical(x);
+      if (m_GeoViewer->getEnableHighlight())
+      {
+         TEveScene::MouseOverPhysical(x);
 
-      m_GeoViewer->getTableManager()->m_highlightIdx = x -1;
-      m_GeoViewer->getTableManager()->dataChanged();
+         m_GeoViewer->getTableManager()->m_highlightIdx = x -1;
+         m_GeoViewer->getTableManager()->dataChanged();
 
 
-      if (HasChildren()) {
-         TEveElement* e =  *BeginChildren();
-         e->StampColorSelection();
-         gEve->DoRedraw3D();
+         if (HasChildren()) {
+            TEveElement* e =  *BeginChildren();
+            e->StampColorSelection();
+            gEve->DoRedraw3D();
+         }
       }
-
    }
 
    virtual const char* GetTooltipForHighlightedPhysical()
@@ -315,6 +317,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
      m_visLevel(this,"VisLevel:", 3l, 1l, 100l),
      m_visLevelFilter(this,"IgnoreVisLevelOnFilter", true),
      m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
+     m_enableHighlight(this,"EnableHiglight", false),
      m_colorManager(colMng),
      m_tableManager(0),
      m_eveTopNode(0),
@@ -332,8 +335,9 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
    m_frame = new TGVerticalFrame(xf);
    xf->AddFrame(m_frame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
-   m_mode.addEntry(0, "Node");
-   m_mode.addEntry(1, "Volume");
+   m_mode.addEntry(kNode, "Node");
+   m_mode.addEntry(kVolume, "Volume");
+   m_mode.addEntry(kOverlap, "Overlap");
    
    m_tableManager = new FWGeometryTableManager(this);
    m_mode.changed_.connect(boost::bind(&FWGeometryTableView::modeChanged,this));
@@ -343,6 +347,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
   
   m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
+  //  m_enableHighlight.changed_.connect(boost::bind(&FWGeometryTableView::enableHighlight,this));
 
    // top row
    {
@@ -857,6 +862,8 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 
    m_tableManager->topGeoNodeChanged(parentIdx);
    m_tableManager->updateFilter();
+   m_tableManager->checkOverlaps();
+
    m_tableManager->checkExpandLevel();
 
    refreshTable3D();
@@ -934,7 +941,11 @@ void FWGeometryTableView::updateFilter(std::string& exp)
 void FWGeometryTableView::modeChanged()
 {
    // reset filter when change mode
-   //   std::cout << "chage mode \n";
+    std::cout << "chage mode \n";
+
+    if (m_mode.value() == kOverlap)
+       m_tableManager->checkOverlaps();
+
    m_tableManager->updateFilter();
    refreshTable3D();
 }
@@ -958,6 +969,7 @@ void FWGeometryTableView::refreshTable3D()
    } 
 }
 
+
 void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
 {
 
@@ -966,6 +978,8 @@ void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
       addParam(&m_mode).
       addParam(&m_autoExpand).
       addParam(&m_visLevel).
-      addParam(&m_visLevelFilter);
+      addParam(&m_visLevelFilter).
+      separator().
+      addParam(&m_enableHighlight);
 
 }

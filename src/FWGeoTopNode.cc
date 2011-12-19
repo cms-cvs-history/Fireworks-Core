@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.1 2011/12/07 22:39:59 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.2 2011/12/09 22:32:43 amraktad Exp $
 //
 
 // system include files
@@ -142,7 +142,7 @@ void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt
          if ( m_browser->getTableManager()->getVisibility(*it))
             paintShape(*it, cnt , nm);
 
-         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || it->testBit(FWGeometryTableManager::kExpanded) )) {
+         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || m_browser->getMode() == FWGeometryTableView::kOverlap || it->testBit(FWGeometryTableManager::kExpanded) )) {
             paintChildNodesRecurse(it,cnt , nm);
          }
 
@@ -168,7 +168,7 @@ void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt
 void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm)
 { 
    static const TEveException eh("FWGeoTopNode::paintShape ");
-   
+
    /*
    
    int cnt = 0;

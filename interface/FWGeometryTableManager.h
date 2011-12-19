@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.33 2011/11/18 02:57:07 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.33.2.1 2011/12/07 22:39:58 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -52,11 +52,10 @@ public:
       kFilterCached    =  BIT(3),
 
       kVisNode         =  BIT(4),
-      kVisNodeChld     =  BIT(5)
+      kVisNodeChld     =  BIT(5),
 
-      //kTableExposed          =  BIT(6)
-      //   kVisVolChld      =  BIT(7),
-
+      kOverlap         =  BIT(6),
+      kOverlapParent   =  BIT(7)
    };
 
    struct NodeInfo
@@ -72,7 +71,7 @@ public:
       UChar_t     m_flags;
 
       const char* name() const;
-     //  const char* nameIndent() const;
+      //  const char* nameIndent() const;
 
       void setBit(UChar_t f)    { m_flags  |= f;}
       void resetBit(UChar_t f)  { m_flags &= ~f; }
@@ -168,9 +167,11 @@ public:
    bool getVisibilityChld(const NodeInfo& nodeInfo) const;
    bool getVisibility (const NodeInfo& nodeInfo) const;
 
+   void checkOverlaps();
+
    static  void getNNodesTotal(TGeoNode* geoNode, int& off);
 
-   //private:
+   // private:
    FWGeometryTableManager(const FWGeometryTableManager&); // stop default
    const FWGeometryTableManager& operator=(const FWGeometryTableManager&); // stop default
 
@@ -184,7 +185,8 @@ public:
    void recalculateVisibility();
    void recalculateVisibilityNodeRec(int);
    void recalculateVisibilityVolumeRec(int);
-   
+   void recalculateVisibilityOverlap(int);
+
    // geo
    void checkChildMatches(TGeoVolume* v,  std::vector<TGeoVolume*>&);
    void importChildren(int parent_idx);
@@ -207,7 +209,6 @@ public:
    mutable ColorBoxRenderer       m_colorBoxRenderer;  
 
    std::vector<int>  m_row_to_index;
-   //   int               m_selectedRow;
    int               m_selectedIdx;
    int               m_selectedColumn;
    
@@ -220,7 +221,7 @@ public:
    bool               m_filterOff; //cached
    int                m_numVolumesMatched; //cached
 
-  //int m_topGeoNodeIdx; 
+   //int m_topGeoNodeIdx; 
    int m_levelOffset;
    //  int m_geoTopNodeIdx;
 

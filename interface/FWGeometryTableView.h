@@ -50,7 +50,7 @@ class FWGeometryTableView
 {
 
 public:
-   enum EMode { kNode, kVolume };
+   enum EMode { kNode, kVolume, kOverlap };
 
    FWGeometryTableView(TEveWindowSlot*, FWColorManager*, TGeoNode*, TObjArray*);
    virtual ~FWGeometryTableView();
@@ -73,13 +73,15 @@ public:
    void cdUp();
    void setPath(int, std::string&);
 
-   bool getVolumeMode()      const { return m_mode.value(); }
+   bool getVolumeMode()      const { return m_mode.value() == 1; }
+   int getMode() const  { return m_mode.value() ;}
    std::string getFilter ()  const { return m_filter.value(); }
    int getAutoExpand()       const { return m_autoExpand.value(); }
    int getVisLevel()         const  {return m_visLevel.value(); }
    bool getIgnoreVisLevelWhenFilter() const  {return m_visLevelFilter.value(); }
 
    int getTopNodeIdx() const { return m_topNodeIdx.value(); }
+   bool getEnableHighlight() { return m_enableHighlight.value(); } 
    FWGeometryTableManager*  getTableManager() { return m_tableManager;} 
    virtual void setFrom(const FWConfiguration&);
 
@@ -108,7 +110,8 @@ private:
    FWLongParameter         m_autoExpand;
    FWLongParameter         m_visLevel;
    FWBoolParameter         m_visLevelFilter;      
-   FWLongParameter         m_topNodeIdx;  
+   FWLongParameter         m_topNodeIdx;   
+   FWBoolParameter         m_enableHighlight;    
 #endif
 
    FWColorManager         *m_colorManager;
@@ -140,6 +143,7 @@ private:
    void autoExpandChanged();
    void modeChanged();
    void refreshTable3D();
+   void enableHighlight();
 
    ClassDef(FWGeometryTableView, 0);
 };
