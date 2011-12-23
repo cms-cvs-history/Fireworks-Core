@@ -9,6 +9,7 @@
 #include "Rtypes.h"
 #include "TGFrame.h"
 
+#include "Fireworks/Core/interface/FWViewType.h"
 #ifndef __CINT__
 #include "Fireworks/Core/interface/FWViewBase.h"
 #include "Fireworks/Core/interface/FWViewBase.h"
@@ -50,9 +51,9 @@ class FWGeometryTableView
 {
 
 public:
-   enum EMode { kNode, kVolume, kOverlap };
+   enum EMode { kNode, kVolume};
 
-   FWGeometryTableView(TEveWindowSlot*, FWColorManager*, TGeoNode*, TObjArray*);
+   FWGeometryTableView(TEveWindowSlot*, FWViewType::EType, FWColorManager*, TGeoNode*, TObjArray*);
    virtual ~FWGeometryTableView();
   
    void cellClicked(Int_t iRow, Int_t iColumn, 
@@ -73,7 +74,7 @@ public:
    void cdUp();
    void setPath(int, std::string&);
 
-   bool getVolumeMode()      const { return m_mode.value() == 1; }
+   bool getVolumeMode()      const { return m_mode.value() == kVolume; }
    int getMode() const  { return m_mode.value() ;}
    std::string getFilter ()  const { return m_filter.value(); }
    int getAutoExpand()       const { return m_autoExpand.value(); }

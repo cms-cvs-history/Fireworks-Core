@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.2 2011/12/09 22:32:43 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.3 2011/12/19 07:21:28 amraktad Exp $
 //
 
 // system include files
@@ -41,6 +41,7 @@
 #include "Fireworks/Core/interface/FWGeometryTableView.h"
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
+#include "Fireworks/Core/interface/FWViewType.h"
 
 FWGeoTopNode::FWGeoTopNode(FWGeometryTableView* t):
    m_browser(t),
@@ -82,40 +83,71 @@ void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
 
    buff.fLocalFrame = kTRUE;
 }
-//______________________________________________________________________________
-void FWGeoTopNode::Paint(Option_t*)
-{
-   // workaround for global usage of gGeoManager in TGeoShape
-   TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
-   Int_t topIdx = m_browser->getTopNodeIdx();
-   FWGeometryTableManager::Entries_i sit = m_entries->begin(); 
+//______________________________________________________________________________
+void FWGeoTopNode::Paint(Option_t* opt)
+{
+   TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
    m_maxLevel = m_browser->getVisLevel() + m_browser->getTableManager()->getLevelOffset() -1;
    m_filterOff = m_browser->getFilter().empty();
 
-   TGeoHMatrix mtx;
-   if (topIdx >= 0)
+   if ( m_browser->typeId() == FWViewType::kGeometryTable)
    {
-      std::advance(sit, topIdx);
-      m_browser->getTableManager()->getNodeMatrix(*sit, mtx);
+      Int_t topIdx = m_browser->getTopNodeIdx();
+      FWGeometryTableManager::Entries_i sit = m_entries->begin(); 
 
-      // paint this node
-      if ( m_filterOff == false)
-         m_browser->getTableManager()->assertNodeFilterCache(*sit);
+      TGeoHMatrix mtx;
+      if (topIdx >= 0)
+      {
+         std::advance(sit, topIdx);
+         m_browser->getTableManager()->getNodeMatrix(*sit, mtx);
 
-      if (m_browser->drawTopNode() && m_browser->getTableManager()->getVisibility(*sit))
-         paintShape(*sit,  topIdx,mtx);
+         // paint this node
+         if ( m_filterOff == false)
+            m_browser->getTableManager()->assertNodeFilterCache(*sit);
+
+         if (m_browser->drawTopNode() && m_browser->getTableManager()->getVisibility(*sit))
+            paintShape(*sit,  topIdx,mtx);
+      }
+      if (m_entries->size() > 0)
+      {
+         if ( m_browser->getTableManager()->getVisibilityChld(*sit) && sit->testBit(FWGeometryTableManager::kExpanded) )
+            paintChildNodesRecurse( sit, topIdx, mtx);
+      }
    }
-   if (m_entries->size() > 0)
+   else
    {
-      if ( m_browser->getTableManager()->getVisibilityChld(*sit) && sit->testBit(FWGeometryTableManager::kExpanded) )
-         paintChildNodesRecurse( sit, topIdx, mtx);
+      PaintOverlaps();
    }
 }
 
-// ______________________________________________________________________
+//______________________________________________________________________________
+void FWGeoTopNode::PaintOverlaps()
+{
+   int N = m_entries->size();
+   int parentIdx = 0;
+   bool visChld = false;
+   for (int i = 1; i < N; ++i)
+   {
+      if (m_entries->at(i).m_parent == 0)
+      {
+         if (visChld && m_browser->getTableManager()->getVisibility(m_entries->at(i)) )
+            paintShape(m_entries->at(i), i, *(m_entries->at(i).m_node->GetMatrix()));
+         parentIdx = i;
+         visChld = m_browser->getTableManager()->getVisibilityChld(m_entries->at(i));
+      }
+      else if (visChld && m_browser->getTableManager()->getVisibility(m_entries->at(i)) )
+      {
+         TGeoHMatrix nm = *m_entries->at(parentIdx).m_node->GetMatrix();
+         nm.Multiply(m_entries->at(i).m_node->GetMatrix());
+         paintShape(m_entries->at(i), i , nm);
+      }
+   }
 
+}
+
+// ______________________________________________________________________
 void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt, Int_t cnt, const TGeoHMatrix& parentMtx)
 { 
    TGeoNode* parentNode =  pIt->m_node;
@@ -142,7 +174,7 @@ void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt
          if ( m_browser->getTableManager()->getVisibility(*it))
             paintShape(*it, cnt , nm);
 
-         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || m_browser->getMode() == FWGeometryTableView::kOverlap || it->testBit(FWGeometryTableManager::kExpanded) )) {
+         if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel  || it->testBit(FWGeometryTableManager::kExpanded) )) {
             paintChildNodesRecurse(it,cnt , nm);
          }
 
@@ -163,27 +195,27 @@ void FWGeoTopNode::paintChildNodesRecurse (FWGeometryTableManager::Entries_i pIt
       FWGeometryTableManager::getNNodesTotal(parentNode->GetDaughter(n), dOff);  
    }
 }
+   /*
+   // TEST ITERATON
+     int cnt = 0;
+     for ( FWGeometryTableManager::Entries_i sit = m_entries->begin(); sit  != m_entries->end(); ++sit, ++cnt)
+     {
+     if ( &(*sit) == (&data))
+     {
+     //       printf("%d \n", cnt);
+     break;
+     }
+     }
+
+     if (cnt != idx) printf("ERRROT IDX %d %d \n", cnt, idx);
+   */
 
 // ______________________________________________________________________
 void FWGeoTopNode::paintShape(FWGeometryTableManager::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm)
 { 
    static const TEveException eh("FWGeoTopNode::paintShape ");
 
-   /*
-   
-   int cnt = 0;
-   for ( FWGeometryTableManager::Entries_i sit = m_entries->begin(); sit  != m_entries->end(); ++sit, ++cnt)
-   {
-      if ( &(*sit) == (&data))
-      {
-         //       printf("%d \n", cnt);
-         break;
-      }
-   }
-
-   if (cnt != idx) printf("ERRROT IDX %d %d \n", cnt, idx);
-   */
-
+ 
    UInt_t phyID = UInt_t(idx+1);
 
    TGeoShape* shape = data.m_node->GetVolume()->GetShape();

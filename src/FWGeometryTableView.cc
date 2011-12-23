@@ -259,7 +259,6 @@ public:
             {     
                bool added = false;          
                m_viewPopup->AddEntry(v->GetElementName(), idx);
-               // TEveSceneInfo* si = ( TEveSceneInfo*)v->FindChild(v->GetElementName());
                TEveSceneInfo* si = ( TEveSceneInfo*)v->FindChild(Form("SI - %s",v->GetElementName() ));
                if (m_el && si) {
                   for (TEveElement::List_i eit = m_el->BeginParents(); eit != m_el->EndParents(); ++eit ){
@@ -308,8 +307,8 @@ public:
 //==============================================================================
 //==============================================================================
 
-FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes )
-   : FWViewBase(FWViewType::kGeometryTable),
+FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes )
+   : FWViewBase(type),
      m_mode(this, "Mode:", 0l, 0l, 1l),
      m_filter(this,"Materials:",std::string()),
      m_disableTopNode(this,"HideTopNode", true),
@@ -337,17 +336,16 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
 
    m_mode.addEntry(kNode, "Node");
    m_mode.addEntry(kVolume, "Volume");
-   m_mode.addEntry(kOverlap, "Overlap");
    
    m_tableManager = new FWGeometryTableManager(this);
    m_mode.changed_.connect(boost::bind(&FWGeometryTableView::modeChanged,this));
    m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::autoExpandChanged, this));
-  m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
-  m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+   m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+   m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
   
-  m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+   m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
-  //  m_enableHighlight.changed_.connect(boost::bind(&FWGeometryTableView::enableHighlight,this));
+   //  m_enableHighlight.changed_.connect(boost::bind(&FWGeometryTableView::enableHighlight,this));
 
    // top row
    {
@@ -404,7 +402,10 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWColorManager*
 
    if (tn)
    {
-      m_tableManager->loadGeometry(tn, volumes);
+      if (typeId() == FWViewType::kGeometryTable)
+         m_tableManager->loadGeometry(tn, volumes);
+      else
+         m_tableManager->importOverlaps(tn, volumes);
       cdTop();
    }
 
@@ -608,7 +609,7 @@ FWGeometryTableView::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t
                   if (xs->GetScene()->GetUseEveSelection() == kFALSE)
                   {
                      // check volume mode
-                     if (m_mode.value())
+                     if (m_mode.value() == kVolume)
                      {
 
                         ((PipiScene*)xs->GetScene())->RefSelected().clear();
@@ -622,9 +623,16 @@ FWGeometryTableView::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t
                            }
                         }
                         xs->GetScene()->ClickedPhysical(idx+1, 1, 0);
-                     }
-
-
+                     }/*
+                     else if (m_mode.value() == kOverlap)
+                     {
+                        ((PipiScene*)xs->GetScene())->RefSelected().clear();
+                        int np = m_tableManager->overlapPair(idx);
+                        if (np >= 0) {
+                           ((PipiScene*)xs->GetScene())->RefSelected().insert(np+1);
+                        }
+                        xs->GetScene()->ClickedPhysical(idx+1, 1, 0);
+                        }*/
                      else
                      {
                         xs->GetScene()->ClickedPhysical(idx+1, 1, 1);
@@ -657,7 +665,7 @@ FWGeometryTableView::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, Int_t
       }
       else
       {
-         printf("set visibility \n"); 
+         //         printf("set visibility %s \n", ni.name()); 
 
          bool elementChanged = false;
          if (iColumn ==  FWGeometryTableManager::kVisSelf)
@@ -862,7 +870,6 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 
    m_tableManager->topGeoNodeChanged(parentIdx);
    m_tableManager->updateFilter();
-   m_tableManager->checkOverlaps();
 
    m_tableManager->checkExpandLevel();
 
@@ -942,9 +949,6 @@ void FWGeometryTableView::modeChanged()
 {
    // reset filter when change mode
     std::cout << "chage mode \n";
-
-    if (m_mode.value() == kOverlap)
-       m_tableManager->checkOverlaps();
 
    m_tableManager->updateFilter();
    refreshTable3D();

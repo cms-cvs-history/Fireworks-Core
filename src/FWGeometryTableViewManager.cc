@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel
 //         Created:  Fri Jul  8 00:40:37 CEST 2011
-// $Id: FWGeometryTableViewManager.cc,v 1.5 2011/08/05 09:38:16 yana Exp $
+// $Id: FWGeometryTableViewManager.cc,v 1.6 2011/09/07 06:21:46 amraktad Exp $
 //
 
 #include <boost/bind.hpp>
@@ -34,6 +34,7 @@ FWGeometryTableViewManager::FWGeometryTableViewManager(FWGUIManager* iGUIMgr, st
    FWGUIManager::ViewBuildFunctor f;
    f=boost::bind(&FWGeometryTableViewManager::buildView, this, _1, _2);                
    iGUIMgr->registerViewBuilder(FWViewType::idToName(FWViewType::kGeometryTable), f);
+   iGUIMgr->registerViewBuilder(FWViewType::idToName(FWViewType::kOverlapTable), f);
 }
 
 FWGeometryTableViewManager::~FWGeometryTableViewManager()
@@ -42,11 +43,13 @@ FWGeometryTableViewManager::~FWGeometryTableViewManager()
 
 
 FWViewBase*
-FWGeometryTableViewManager::buildView(TEveWindowSlot* iParent, const std::string& /*type*/)
+FWGeometryTableViewManager::buildView(TEveWindowSlot* iParent, const std::string& type)
 {
    boost::shared_ptr<FWGeometryTableView> view;
    if (!s_geoManager) initGeoManager();
-   view.reset( new FWGeometryTableView(iParent, &colorManager(), (!s_geoManager) ? 0 : s_geoManager->GetTopNode(),  (!s_geoManager) ? 0 : s_geoManager->GetListOfVolumes()));
+
+   FWViewType::EType typeId = (type == FWViewType::sName[FWViewType::kGeometryTable]) ?  FWViewType::kGeometryTable : FWViewType::kOverlapTable;
+   view.reset( new FWGeometryTableView(iParent, typeId, &colorManager(), (!s_geoManager) ? 0 : s_geoManager->GetTopNode(),  (!s_geoManager) ? 0 : s_geoManager->GetListOfVolumes()));
 
    view->setBackgroundColor();
    m_views.push_back(boost::shared_ptr<FWGeometryTableView> (view));

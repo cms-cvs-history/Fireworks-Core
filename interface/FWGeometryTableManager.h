@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.33.2.1 2011/12/07 22:39:58 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.33.2.2 2011/12/19 07:21:29 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -51,18 +51,17 @@ public:
       kChildMatches    =  BIT(2),
       kFilterCached    =  BIT(3),
 
-      kVisNode         =  BIT(4),
-      kVisNodeChld     =  BIT(5),
-
-      kOverlap         =  BIT(6),
-      kOverlapParent   =  BIT(7)
+      kVisNodeSelf     =  BIT(4),
+      kVisNodeChld     =  BIT(5)
    };
 
    struct NodeInfo
    {
       NodeInfo():m_node(0), m_parent(-1), m_color(0), m_level(-1), 
-                 m_flags(kVisNode|kVisNodeChld)
-      {}  
+                 m_flags(kVisNodeSelf|kVisNodeChld) {}  
+
+      NodeInfo(TGeoNode* n, Int_t p, Color_t col, Char_t l, UChar_t f = kVisNodeSelf|kVisNodeChld ):m_node(n), m_parent(p), m_color(col), m_level(l), 
+                 m_flags(f) {}  
 
       TGeoNode*   m_node;
       Int_t       m_parent;
@@ -124,6 +123,7 @@ public:
    FWGeometryTableManager(FWGeometryTableView*);
    virtual ~FWGeometryTableManager();
 
+
    // virtual functions of FWTableManagerBase
    
    virtual int unsortedRowNumber(int unsorted) const;
@@ -150,6 +150,8 @@ public:
    Entries_v& refEntries() {return m_entries;}
 
    void loadGeometry( TGeoNode* , TObjArray*);
+   void importOverlaps( TGeoNode* , TObjArray*);
+
    void setBackgroundToWhite(bool);
    void getNodePath(int, std::string&) const;
 
@@ -167,7 +169,6 @@ public:
    bool getVisibilityChld(const NodeInfo& nodeInfo) const;
    bool getVisibility (const NodeInfo& nodeInfo) const;
 
-   void checkOverlaps();
 
    static  void getNNodesTotal(TGeoNode* geoNode, int& off);
 
@@ -177,7 +178,7 @@ public:
 
    
    bool firstColumnClicked(int row, int xPos);
-
+   //   std::vector<int>& row_to_index();
    // table mng
    void changeSelection(int iRow, int iColumn);
    void redrawTable();
@@ -198,6 +199,9 @@ public:
    void checkExpandLevel();
    void topGeoNodeChanged(int);
    void printMaterials();
+
+   
+   int overlapPair(int idx) const;
 
    //   const std::string& getStatusMessage() const { return m_statusMessage; }
    // ---------- member data --------------------------------

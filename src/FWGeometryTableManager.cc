@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.43.2.3 2011/12/08 02:35:26 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.4 2011/12/19 07:21:28 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -258,9 +258,8 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
 
    bool isSelected = false;
 
-
-   if ( m_selectedIdx == unsortedRow ||
-        ( m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == data.m_node->GetVolume()) ))
+   if (  m_selectedIdx == unsortedRow ||
+         ( m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == data.m_node->GetVolume()) ))
    {
       isSelected = true;
       if (m_renderer.graphicsContext()->GetForeground() == 0xffffff) 
@@ -292,7 +291,14 @@ FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumb
       else    
          renderer->setData(Form("%s [%d]", gn.GetName(), nD), isSelected); 
 
-      renderer->setIsParent((gn.GetNdaughters() != 0) && (m_filterOff || data.testBit(kChildMatches) ));
+      if (m_browser->typeId() == FWViewType::kOverlapTable )
+      {
+         renderer->setIsParent( data.m_parent == 0);
+      }
+      else
+      {
+         renderer->setIsParent((gn.GetNdaughters() != 0) && (m_filterOff || data.testBit(kChildMatches) ));
+      }
 
       renderer->setIsOpen( data.testBit(FWGeometryTableManager::kExpanded));
 
@@ -415,7 +421,6 @@ void FWGeometryTableManager::assertNodeFilterCache(NodeInfo& data)
       data.setBitVal(kExpanded, childMatches);
       setVisibilityChld(data, childMatches);
 
-
       data.setBit(kFilterCached);
       //  printf("%s matches [%d] childMatches [%d] ................ %d %d \n", data.name(), data.testBit(kMatches), data.testBit(kChildMatches), matches , childMatches);
    }
@@ -426,6 +431,14 @@ void FWGeometryTableManager::assertNodeFilterCache(NodeInfo& data)
 void FWGeometryTableManager::recalculateVisibility()
 {
    m_row_to_index.clear();
+
+
+   if (m_browser->typeId() == FWViewType::kOverlapTable)
+   {
+      recalculateVisibilityOverlap(0);
+      return;
+   }
+
    int i = TMath::Max(0, m_browser->getTopNodeIdx());
    m_row_to_index.push_back(i);
 
@@ -438,13 +451,12 @@ void FWGeometryTableManager::recalculateVisibility()
        (m_filterOff == false && data.testBit(kChildMatches) == false) )
       return;
 
+
+  
    switch (m_browser->getMode())
    {
       case FWGeometryTableView::kVolume:
          recalculateVisibilityVolumeRec(i);
-         break;
-      case FWGeometryTableView::kOverlap:
-         recalculateVisibilityOverlap(i);
          break;
       default:
          recalculateVisibilityNodeRec(i);
@@ -454,16 +466,24 @@ void FWGeometryTableManager::recalculateVisibility()
 
 //______________________________________________________________________________
 
-void FWGeometryTableManager::recalculateVisibilityOverlap( int idx)
-{
-   int n = m_entries.size();
-   while (idx < n)
+void FWGeometryTableManager::recalculateVisibilityOverlap( int )
+{m_row_to_index.push_back(0);
+   printf("FWGeometryTableManager::recalculateVisibilityOverlap \n");
+   int cnt = 0;
+   bool rnrChld = false;
+   for (Entries_i i = m_entries.begin(); i!= m_entries.end(); ++i, ++cnt)
    {
-      if (m_entries[idx].testBit(kOverlap) || m_entries[idx].testBit(kOverlapParent) )  m_row_to_index.push_back(idx);
-      idx ++;
+      if (i->m_parent == 0) {
+         rnrChld = i->testBit(kExpanded);
+         m_row_to_index.push_back(cnt);
+      }
+      else if (rnrChld)
+      {
+         m_row_to_index.push_back(cnt);
+      }
    }
 }
-
+ 
 //______________________________________________________________________________
 
 void FWGeometryTableManager::recalculateVisibilityNodeRec( int pIdx)
@@ -543,7 +563,6 @@ void FWGeometryTableManager::recalculateVisibilityVolumeRec(int pIdx)
    }
 }
 
-
 //______________________________________________________________________________
 
 void FWGeometryTableManager::redrawTable() 
@@ -554,10 +573,6 @@ void FWGeometryTableManager::redrawTable()
 
    recalculateVisibility();
 
-   // if (m_filterOff)  
-   //   m_statusMessage = Form("level:%d  rows %d ",   getLevelOffset(), (int)m_row_to_index.size());
-   // else
-   //   m_statusMessage = Form("level:%d  rows %d volumes %d (%.2f %%) selected ", getLevelOffset(), (int)m_row_to_index.size(), m_numVolumesMatched, 100.0* m_numVolumesMatched/m_volumes.size());
 
    dataChanged();
    visualPropertiesChanged();
@@ -750,7 +765,7 @@ void FWGeometryTableManager::getNodePath(int idx, std::string& path) const
 //______________________________________________________________________________
 
 void  FWGeometryTableManager::checkExpandLevel()
-{
+{return;
    // check expand state
    int ae = m_browser->getAutoExpand() +  m_levelOffset;
    for (Entries_i i = m_entries.begin(); i != m_entries.end(); ++i)
@@ -764,87 +779,6 @@ void  FWGeometryTableManager::checkExpandLevel()
 
 //______________________________________________________________________________
 
-void  FWGeometryTableManager::checkOverlaps()
-{
-   if (m_browser->getMode() != 2) return;
-   TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-
-   // gGeoManager->CheckOverlaps();
-
-   if (m_browser->getTopNodeIdx() < 0) return;
-
-   TGeoVolume* tv = m_entries[m_browser->getTopNodeIdx()].m_node->GetVolume();
-   printf( "check ovl %s \n", tv->GetName());
-
-   m_entries[m_browser->getTopNodeIdx()].m_node->CheckOverlaps(1.0);
-   TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
-
-
-   TIter next_node(lOverlaps);
-   TGeoOverlap *ovl;
-   //   TGeoIterator top_git   (gGeoManager->GetTopVolume());
-   //  TGeoNode*    top_gnode (top_git.Next());
-   int cnt=0;
-   while((ovl = (TGeoOverlap*)next_node())) 
-   {
-      Bool_t isExtr = ovl->IsExtrusion();
-      Bool_t isOvlp = ovl->IsOverlap();
-
-      if (isExtr) continue;
- 
-      printf("%d Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
-             cnt++, isExtr, isOvlp,
-             ovl->GetFirstVolume()->GetName(),
-             ovl->GetSecondVolume()->GetName());
-
-      Entries_i it = m_entries.begin();
-      std::advance(it, m_browser->getTopNodeIdx());
-
-      TGeoVolume* v2 = 0;
-      while (it !=  m_entries.end()) 
-      {
-         if (it->m_node->GetVolume() == ovl->GetFirstVolume() && *it->m_node->GetMatrix() == *ovl->GetFirstMatrix()  )
-         {
-            it->setBit(kOverlap);
-            printf("find 1st vol \n");
-            int dOff  = 0;
-            FWGeometryTableManager::getNNodesTotal(it->m_node, dOff);
-            dOff = 1;
-            std::advance(it, dOff);
-            while(it !=  m_entries.end())
-            {
-               if (it->m_node->GetVolume() == ovl->GetSecondVolume() && *it->m_node->GetMatrix() == *ovl->GetSecondMatrix() )
-               {
-                  it->setBit(kOverlap);
-                  v2 = ovl->GetSecondVolume();
-                  printf("find 2nd vol \n");
-
-                  // find mother volume as an assembly
-                  /*
-                    do {
-                    --motherl;
-                    mothern = motherl > 0 ? git.GetNode(motherl) : top_node;
-                    motherv = mothern->GetVolume();
-                    } while(motherv->IsAssembly());
-
-                  */
-                  goto endo;
-               }
-               ++it;
-            }
-            if (it == m_entries.end()) goto endo;
-         }
-         ++it;
-      }
-
-   endo://&& *it->m_node->GetMatrix() == *ovl->GetFirstMatrix() 
-      if (v2 == 0) printf("error\n");
-   }
-}
-
-//______________________________________________________________________________
-
-
 void  FWGeometryTableManager::topGeoNodeChanged(int idx)
 {
    // cached 
@@ -855,26 +789,45 @@ void  FWGeometryTableManager::topGeoNodeChanged(int idx)
 
 }
 
+   //______________________________________________________________________________
+void FWGeometryTableManager::getNodeMatrix(const NodeInfo& data, TGeoHMatrix& mtx) const
+{
+   // utility used by browser and FWGeoNode
+   //   printf("================ FWGeometryTableManager::getNodeMatri \n");
+   int pIdx  = data.m_parent;
+
+   while (pIdx > 0)
+   {
+      // printf("%s [%d]\n",m_entries.at(pIdx).name(), m_entries.at(pIdx).m_level );
+      mtx.MultiplyLeft(m_entries.at(pIdx).m_node->GetMatrix());
+      pIdx = m_entries.at(pIdx).m_parent;
+   }
+
+   //   printf("right %s [%d]\n",data.name(), data.m_level );
+   mtx.Multiply(data.m_node->GetMatrix());
+}
+   //==============================================================================
+
 void FWGeometryTableManager::printChildren(int idx) const
 {
    //   static double pnt[3];
-  std::string path;
-  getNodePath(idx, path);
-  printf("My %s parent %s path  %d \n",m_entries[idx].name(),path.c_str(), m_entries[idx].m_parent );
-  /*
-   for (int i =0, k = m_entries.size(); i < k; ++i)
-   {
+   std::string path;
+   getNodePath(idx, path);
+   printf("My %s parent %s path  %d \n",m_entries[idx].name(),path.c_str(), m_entries[idx].m_parent );
+   /*
+     for (int i =0, k = m_entries.size(); i < k; ++i)
+     {
      const  NodeInfo&  ni = m_entries[i];
-      if (ni.m_parent == idx)
-      {
-         std::string indent(ni.m_level*3 , ' ');
+     if (ni.m_parent == idx)
+     {
+     std::string indent(ni.m_level*3 , ' ');
 
-         //  printf("%s%s (%.2f, %.2f, %.2f)\n",indent.c_str(), ni.name(), pnt[0], pnt[1], pnt[2]);
-         printf("%s%s \n",indent.c_str(), ni.name());
+     //  printf("%s%s (%.2f, %.2f, %.2f)\n",indent.c_str(), ni.name(), pnt[0], pnt[1], pnt[2]);
+     printf("%s%s \n",indent.c_str(), ni.name());
 
-         printChildren(i);
-      }
-      }*/
+     printChildren(i);
+     }
+     }*/
 }
 
 void FWGeometryTableManager::setDaughtersSelfVisibility(bool v)
@@ -894,25 +847,6 @@ void FWGeometryTableManager::setDaughtersSelfVisibility(bool v)
    }
 }
 
-//______________________________________________________________________________
-void FWGeometryTableManager::getNodeMatrix(const NodeInfo& data, TGeoHMatrix& mtx) const
-{
-   // utility used by browser and FWGeoNode
-   //   printf("================ FWGeometryTableManager::getNodeMatri \n");
-   int pIdx  = data.m_parent;
-
-   while (pIdx > 0)
-   {
-      // printf("%s [%d]\n",m_entries.at(pIdx).name(), m_entries.at(pIdx).m_level );
-      mtx.MultiplyLeft(m_entries.at(pIdx).m_node->GetMatrix());
-      pIdx = m_entries.at(pIdx).m_parent;
-   }
-
-   //   printf("right %s [%d]\n",data.name(), data.m_level );
-   mtx.Multiply(data.m_node->GetMatrix());
-}
-//==============================================================================
-
 void FWGeometryTableManager::setVisibility(NodeInfo& data, bool x)
 {
    if (m_browser->getVolumeMode())
@@ -925,7 +859,7 @@ void FWGeometryTableManager::setVisibility(NodeInfo& data, bool x)
    }
    else
    {
-      data.setBitVal(kVisNode, x);
+      data.setBitVal(kVisNodeSelf, x);
    }
 }
 
@@ -952,25 +886,20 @@ bool  FWGeometryTableManager::getVisibility(const NodeInfo& data) const
 {
    if (m_browser->getVolumeMode())
       return data.m_node->GetVolume()->IsVisible();
-   else if (m_browser->getMode() == 2)
-      return  data.testBit(kOverlap);
-   else
-      return  data.testBit(kVisNode);
-   
+
+   return  data.testBit(kVisNodeSelf);   
 }
 
 bool  FWGeometryTableManager::getVisibilityChld(const NodeInfo& data) const
 {
    if (m_browser->getVolumeMode())
       return data.m_node->GetVolume()->IsVisibleDaughters();
-   else
-      return  data.testBit(kVisNodeChld);
-   
+
+   return  data.testBit(kVisNodeChld);   
 }
-//==============================================================================
+
 
 //______________________________________________________________________________
-
 void FWGeometryTableManager::printMaterials()
 {
    std::map<TGeoMaterial*, std::string> mlist;
@@ -996,3 +925,139 @@ void FWGeometryTableManager::printMaterials()
 
 }
 
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//==============================================================================
+
+void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVolumes)
+{
+   TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+   //   m_entries[m_browser->getTopNodeIdx()].m_node->CheckOverlaps(1.0);
+
+   //   gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/");
+   gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2");
+   gGeoManager->GetCurrentNode()->CheckOverlaps(1.0);
+
+   NodeInfo topNodeInfo;
+   topNodeInfo.m_node   = top_node;
+   topNodeInfo.m_level  = 0;
+   topNodeInfo.m_parent = -1;
+   m_entries.push_back( topNodeInfo);
+
+   TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
+
+   {
+      TIter next_ovl(lOverlaps);
+      TGeoOverlap *ovl;
+
+      TGeoIterator top_git   (gGeoManager->GetTopVolume());
+      TGeoNode*    top_gnode (top_git.Next());
+      while((ovl = (TGeoOverlap*)next_ovl())) 
+      {
+         if (0) printf(Form("Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
+                            ovl->IsExtrusion(),  ovl->IsOverlap(),
+                            ovl->GetFirstVolume()->GetName(),
+                            ovl->GetSecondVolume()->GetName()));
+
+         TGeoNode    *n1 =  0, *n2 =  0, *gnode;
+         TGeoVolume  *v1 =  0, *v2 =  0, *gvol;
+         Int_t        l1 = -1,  l2 = -1;
+         TGeoIterator git(top_git);
+         gnode = top_gnode;
+         do {
+            gvol = gnode->GetVolume();
+            if(gvol == ovl->GetFirstVolume())
+            {
+               top_git = git; top_gnode = gnode;
+
+               n1 = gnode; v1 = gvol;  l1 = git.GetLevel();
+               //printf("  Found first  vol lvl=%d \n", l1);
+               if( ovl->IsOverlap())
+                  git.Skip();
+
+               while((gnode = git.Next()) != 0) {
+
+                  gvol = gnode->GetVolume();
+                  if(gvol == ovl->GetSecondVolume()) {
+                     n2 = gnode; v2 = gvol; l2 = git.GetLevel();
+                     // printf("  Found second vol lvl=%d \n", l2);
+
+
+                     Int_t       motherl;
+                     TGeoNode*   mothern;
+                     TGeoVolume* motherv;
+                     if(ovl->IsExtrusion()) {
+                        motherl = l1;
+                        mothern = n1;
+                        motherv = v1;
+                     } else {
+                        motherl = TMath::Min(l1, l2);
+                        do {
+                           --motherl;
+                           mothern = motherl > 0 ? git.GetNode(motherl) : top_node;
+                           motherv = mothern->GetVolume();
+                        } while(motherv->IsAssembly());
+
+                     }
+                     TGeoHMatrix motherm;
+                     {
+                        TGeoNode *node = git.GetTopVolume()->GetNode(git.GetIndex(1));
+                        motherm.Multiply(node->GetMatrix());
+                        for (Int_t i=2; i<=motherl; i++) {
+                           node = node->GetDaughter(git.GetIndex(i));
+                           motherm.Multiply(node->GetMatrix());
+                        }
+                     }
+                     //______________________________________________________________________________
+                     //______________________________________________________________________________
+                     //______________________________________________________________________________
+                     {
+                        TString mname  = ovl->IsExtrusion() ? "Extr: " : "Ovlp: ";
+                        mname += motherv->GetName();
+                        TString mtitle = top_node->GetVolume()->GetName();
+                        for(Int_t l=1; l<motherl; ++l) {
+                           mtitle += "/";
+                           mtitle += git.GetNode(l)->GetVolume()->GetName();
+                        }
+
+                        //  printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
+                    
+                        TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
+                        mother_node->SetNameTitle(mname.Data(), mtitle.Data());
+                        m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld | kExpanded));
+                        if (m_entries.back().testBit(kExpanded))
+                        {
+                           printf("EEEEEEEEEXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+                        }
+                        int parentIdx = m_entries.size() -1;
+
+                        TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
+                        gnode1->SetName(Form ("%s", v1->GetName()));
+                        m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), l1));
+                        if (ovl->IsOverlap()) {
+                           TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
+                           gnode2->SetName(Form ("%s", v2->GetName()));
+                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
+                        }
+
+                     }
+                     break;
+                  }
+               }
+               break; // found first
+            }
+         } while((gnode = git.Next()) != 0);
+
+         if(v2 == 0) {
+            printf( "  Could not find both volumes, resetting geo-iterator.");
+            top_git.Reset();
+            top_gnode = top_git.Next();
+         }
+
+      }
+   }
+
+
+}
