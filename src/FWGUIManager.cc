@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
-// $Id: FWGUIManager.cc,v 1.249 2011/09/12 22:56:09 amraktad Exp $
+// $Id: FWGUIManager.cc,v 1.250 2011/09/12 23:12:49 amraktad Exp $
 
 
 //
@@ -1283,7 +1283,7 @@ FWGUIManager::setFrom(const FWConfiguration& iFrom) {
 
    for(ViewMap_i it = m_viewMap.begin(); it != m_viewMap.end(); ++it)
    {
-      if (it->second->typeId() == FWViewType::kGeometryTable)
+      if (it->second->typeId() >= FWViewType::kGeometryTable)
       {
          FWGeometryTableView* gv = ( FWGeometryTableView*)it->second;
          gv->populate3DViewsFromConfig();
