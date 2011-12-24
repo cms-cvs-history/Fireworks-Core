@@ -31,6 +31,7 @@ class TGStatusBar;
 class TGeoManager;
 class TEveWindowSlot;
 class TEveWindowFrame;
+class TEvePointSet;
 
 class FWTableWidget;
 class FWGeometryTableManager;
@@ -97,8 +98,11 @@ public:
 
    virtual void populateController(ViewerParameterGUI&) const;
 
-  bool drawTopNode() const { return !m_disableTopNode.value(); }
+   bool drawTopNode() const { return !m_disableTopNode.value(); }
   
+   bool rnrOvl() const { return typeId() == FWViewType::kOverlapTable; }
+   TEvePointSet* overlapPnts() { return m_overlapPnts; }
+
 private:
    FWGeometryTableView(const FWGeometryTableView&);
    const FWGeometryTableView& operator=(const FWGeometryTableView&);
@@ -133,6 +137,8 @@ private:
    FWGeoMaterialValidator*   m_filterValidator;
 
    const FWConfiguration*  m_viewersConfig;
+
+   TEvePointSet*           m_overlapPnts;
 
 #ifndef __CINT__
    std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;

@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.43.2.4 2011/12/19 07:21:28 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.5 2011/12/23 02:24:33 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -37,6 +37,8 @@
 #include "TEveUtil.h"
 #include "TGeoManager.h"
 #include "TGeoOverlap.h"
+#include "TPolyMarker3D.h"
+#include "TEvePointSet.h"
 
 #include "TGFrame.h"
 
@@ -933,12 +935,18 @@ void FWGeometryTableManager::printMaterials()
 
 void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVolumes)
 {
+  
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-   //   m_entries[m_browser->getTopNodeIdx()].m_node->CheckOverlaps(1.0);
 
+   //   m_entries[m_browser->getTopNodeIdx()].m_node->CheckOverlaps(1.0);
    //   gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/");
    gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2");
+
    gGeoManager->GetCurrentNode()->CheckOverlaps(1.0);
+   TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
+
+   //   TEvePointSet* pointSet = m_browser->overlapPnts();
+
 
    NodeInfo topNodeInfo;
    topNodeInfo.m_node   = top_node;
@@ -946,7 +954,7 @@ void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVo
    topNodeInfo.m_parent = -1;
    m_entries.push_back( topNodeInfo);
 
-   TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
+   std::vector<float> pnts;
 
    {
       TIter next_ovl(lOverlaps);
@@ -1027,10 +1035,6 @@ void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVo
                         TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
                         mother_node->SetNameTitle(mname.Data(), mtitle.Data());
                         m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld | kExpanded));
-                        if (m_entries.back().testBit(kExpanded))
-                        {
-                           printf("EEEEEEEEEXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-                        }
                         int parentIdx = m_entries.size() -1;
 
                         TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
@@ -1040,6 +1044,21 @@ void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVo
                            TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
                            gnode2->SetName(Form ("%s", v2->GetName()));
                            m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
+                        }
+
+                        TPolyMarker3D* pm = ovl->GetPolyMarker();
+                        for (int j=0; j<pm->GetN(); ++j )
+                        {
+                           double pl[3];
+                           double pg[3];
+                           pm->GetPoint(j, pl[0], pl[1], pl[2]);
+                           motherm.LocalToMaster(pl, pg);
+                           // pnts->SetNextPoint(pg[0], pg[1], pg[2]);
+                           // printf("set point %f %f %f\n", pg[0], pg[1], pg[2]);
+                           pnts.push_back( pg[0]);
+                           pnts.push_back( pg[1]);
+                           pnts.push_back( pg[2]);
+
                         }
 
                      }
@@ -1059,5 +1078,8 @@ void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVo
       }
    }
 
+
+
+   m_browser->overlapPnts()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
 
 }

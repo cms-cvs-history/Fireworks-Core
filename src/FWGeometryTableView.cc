@@ -38,6 +38,7 @@
 #include "TEveScene.h"
 #include "TEveSceneInfo.h"
 #include "TEveViewer.h"
+#include "TEvePointSet.h"
 #include "TGLViewer.h"
 #include "TGLCamera.h"
 #ifdef PERFTOOL_BROWSER 
@@ -326,7 +327,8 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWViewType::ETy
      m_viewBox(0),
      m_filterEntry(0),
      m_filterValidator(0),
-     m_viewersConfig(0)
+     m_viewersConfig(0),
+     m_overlapPnts()
 {
    m_eveWindow = iParent->MakeFrame(0);
    TGCompositeFrame* xf = m_eveWindow->GetGUICompositeFrame();
@@ -350,11 +352,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWViewType::ETy
    // top row
    {
       TGHorizontalFrame* hp =  new TGHorizontalFrame(m_frame);
- 
-      if (0) { TGTextButton* fileOpen = new TGTextButton (hp, "Open Geometry File");
-         hp->AddFrame(fileOpen);
-         fileOpen->Connect("Clicked()","FWGeometryTableView",this,"browse()");
-      }
+
       {
          TGTextButton* rb = new TGTextButton (hp, "CdTop");
          hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0) );
@@ -400,13 +398,23 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent,FWViewType::ETy
    m_tableWidget->disableGrowInWidth();
    resetSetters();
 
-   if (tn)
+
+   if (typeId() == FWViewType::kGeometryTable)
    {
-      if (typeId() == FWViewType::kGeometryTable)
+      if (tn)
+      {
          m_tableManager->loadGeometry(tn, volumes);
-      else
-         m_tableManager->importOverlaps(tn, volumes);
-      cdTop();
+         cdTop();
+      }
+   }
+   else
+   {
+      m_overlapPnts = new TEvePointSet();
+      m_overlapPnts->SetMarkerSize(5);
+      m_overlapPnts->SetMainColor(kRed);
+      m_overlapPnts->IncDenyDestroy();
+      if (tn) m_tableManager->importOverlaps(tn, volumes);
+         cdTop();
    }
 
    m_frame->MapSubwindows();
@@ -426,10 +434,14 @@ FWGeometryTableView::~FWGeometryTableView()
       m_eveTopNode->DecDenyDestroy();
    }
 
+   if (m_overlapPnts) m_overlapPnts->DecDenyDestroy();
+
    // take out composite frame and delete it directly (zwithout the timeout)
    TGCompositeFrame *frame = m_eveWindow->GetGUICompositeFrame();
    frame->RemoveFrame( m_frame );
    delete m_frame;
+
+
 
    m_eveWindow->DestroyWindowAndSlot();
    delete m_tableManager;
@@ -493,19 +505,24 @@ FWGeometryTableView::populate3DViewsFromConfig()
             TEveViewer* v = dynamic_cast<TEveViewer*>(viewers->FindChild(sname));
 
 
-         TEveScene* s = new PipiScene(this, v->GetElementName());
-         gEve->AddElement(s, gEve->GetScenes());
+            TEveScene* s = new PipiScene(this, v->GetElementName());
+            gEve->AddElement(s, gEve->GetScenes());
 
-         v->AddScene(s);  
-         if (!m_eveTopNode) {
-            m_eveTopNode = new FWGeoTopNode(this);
-            m_eveTopNode->IncDenyDestroy();
-            m_viewBox->setElement(m_eveTopNode);
-         }
-         s->AddElement(m_eveTopNode);
-      }   
+            v->AddScene(s);  
+            if (!m_eveTopNode) {
+               m_eveTopNode = new FWGeoTopNode(this);
+               m_eveTopNode->IncDenyDestroy();
+               m_viewBox->setElement(m_eveTopNode);
+            }
+            s->AddElement(m_eveTopNode);
+
+            gEve->AddElement(m_overlapPnts);
+            TEveSceneInfo* gsi = (TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
+            gsi->GetScene()->AddElement(m_overlapPnts);
+
+         }   
+      }
    }
-}
 }
 
 void
@@ -567,13 +584,24 @@ FWGeometryTableView::selectView(int idx)
       gEve->AddElement(s, gEve->GetScenes());
       s->AddElement(m_eveTopNode);
       v->AddScene(s);
+      if (rnrOvl())
+      {
+         TEveSceneInfo* gsi = (TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
+         gsi->AddElement(m_overlapPnts);
+      }
    }
    else
    {
       si->GetScene()->RemoveElement(m_eveTopNode);
+      if (rnrOvl())
+      {
+         TEveSceneInfo* gsi = (TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
+         gsi->RemoveElement(m_overlapPnts);
+      }
    }
 
    m_eveTopNode->ElementChanged();
+
    gEve->Redraw3D();
 }
 
