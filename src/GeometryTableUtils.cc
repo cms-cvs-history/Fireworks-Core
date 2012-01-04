@@ -12,7 +12,7 @@
 #include "TEveViewer.h"
 #include "TGLViewer.h"
 
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
 #include "Fireworks/Core/src/FWPopupMenu.cc"
@@ -36,14 +36,14 @@ enum GeoMenuOptions {
 
 class PipiScene :public TEveScene
 {
-   friend class FWGeometryTableView;
+   friend class FWGeometryTableViewBase;
 
 public:
-   PipiScene(FWGeometryTableView* v, const char* n="TEveScene", const char* t=""):TEveScene(n,t), m_GeoViewer(v) 
+   PipiScene(FWGeometryTableViewBase* v, const char* n="TEveScene", const char* t=""):TEveScene(n,t), m_GeoViewer(v) 
    { fUseEveSelection = kFALSE; }
    virtual ~PipiScene(){}
 
-   FWGeometryTableView* m_GeoViewer;
+   FWGeometryTableViewBase* m_GeoViewer;
 
    std::set<UInt_t>& RefSelected() { return fSelectPhyIDs; }
    virtual   void MouseOverPhysical(UInt_t x) 
@@ -122,8 +122,8 @@ public:
 
          nodePopup->PlaceMenu(win_x, win_y,true,true);
          nodePopup->Connect("Activated(Int_t)",
-                            "FWGeometryTableView",
-                            const_cast<FWGeometryTableView*>( m_GeoViewer),
+                            "FWGeometryTableViewBase",
+                            const_cast<FWGeometryTableViewBase*>( m_GeoViewer),
                             "chosenItemFrom3DView(Int_t)");
       }
    }
@@ -217,11 +217,11 @@ public:
 class FWViewCombo : public TGTextButton
 {
 private:
-   FWGeometryTableView* m_tableView;
+   FWGeometryTableViewBase* m_tableView;
    TEveElement* m_el;
 
 public:
-   FWViewCombo(const TGWindow *p, FWGeometryTableView* t): 
+   FWViewCombo(const TGWindow *p, FWGeometryTableViewBase* t): 
       TGTextButton(p, "Select Views", -1, TGButton::GetDefaultGC()(), TGTextButton::GetDefaultFontStruct(), kRaisedFrame | kDoubleBorder  ), m_tableView(t), m_el(0) {}
    virtual ~FWViewCombo() {}
    void setElement(TEveElement* x) {m_el = x;}
@@ -273,8 +273,8 @@ public:
 
             m_viewPopup->PlaceMenu(ax, ay, true,true);
             m_viewPopup->Connect("Activated(Int_t)",
-                                 "FWGeometryTableView",
-                                 const_cast<FWGeometryTableView*>(m_tableView),
+                                 "FWGeometryTableViewBase",
+                                 const_cast<FWGeometryTableViewBase*>(m_tableView),
                                  "selectView(Int_t)");
          }
          else

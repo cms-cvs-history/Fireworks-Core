@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.3 2011/12/19 07:21:28 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.4 2011/12/23 02:24:33 amraktad Exp $
 //
 
 // system include files
@@ -38,12 +38,12 @@
 #include "TVirtualGeoPainter.h"
 
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/interface/FWViewType.h"
 
-FWGeoTopNode::FWGeoTopNode(FWGeometryTableView* t):
+FWGeoTopNode::FWGeoTopNode(FWGeometryTableViewBase* t):
    m_browser(t),
    m_maxLevel(0),
    m_filterOff(0)

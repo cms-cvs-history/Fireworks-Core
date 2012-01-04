@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Mon Feb 11 11:06:40 EST 2008
-// $Id: FWGUIManager.cc,v 1.250 2011/09/12 23:12:49 amraktad Exp $
+// $Id: FWGUIManager.cc,v 1.250.2.1 2011/12/24 00:02:33 amraktad Exp $
 
 
 //
@@ -46,7 +46,7 @@
 #include "Fireworks/Core/interface/FWDetailViewManager.h"
 #include "Fireworks/Core/interface/FWViewBase.h"
 #include "Fireworks/Core/interface/FWViewType.h"
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWJobMetadataManager.h"
 #include "Fireworks/Core/interface/FWInvMassDialog.h"
 
@@ -1285,7 +1285,7 @@ FWGUIManager::setFrom(const FWConfiguration& iFrom) {
    {
       if (it->second->typeId() >= FWViewType::kGeometryTable)
       {
-         FWGeometryTableView* gv = ( FWGeometryTableView*)it->second;
+         FWGeometryTableViewBase* gv = ( FWGeometryTableViewBase*)it->second;
          gv->populate3DViewsFromConfig();
       }
    }

@@ -23,7 +23,7 @@
 #include "Fireworks/Core/interface/CmsShowViewPopup.h"
 #include "Fireworks/Core/interface/FWInvMassDialog.h"
 
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWTextProjected.h"
 
 #ifdef __CINT__
@@ -69,6 +69,6 @@
 
 #pragma link C++ class FWInvMassDialog;
 
-#pragma link C++ class FWGeometryTableView;
+#pragma link C++ class FWGeometryTableViewBase;
 
 #endif

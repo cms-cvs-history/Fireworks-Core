@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel
 //         Created:  Fri Jul  8 00:40:37 CEST 2011
-// $Id: FWGeometryTableViewManager.cc,v 1.6 2011/09/07 06:21:46 amraktad Exp $
+// $Id: FWGeometryTableViewManager.cc,v 1.6.2.1 2011/12/23 02:24:33 amraktad Exp $
 //
 
 #include <boost/bind.hpp>
@@ -19,7 +19,8 @@
 #include "TGeoMatrix.h"
 
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/src/FWGeometryTableView.h"
+#include "Fireworks/Core/src/FWOverlapTableView.h"
 #include "Fireworks/Core/interface/FWGeometry.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/Core/interface/FWColorManager.h"
@@ -45,14 +46,17 @@ FWGeometryTableViewManager::~FWGeometryTableViewManager()
 FWViewBase*
 FWGeometryTableViewManager::buildView(TEveWindowSlot* iParent, const std::string& type)
 {
-   boost::shared_ptr<FWGeometryTableView> view;
+   boost::shared_ptr<FWGeometryTableViewBase> view;
    if (!s_geoManager) initGeoManager();
 
    FWViewType::EType typeId = (type == FWViewType::sName[FWViewType::kGeometryTable]) ?  FWViewType::kGeometryTable : FWViewType::kOverlapTable;
-   view.reset( new FWGeometryTableView(iParent, typeId, &colorManager(), (!s_geoManager) ? 0 : s_geoManager->GetTopNode(),  (!s_geoManager) ? 0 : s_geoManager->GetListOfVolumes()));
+   if (typeId == FWViewType::kGeometryTable)
+      view.reset( new FWGeometryTableView(iParent, &colorManager(), (!s_geoManager) ? 0 : s_geoManager->GetTopNode(),  (!s_geoManager) ? 0 : s_geoManager->GetListOfVolumes()));
+   else
+      view.reset( new FWOverlapTableView(iParent, &colorManager(), (!s_geoManager) ? 0 : s_geoManager->GetTopNode(),  (!s_geoManager) ? 0 : s_geoManager->GetListOfVolumes()));
 
    view->setBackgroundColor();
-   m_views.push_back(boost::shared_ptr<FWGeometryTableView> (view));
+   m_views.push_back(boost::shared_ptr<FWGeometryTableViewBase> (view));
    view->beingDestroyed_.connect(boost::bind(&FWGeometryTableViewManager::beingDestroyed, this,_1));
                                             
    return view.get();
@@ -62,7 +66,7 @@ FWGeometryTableViewManager::buildView(TEveWindowSlot* iParent, const std::string
 void
 FWGeometryTableViewManager::beingDestroyed(const FWViewBase* iView)
 {
-   for(std::vector<boost::shared_ptr<FWGeometryTableView> >::iterator it=m_views.begin(); it != m_views.end(); ++it) {
+   for(std::vector<boost::shared_ptr<FWGeometryTableViewBase> >::iterator it=m_views.begin(); it != m_views.end(); ++it) {
       if(it->get() == iView) {
          m_views.erase(it);
          return;
@@ -73,7 +77,7 @@ FWGeometryTableViewManager::beingDestroyed(const FWViewBase* iView)
 void
 FWGeometryTableViewManager::colorsChanged()
 {
-  for(std::vector<boost::shared_ptr<FWGeometryTableView> >::iterator it=m_views.begin(); it != m_views.end(); ++it)
+  for(std::vector<boost::shared_ptr<FWGeometryTableViewBase> >::iterator it=m_views.begin(); it != m_views.end(); ++it)
       (*it)->setBackgroundColor();
 }
 

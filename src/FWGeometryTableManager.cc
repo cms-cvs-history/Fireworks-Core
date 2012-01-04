@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManager.cc,v 1.43.2.5 2011/12/23 02:24:33 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.6 2011/12/24 00:03:37 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -21,7 +21,7 @@
 #include <google/profiler.h>
 #endif
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/src/FWColorBoxIcon.h"
 #include "Fireworks/TableWidget/interface/GlobalContexts.h"
@@ -116,7 +116,7 @@ void FWGeometryTableManager::ColorBoxRenderer::draw(Drawable_t iID, int iX, int 
 //==============================================================================
 //==============================================================================
 
-FWGeometryTableManager::FWGeometryTableManager(FWGeometryTableView* browser)
+FWGeometryTableManager::FWGeometryTableManager(FWGeometryTableViewBase* browser)
    :   
    m_highlightIdx(-1),
    //   m_renderer(&(FWTextTableCellRenderer::getDefaultGC())),
@@ -457,7 +457,7 @@ void FWGeometryTableManager::recalculateVisibility()
   
    switch (m_browser->getMode())
    {
-      case FWGeometryTableView::kVolume:
+      case FWGeometryTableViewBase::kVolume:
          recalculateVisibilityVolumeRec(i);
          break;
       default:
@@ -933,7 +933,7 @@ void FWGeometryTableManager::printMaterials()
 //==============================================================================
 //==============================================================================
 
-void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVolumes)
+void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVolumes, TEvePointSet* iPnts)
 {
   
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
@@ -1078,8 +1078,6 @@ void FWGeometryTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVo
       }
    }
 
-
-
-   m_browser->overlapPnts()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
+   iPnts->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
 
 }

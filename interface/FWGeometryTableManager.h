@@ -16,13 +16,13 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManager.h,v 1.33.2.2 2011/12/19 07:21:29 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.33.2.3 2011/12/23 02:24:33 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
 #include <boost/tr1/unordered_map.hpp>
 
-#include "Fireworks/Core/interface/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 
 #include "Fireworks/TableWidget/interface/FWTableManagerBase.h"
 #include "Fireworks/TableWidget/interface/FWTextTreeCellRenderer.h"
@@ -33,13 +33,14 @@
 #include "TGeoVolume.h"
 
 class FWTableCellRendererBase;
-// class FWGeometryTableView;
+// class FWGeometryTableViewBase;
 //class TGeoManager;
 class TGeoNode;
+class TEvePointSet;
 
 class FWGeometryTableManager : public FWTableManagerBase
 {
-   friend class FWGeometryTableView;
+   friend class FWGeometryTableViewBase;
 
 public:
    enum   ECol { kName, kColor,  kVisSelf, kVisChild, kMaterial/*, kPosX, kPosY, kPosZ, kDiagonal*/, kNumCol };
@@ -120,7 +121,7 @@ public:
    };
 
 public:
-   FWGeometryTableManager(FWGeometryTableView*);
+   FWGeometryTableManager(FWGeometryTableViewBase*);
    virtual ~FWGeometryTableManager();
 
 
@@ -150,7 +151,7 @@ public:
    Entries_v& refEntries() {return m_entries;}
 
    void loadGeometry( TGeoNode* , TObjArray*);
-   void importOverlaps( TGeoNode* , TObjArray*);
+   void importOverlaps( TGeoNode* , TObjArray*, TEvePointSet*);
 
    void setBackgroundToWhite(bool);
    void getNodePath(int, std::string&) const;
@@ -217,7 +218,7 @@ public:
    int               m_selectedColumn;
    
    // geo stuff
-   FWGeometryTableView*   m_browser;
+   FWGeometryTableViewBase*   m_browser;
       
    mutable Volumes_t  m_volumes;
    Entries_v          m_entries;

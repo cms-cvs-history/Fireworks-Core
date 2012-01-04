@@ -16,7 +16,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.9.2.1 2011/12/07 22:39:58 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9.2.2 2011/12/23 02:24:33 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManager.h"
@@ -25,7 +25,7 @@
 class TGeoHMatrix;
 
 class FWGeometryTableManager;
-class FWGeometryTableView;
+class FWGeometryTableViewBase;
 class TBuffer3D;
 class TGeoNode;
 
@@ -33,7 +33,7 @@ class TGeoNode;
 class FWGeoTopNode : public TEveElementList
 {
 public:
-   FWGeoTopNode(FWGeometryTableView*);
+   FWGeoTopNode(FWGeometryTableViewBase*);
    virtual ~FWGeoTopNode();
    virtual void Paint(Option_t* option="");
 
@@ -48,7 +48,7 @@ private:
    void PaintOverlaps();
    void paintChildNodesRecurse(FWGeometryTableManager::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
    void  paintShape(FWGeometryTableManager::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm);
-   FWGeometryTableView       *m_browser;
+   FWGeometryTableViewBase       *m_browser;
 
    // cached
    FWGeometryTableManager::Entries_v* m_entries;
