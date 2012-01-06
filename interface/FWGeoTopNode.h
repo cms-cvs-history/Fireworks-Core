@@ -16,16 +16,17 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.9.2.2 2011/12/23 02:24:33 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9.2.3 2012/01/04 02:39:45 amraktad Exp $
 //
 
-#include "Fireworks/Core/interface/FWGeometryTableManager.h"
+#include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
 #include "TEveElement.h"
 
 class TGeoHMatrix;
 
-class FWGeometryTableManager;
-class FWGeometryTableViewBase;
+
+class FWGeometryTableView;
+class FWOverlapTableView;
 class TBuffer3D;
 class TGeoNode;
 
@@ -33,28 +34,56 @@ class TGeoNode;
 class FWGeoTopNode : public TEveElementList
 {
 public:
-   FWGeoTopNode(FWGeometryTableViewBase*);
-   virtual ~FWGeoTopNode();
-   virtual void Paint(Option_t* option="");
+   FWGeoTopNode(const char* n = "FWGeoTopNode", const char* t = "FWGeoTopNode"){ printf("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfff\n");}
+   virtual ~FWGeoTopNode(){}
 
-   virtual TString     GetHighlightTooltip() ;
-private:
+protected:
+   void setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat);
+   void paintShape(FWGeometryTableManagerBase::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm);
+
+private:   
    FWGeoTopNode(const FWGeoTopNode&); // stop default
    const FWGeoTopNode& operator=(const FWGeoTopNode&); // stop default
 
+};
+//==============================================================================
+//==============================================================================
+//==============================================================================
+class FWEveDetectorGeo : public FWGeoTopNode
+{
+public:
+   FWEveDetectorGeo(FWGeometryTableView* v):m_browser(v), m_maxLevel(0), m_filterOff(0){}   
+                                             
+   virtual ~FWEveDetectorGeo() {}
 
-   void setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat);
+   virtual void Paint(Option_t* option="");
 
-   void PaintOverlaps();
-   void paintChildNodesRecurse(FWGeometryTableManager::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
-   void  paintShape(FWGeometryTableManager::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm);
-   FWGeometryTableViewBase       *m_browser;
+   virtual TString     GetHighlightTooltip();
 
-   // cached
-   FWGeometryTableManager::Entries_v* m_entries;
+private:
+   void paintChildNodesRecurse(FWGeometryTableManagerBase::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
+   FWGeometryTableView       *m_browser;
    int m_maxLevel;
    bool m_filterOff;
+
 };
+//==============================================================================
+//==============================================================================
+
+
+class FWEveOverlap : public FWGeoTopNode
+{
+public:
+   FWEveOverlap(FWOverlapTableView* v) :  m_browser(v) {}
+   virtual ~FWEveOverlap(){}
+
+   virtual void Paint(Option_t* option="");
+   virtual TString     GetHighlightTooltip();
+
+private:
+   FWOverlapTableView       *m_browser;
+};
+
 
 
 #endif

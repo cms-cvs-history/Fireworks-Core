@@ -34,7 +34,7 @@ class TEveWindowFrame;
 class TEvePointSet;
 
 class FWTableWidget;
-class FWGeometryTableManager;
+class FWGeometryTableManagerBase;
 class FWConfiguration;
 class FWColorPopup;
 class FWColorManager;
@@ -84,7 +84,7 @@ public:
 
    int getTopNodeIdx() const { return m_topNodeIdx.value(); }
    bool getEnableHighlight() { return m_enableHighlight.value(); } 
-   FWGeometryTableManager*  getTableManager() { return m_tableManager;} 
+   FWGeometryTableManagerBase*  getTableManager() { return m_tableManager;} 
    virtual void setFrom(const FWConfiguration&);
 
    // ---------- const member functions --------------------- 
@@ -121,7 +121,7 @@ private:
 
    FWColorManager         *m_colorManager;
    FWTableWidget          *m_tableWidget;
-   FWGeometryTableManager *m_tableManager;
+   FWGeometryTableManagerBase *m_tableManager;
 
    TGCompositeFrame       *m_settersFrame;
    FWGeoTopNode           *m_eveTopNode;

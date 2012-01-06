@@ -16,12 +16,15 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id$
+// $Id: FWOverlapTableView.h,v 1.1.2.1 2012/01/04 02:39:46 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 
+
+class FWOverlapTableManager;
 class TEvePointSet;
+class FWEveOverlap;
 
 class FWOverlapTableView : public FWGeometryTableViewBase
 {
@@ -32,11 +35,12 @@ public:
 
    // virtual void setFrom(const FWConfiguration&);
    //   virtual void addTo(FWConfiguration&) const;
+   virtual  FWGeometryTableManagerBase*  getTableManager(); 
 
 protected:
    virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes);
-
-   virtual void populate3DViewsFromConfig();
+   virtual TEveElement* getEveGeoElement() const;
+   virtual void assertEveGeoElement();
 
 private:
    FWOverlapTableView(const FWOverlapTableView&); // stop default
@@ -44,7 +48,10 @@ private:
 
    // ---------- member data --------------------------------
 
-   TEvePointSet*           m_overlapPnts;
+   FWOverlapTableManager *m_tableManager;
+
+   FWEveOverlap*         m_eveTopNode;
+   TEvePointSet*         m_overlapPnts;
 };
 
 
