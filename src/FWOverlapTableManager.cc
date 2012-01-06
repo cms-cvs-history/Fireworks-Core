@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id$
+// $Id: FWOverlapTableManager.cc,v 1.1.2.1 2012/01/06 00:27:34 amraktad Exp $
 //
 
 // system include files
@@ -184,13 +184,14 @@ void FWOverlapTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVol
    }
 
    iPnts->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
-
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 
 void FWOverlapTableManager::recalculateVisibility( )
 {
+   m_row_to_index.clear();
+
    printf("FWGeometryTableManagerBase::recalculateVisibilityOverlap \n");
    m_row_to_index.push_back(0);
    int cnt = 0;
@@ -214,3 +215,12 @@ bool  FWOverlapTableManager::nodeIsParent(const NodeInfo& data) const
 {
    return   data.m_parent == 0;
 }
+
+
+//______________________________________________________________________________
+
+const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
+{
+   return data.name();
+}
+

@@ -16,7 +16,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.9.2.3 2012/01/04 02:39:45 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9.2.4 2012/01/06 00:27:33 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -34,12 +34,12 @@ class TGeoNode;
 class FWGeoTopNode : public TEveElementList
 {
 public:
-   FWGeoTopNode(const char* n = "FWGeoTopNode", const char* t = "FWGeoTopNode"){ printf("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfff\n");}
+   FWGeoTopNode(const char* n = "FWGeoTopNode", const char* t = "FWGeoTopNode"){};
    virtual ~FWGeoTopNode(){}
 
 protected:
    void setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat);
-   void paintShape(FWGeometryTableManagerBase::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm);
+   void paintShape(FWGeometryTableManagerBase::NodeInfo& nodeInfo, Int_t idx,  const TGeoHMatrix& nm, bool volumeColor);
 
 private:   
    FWGeoTopNode(const FWGeoTopNode&); // stop default

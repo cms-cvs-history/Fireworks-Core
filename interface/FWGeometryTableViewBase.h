@@ -61,7 +61,6 @@ public:
       virtual ~FWViewCombo() {}
       void setElement(TEveElement* x) {m_el = x;}
       virtual Bool_t  HandleButton(Event_t* event);
-
    };
 
 
@@ -96,8 +95,7 @@ public:
    void nodeColorChangeRequested(Color_t);
 
    void setBackgroundColor();
-   virtual void populate3DViewsFromConfig();
-  
+   void populate3DViewsFromConfig();
    void refreshTable3D();
 
 protected:
@@ -125,11 +123,12 @@ protected:
 
    const FWConfiguration*  m_viewersConfig;
 
+
 #ifndef __CINT__
-   std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
+   // std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
 #endif
-   void resetSetters();
-   void makeSetter(TGCompositeFrame* frame, FWParameterBase* param);
+   //   void resetSetters();
+   //   void makeSetter(TGCompositeFrame* frame, FWParameterBase* param);
 
    void enableHighlight();
 
@@ -138,6 +137,8 @@ private:
    FWGeometryTableViewBase(const FWGeometryTableViewBase&); // stop default
 
    const FWGeometryTableViewBase& operator=(const FWGeometryTableViewBase&); // stop default
+
+   bool m_enableRedraw;
 
    ClassDef(FWGeometryTableViewBase, 0);
 };

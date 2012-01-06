@@ -16,14 +16,14 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:22 CET 2012
-// $Id$
+// $Id: FWGeometryTableManager.h,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
 
 class FWGeometryTableViewBase;
 class FWGeometryTableView;
-
+#include <string>
 class FWGeometryTableManager : public FWGeometryTableManagerBase
 {
 public:
@@ -41,7 +41,6 @@ public:
 
    // signal callbacks
    void updateFilter();
-   void checkExpandLevel();
    void printMaterials();
 
    virtual void setVisibility(NodeInfo& nodeInfo, bool );
@@ -52,9 +51,11 @@ public:
 
    void assertNodeFilterCache(NodeInfo& data);
  
+
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
    virtual FWGeometryTableManagerBase::ESelectionState nodeSelectionState(int) const;
+   virtual const char* cellName(const NodeInfo& data) const;
 
 private:
    FWGeometryTableManager(const FWGeometryTableManager&); // stop default

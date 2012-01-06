@@ -104,6 +104,11 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
    }
    return true;
 }
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//==============================================================================
 
 
 FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes )
@@ -115,7 +120,8 @@ FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewT
      m_eveWindow(0),
      m_frame(0),
      m_viewBox(0),
-     m_viewersConfig(0)
+     m_viewersConfig(0),
+     m_enableRedraw(true)
 {
    m_eveWindow = iParent->MakeFrame(0);
    TGCompositeFrame* xf = m_eveWindow->GetGUICompositeFrame();
@@ -141,7 +147,7 @@ void FWGeometryTableViewBase::postConst()
                           "FWGeometryTableViewBase",this,
                           "cellClicked(Int_t,Int_t,Int_t,Int_t,Int_t,Int_t)");
    m_tableWidget->disableGrowInWidth();
-   resetSetters();
+   //   resetSetters();
 
 
    m_frame->MapSubwindows();
@@ -183,56 +189,22 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
             if (strncmp(sname.Data(), "EventScene ", 11) == false) 
             {
                sname = &sname.Data()[11];
-
             }
             //             std::cerr << sname.Data() << std::endl;
             TEveViewer* v = dynamic_cast<TEveViewer*>(viewers->FindChild(sname));
 
-            printf("add new SCENE %s =============================\n",v->GetElementName() );
             TEveScene* s = new PipiScene(this, v->GetElementName());
             gEve->AddElement(s, gEve->GetScenes());
             v->AddScene(s);  
             assertEveGeoElement();
             m_viewBox->setElement(getEveGeoElement());
-            printf("dddddd %s \n", getEveGeoElement()->GetElementName());
+
             s->AddElement(getEveGeoElement());
+            gEve->FullRedraw3D(false, true);
          }   
       }
    }
 }
-
-void
-FWGeometryTableViewBase::resetSetters()
-{
-
-   if (!m_settersFrame->GetList()->IsEmpty())
-   {
-      m_setters.clear();
-
-      TGFrameElement *el = (TGFrameElement*) m_settersFrame->GetList()->First();
-      TGHorizontalFrame* f = (TGHorizontalFrame*) el->fFrame;
-      m_settersFrame->RemoveFrame(f);
-   }
-
-   TGHorizontalFrame* frame =  new TGHorizontalFrame(m_settersFrame);
-   m_settersFrame->AddFrame(frame, new TGLayoutHints(kLHintsExpandX,4,2,2,2) );
-   m_settersFrame->SetCleanup(kDeepCleanup);
-   m_settersFrame->MapSubwindows();
-   m_frame->Layout();
-}
-
-void
-FWGeometryTableViewBase::makeSetter(TGCompositeFrame* frame, FWParameterBase* param) 
-{
-   boost::shared_ptr<FWParameterSetterBase> ptr( FWParameterSetterBase::makeSetterFor(param) );
-   ptr->attach(param, this);
- 
-   TGFrame* m_frame = ptr->build(frame, false);
-   frame->AddFrame(m_frame, new TGLayoutHints(kLHintsExpandX));
-
-   m_setters.push_back(ptr);
-}
-
 
 //==============================================================================
 
@@ -243,7 +215,7 @@ FWGeometryTableViewBase::selectView(int idx)
    std::advance(it, idx);
    TEveViewer* v = (TEveViewer*)(*it);
    TEveSceneInfo* si = (TEveSceneInfo*)v->FindChild(Form("SI - %s",v->GetElementName()));
-  assertEveGeoElement();
+   assertEveGeoElement();
    m_viewBox->setElement(getEveGeoElement());
 
 
@@ -362,18 +334,24 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
    else if (iColumn == FWGeometryTableManagerBase::kName)
    {
       FWPopupMenu* nodePopup = new FWPopupMenu();
-      nodePopup->AddEntry("Set As Top Node", kSetTopNode);
-      nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
-      nodePopup->AddSeparator();
-      nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
-      nodePopup->AddEntry("Rnr On For All Children", kVisOn);
-      nodePopup->AddSeparator();
-      nodePopup->AddEntry("Set Camera Center", kCamera);
-      nodePopup->AddSeparator();
-      nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
-      nodePopup->AddEntry("InspectShape", kInspectShape);
-      nodePopup->AddEntry("Table Debug", kTableDebug);
-
+      if (typeId() == FWViewType::kGeometryTable)
+      {
+         nodePopup->AddEntry("Set As Top Node", kSetTopNode);
+         nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
+         nodePopup->AddSeparator();
+         nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
+         nodePopup->AddEntry("Rnr On For All Children", kVisOn);
+         nodePopup->AddSeparator();
+         nodePopup->AddEntry("Set Camera Center", kCamera);
+         nodePopup->AddSeparator();
+         nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
+         nodePopup->AddEntry("InspectShape", kInspectShape);
+         nodePopup->AddEntry("Table Debug", kTableDebug);
+      }
+      else
+      {
+         nodePopup->AddEntry("Set Camera Center", kCamera);
+      }
       nodePopup->PlaceMenu(x,y,true,true);
       nodePopup->Connect("Activated(Int_t)",
                          "FWGeometryTableViewBase",
@@ -517,6 +495,7 @@ void FWGeometryTableViewBase::cdUp()
       setPath(pIdx, p);
    }
 }
+//______________________________________________________________________________
 
 void FWGeometryTableViewBase::setPath(int parentIdx, std::string& path)
 {
@@ -527,26 +506,23 @@ void FWGeometryTableViewBase::setPath(int parentIdx, std::string& path)
 
    getTableManager()->topGeoNodeChanged(parentIdx);
 
-
-   refreshTable3D();
    printf("END Set Path to [%s], curren node \n", path.c_str()); 
-
-   getTableManager()->redrawTable();
-   //  getEveGeoElement()->ElementChanged();
-   // gEve->FullRedraw3D(false, true);
 
    FWGUIManager::getGUIManager()->updateStatus(path.c_str());
 #ifdef PERFTOOL_BROWSER  
    ProfilerStop();
 #endif 
+   refreshTable3D();
+
 }
 //______________________________________________________________________________
 
 void FWGeometryTableViewBase::refreshTable3D()
 {
-   getTableManager()->redrawTable();
-   //assertEveGeoElement();
-   //   if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
+   if (!m_enableRedraw) return;
+
+   getTableManager()->redrawTable(true);
+   if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
    gEve->FullRedraw3D(false, true);
 }
  
@@ -572,14 +548,20 @@ void FWGeometryTableViewBase::addTo(FWConfiguration& iTo) const
 
 void FWGeometryTableViewBase::setFrom(const FWConfiguration& iFrom)
 { 
+   m_enableRedraw = false;
    for(const_iterator it =begin(), itEnd = end();
        it != itEnd;
        ++it) {
+
+      //      printf("set from %s \n",(*it)->name().c_str() );
       (*it)->setFrom(iFrom);
 
    }  
 
-   resetSetters();
+   //   resetSetters();
    cdNode(m_topNodeIdx.value());
    m_viewersConfig = iFrom.valueForKey("Viewers");
+
+   m_enableRedraw = true;
+   refreshTable3D();
 }

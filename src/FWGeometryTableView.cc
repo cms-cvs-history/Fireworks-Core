@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.9 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.10 2012/01/06 00:27:33 amraktad Exp $
 //
 
 // system include files
@@ -28,6 +28,7 @@
 
 #include "TGButton.h"
 #include "TGLabel.h"
+#include "TGListBox.h"
 #include "KeySymbols.h"
 //==============================================================================
 //==============================================================================
@@ -45,10 +46,10 @@ public:
       Material( TGeoMaterial* x) {  g= x; n = x ? x->GetName() : "<show-all>";}
    };
 
-   FWGeometryTableManagerBase* m_table;
+   FWGeometryTableView* m_browser;
    mutable std::vector<Material> m_list;
 
-   FWGeoMaterialValidator( FWGeometryTableManagerBase* t) { m_table = t;}
+   FWGeoMaterialValidator( FWGeometryTableView* v) { m_browser = v;}
    virtual ~FWGeoMaterialValidator() {}
 
 
@@ -61,7 +62,8 @@ public:
       m_list.clear();
       m_list.push_back(0);
 
-      FWGeometryTableManagerBase::Entries_i it = m_table->refSelected();
+      FWGeometryTableManagerBase::Entries_i it = m_browser->getTableManager()->refEntries().begin();
+      std::advance(it, m_browser->getTopNodeIdx());
       int nLevel = it->m_level;
       it++;
       while (it->m_level > nLevel)
@@ -135,12 +137,12 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    {
       TGTextButton* rb = new TGTextButton (hp, "CdTop");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0) );
-      //rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdTop()");
+      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdTop()");
    } 
    {
       TGTextButton* rb = new TGTextButton (hp, "CdUp");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
-      // rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdUp()");
+      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdUp()");
    }
   
    {
@@ -151,12 +153,12 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
       hp->AddFrame(new TGLabel(hp, "Filter:"), new TGLayoutHints(kLHintsBottom, 10, 0, 0, 2));
       m_filterEntry = new FWGUIValidatingTextEntry(hp);
       m_filterEntry->SetHeight(20);
-      m_filterValidator = new FWGeoMaterialValidator(getTableManager());
+      m_filterValidator = new FWGeoMaterialValidator(this);
       m_filterEntry->setValidator(m_filterValidator);
       hp->AddFrame(m_filterEntry, new TGLayoutHints(kLHintsExpandX,  1, 2, 1, 0));
       m_filterEntry->setMaxListBoxHeight(150);
-      //   m_filterEntry->getListBox()->Connect("Selected(int)", "FWGeometryTableViewBase",  this, "filterListCallback()");
-      //  m_filterEntry->Connect("ReturnPressed()", "FWGeometryTableViewBase",  this, "filterTextEntryCallback()");
+      m_filterEntry->getListBox()->Connect("Selected(int)", "FWGeometryTableView",  this, "filterListCallback()");
+      m_filterEntry->Connect("ReturnPressed()", "FWGeometryTableView",  this, "filterTextEntryCallback()");
 
       gVirtualX->GrabKey( m_filterEntry->GetId(),gVirtualX->KeysymToKeycode((int)kKey_A),  kKeyControlMask, true);
    }
@@ -170,8 +172,8 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    m_mode.addEntry(kNode, "Node");
    m_mode.addEntry(kVolume, "Volume");
    
-   m_mode.changed_.connect(boost::bind(&FWGeometryTableView::modeChanged,this));
-   m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::autoExpandChanged, this));
+   m_mode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
+   m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D, this));
    m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
    m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
@@ -198,27 +200,6 @@ FWGeometryTableManagerBase* FWGeometryTableView::getTableManager()
 {
    return m_tableManager;
 }
-
-
-void FWGeometryTableView::modeChanged()
-{
-   // reset filter when change mode
-   std::cout << "chage mode \n";
-
-   m_tableManager->updateFilter();
-   refreshTable3D();
-}
-
-
-
-void FWGeometryTableView::autoExpandChanged()
-{
-   m_tableManager->checkExpandLevel();
-   m_tableManager->redrawTable();
-}
-
-
-
 
    //______________________________________________________________________________
 void FWGeometryTableView::filterTextEntryCallback()
@@ -266,8 +247,6 @@ void FWGeometryTableView::updateFilter(std::string& exp)
 
       // NOTE: entry should be cleared automatically
       m_filterEntry->Clear();
-
-      m_tableManager->checkExpandLevel();
    }
   
    m_filter.set(exp);
@@ -279,8 +258,8 @@ void FWGeometryTableView::updateFilter(std::string& exp)
 
 //==============================================================================
 
-void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
-{
+void FWGeometryTableView::popuateController(ViewerParameterGUI&) const
+{/*
    gui.requestTab("Style").
       addParam(&m_disableTopNode).
       addParam(&m_mode).
@@ -289,7 +268,7 @@ void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
       addParam(&m_visLevelFilter).
       separator().
       addParam(&m_enableHighlight);
-
+ */
 }
 
 //______________________________________________________________________________

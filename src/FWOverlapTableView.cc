@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.1 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.2 2012/01/06 00:27:34 amraktad Exp $
 //
 
 // system include files
@@ -85,6 +85,7 @@ void FWOverlapTableView::assertEveGeoElement()
       m_eveTopNode = new  FWEveOverlap(this);
       m_eveTopNode->SetElementNameTitle("overlapNode", "opverlapNodetitle");
       m_eveTopNode->IncDenyDestroy();
+      m_eveTopNode->AddElement( m_overlapPnts);
       gEve->AddElement(m_eveTopNode);
    }
 }

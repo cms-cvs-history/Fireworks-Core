@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id$
+// $Id: FWOverlapTableManager.h,v 1.1.2.1 2012/01/06 00:27:34 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -33,7 +33,7 @@ public:
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
-
+   virtual  const char* cellName(const NodeInfo& data) const;
 
 private:
    FWOverlapTableManager(const FWOverlapTableManager&); // stop default

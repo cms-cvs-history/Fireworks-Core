@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManagerBase.h,v 1.33.2.4 2012/01/04 02:39:45 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.h,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -128,7 +128,8 @@ protected:
 public:
    FWGeometryTableManagerBase();
    virtual ~FWGeometryTableManagerBase();
-
+   //   virtual std::string& cellName(const NodeInfo& ) const { return &std::string("ddd");} 
+   virtual const char* cellName(const NodeInfo& ) const { return 0;} 
 
    // virtual functions of FWTableManagerBase
    
@@ -181,14 +182,14 @@ public:
    
    bool firstColumnClicked(int row, int xPos);
    void changeSelection(int iRow, int iColumn);
-   void redrawTable();
+   void redrawTable(bool setExpand = false);
 
    virtual void recalculateVisibility() = 0;
 
    // signal callbacks
    void topGeoNodeChanged(int);
 
-
+   void checkExpandLevel();
    // ---------- member data --------------------------------
    
    

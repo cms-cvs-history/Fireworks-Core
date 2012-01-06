@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.1 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.2 2012/01/06 00:27:34 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -31,7 +31,7 @@ class FWGeometryTableView : public FWGeometryTableViewBase
 public:
    FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes);
    virtual ~FWGeometryTableView();
-   virtual void populateController(ViewerParameterGUI&) const;
+   virtual void popuateController(ViewerParameterGUI&) const;
    virtual  FWGeometryTableManagerBase*  getTableManager();
 
    void filterListCallback();
@@ -39,7 +39,6 @@ public:
    void updateFilter(std::string&);
 
    bool getVolumeMode()      const { return m_mode.value() == kVolume; }
-   int getMode() const  { return m_mode.value() ;}
    std::string getFilter ()  const { return m_filter.value(); }
    int getAutoExpand()       const { return m_autoExpand.value(); }
    int getVisLevel()         const  {return m_visLevel.value(); }
@@ -57,9 +56,6 @@ private:
    const FWGeometryTableView& operator=(const FWGeometryTableView&); // stop default
 
    // ---------- member data --------------------------------
-   void autoExpandChanged();
-   void modeChanged();
-
    FWGeometryTableManager *m_tableManager;
 
    FWGUIValidatingTextEntry* m_filterEntry;
@@ -77,6 +73,7 @@ private:
 #endif  
 
 
+   ClassDef(FWGeometryTableView, 0);
 };
 
 

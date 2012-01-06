@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.43.2.7 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -212,6 +212,8 @@ FWGeometryTableManagerBase::ESelectionState FWGeometryTableManagerBase::nodeSele
 
    return kNone;
 }
+
+
 //______________________________________________________________________________
 
 FWTableCellRendererBase* FWGeometryTableManagerBase::cellRenderer(int iSortedRowNumber, int iCol) const
@@ -219,7 +221,11 @@ FWTableCellRendererBase* FWGeometryTableManagerBase::cellRenderer(int iSortedRow
    FWTextTreeCellRenderer* renderer = &m_renderer;
    if (m_row_to_index.empty()) return renderer;
 
+
    int unsortedRow =  m_row_to_index[iSortedRowNumber];
+   if (unsortedRow < 0) printf("!!!!!!!!!!!!!!!! error %d %d \n",unsortedRow,  iSortedRowNumber);
+
+
    const NodeInfo& data = m_entries[unsortedRow];
    TGeoNode& gn = *data.m_node;
 
@@ -243,11 +249,7 @@ FWTableCellRendererBase* FWGeometryTableManagerBase::cellRenderer(int iSortedRow
 
    if (iCol == kName)
    {
-      int nD = data.m_node->GetNdaughters();
-      if (0)//m_browser->getVolumeMode())
-         renderer->setData(Form("%s [%d]", gn.GetVolume()->GetName(), nD), isSelected);
-      else    
-         renderer->setData(Form("%s [%d]", gn.GetName(), nD), isSelected); 
+      renderer->setData(cellName(data), isSelected); 
 
 
       renderer->setIsParent(nodeIsParent(data));
@@ -348,10 +350,13 @@ void FWGeometryTableManagerBase::getNodeMatrix(const NodeInfo& data, TGeoHMatrix
 }
 
 //______________________________________________________________________________
-void FWGeometryTableManagerBase::redrawTable() 
+void FWGeometryTableManagerBase::redrawTable(bool setExpand) 
 {
    std::cerr << "GeometryTableManagerBase::redrawTable ------------------------------------- \n";
    if (m_entries.empty()) return;
+
+   if (setExpand) checkExpandLevel();
+
 
    changeSelection(0, 0);
 
@@ -449,3 +454,17 @@ bool  FWGeometryTableManagerBase::getVisibilityChld(const NodeInfo& data) const
    return  data.testBit(kVisNodeChld);   
 }
 
+//______________________________________________________________________________
+
+void  FWGeometryTableManagerBase::checkExpandLevel()
+{
+   // check expand state
+   int ae = /*m_browser->getAutoExpand()*/ 1 +  m_levelOffset;
+   for (Entries_i i = m_entries.begin(); i != m_entries.end(); ++i)
+   {
+      if (i->m_level  < ae)
+         i->setBit(kExpanded);
+      else
+         i->resetBit(kExpanded);
+   } 
+}

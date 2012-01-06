@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:25 CET 2012
-// $Id$
+// $Id: FWGeometryTableManager.cc,v 1.43.2.8 2012/01/06 00:27:33 amraktad Exp $
 //
 
 // system include files
@@ -31,6 +31,14 @@ FWGeometryTableManager::FWGeometryTableManager(FWGeometryTableView* v):
 
 FWGeometryTableManager::~FWGeometryTableManager()
 {
+}
+
+const char* FWGeometryTableManager::cellName(const NodeInfo& data) const
+{
+   if (m_browser->getVolumeMode())
+      return Form("%s [%d]", data.m_node->GetVolume()->GetName(), data.m_node->GetNdaughters());
+   else    
+      return Form("%s [%d]", data.m_node->GetName(), data.m_node->GetNdaughters()); 
 }
 
 //____________________________________________________________________________
@@ -187,20 +195,6 @@ void FWGeometryTableManager::loadGeometry( TGeoNode* iGeoTopNode, TObjArray* iVo
 #endif
 }
 
-//______________________________________________________________________________
-
-void  FWGeometryTableManager::checkExpandLevel()
-{return;
-   // check expand state
-   int ae = m_browser->getAutoExpand() +  m_levelOffset;
-   for (Entries_i i = m_entries.begin(); i != m_entries.end(); ++i)
-   {
-      if (i->m_level  < ae)
-         i->setBit(kExpanded);
-      else
-         i->resetBit(kExpanded);
-   } 
-}
 
 
 //______________________________________________________________________________
@@ -247,16 +241,11 @@ void FWGeometryTableManager::recalculateVisibility()
        (m_filterOff == false && data.testBit(kChildMatches) == false) )
       return;
 
+   if (m_browser->getVolumeMode())
+      recalculateVisibilityVolumeRec(i);
+   else
+      recalculateVisibilityNodeRec(i);
 
-  
-   switch (m_browser->getMode())
-   {
-      case FWGeometryTableViewBase::kVolume:
-         recalculateVisibilityVolumeRec(i);
-         break;
-      default:
-         recalculateVisibilityNodeRec(i);
-   }
    //  printf (" child [%d] FWGeometryTableManagerBase::recalculateVisibility table size %d \n", (int)m_row_to_index.size());
 }
 
@@ -420,7 +409,11 @@ bool  FWGeometryTableManager::nodeIsParent(const NodeInfo& data) const
 
 FWGeometryTableManagerBase::ESelectionState FWGeometryTableManager::nodeSelectionState(int idx) const
 {
-   if (  m_selectedIdx == idx || ( m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == m_entries[idx].m_node->GetVolume()) ))
+   //   printf("WGeometryTableManagerBase::ESelectionState FWGeometryTableManager::nodeSelectionSta [%d ] ;;;; %d\n", idx, m_selectedIdx);
+   if (idx < 0) return FWGeometryTableManagerBase::kNone;
+
+
+   if (  m_selectedIdx == idx || ( m_selectedIdx > 0 && m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == m_entries[idx].m_node->GetVolume()) ))
    {
       return FWGeometryTableManagerBase::kSelected;
    }
