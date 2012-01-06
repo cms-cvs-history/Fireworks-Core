@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.5 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.6 2012/01/06 00:27:33 amraktad Exp $
 //
 
 // system include files
@@ -62,10 +62,9 @@ void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
 }
 
 // ______________________________________________________________________
-void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm)
-{ 
+void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm, bool volumeColor)
+{
    static const TEveException eh("FWGeoTopNode::paintShape ");
-
  
    UInt_t phyID = UInt_t(idx+1);
 
@@ -77,7 +76,7 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
 
       TBuffer3D buff(TBuffer3DTypes::kComposite);
       buff.fID           = data.m_node->GetVolume();
-      buff.fColor        = /* m_browser->getVolumeMode() ? data.m_node->GetVolume()->GetLineColor(): */data.m_color;
+      buff.fColor        = volumeColor ? data.m_node->GetVolume()->GetLineColor() : data.m_color ;
       buff.fTransparency = data.m_node->GetVolume()->GetTransparency(); 
 
       nm.GetHomogenousMatrix(buff.fLocalMaster);  
@@ -110,7 +109,7 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
       TBuffer3D& buff = (TBuffer3D&) shape->GetBuffer3D (TBuffer3D::kCore, kFALSE);
       setupBuffMtx(buff, nm);
       buff.fID           = data.m_node->GetVolume();
-      buff.fColor        =  /*m_browser->getVolumeMode() ? data.m_node->GetVolume()->GetLineColor():*/ data.m_color;
+      buff.fColor        = volumeColor ? data.m_node->GetVolume()->GetLineColor() : data.m_color ;
       buff.fTransparency =  data.m_node->GetVolume()->GetTransparency();
 
       nm.GetHomogenousMatrix(buff.fLocalMaster);
@@ -140,6 +139,7 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
 
 void FWEveDetectorGeo::Paint(Option_t* opt)
 {
+   // printf("PAINPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTT \n");
    if (m_browser->getTableManager()->refEntries().empty()) return; 
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
@@ -156,12 +156,8 @@ void FWEveDetectorGeo::Paint(Option_t* opt)
       std::advance(sit, topIdx);
       m_browser->getTableManager()->getNodeMatrix(*sit, mtx);
 
-      // paint this node
-      //      if ( m_filterOff == false)
-      // ?????  m_browser->getTableManager()->assertNodeFilterCache(*sit);
-         
       if (m_browser->drawTopNode() && m_browser->getTableManager()->getVisibility(*sit))
-         paintShape(*sit,  topIdx,mtx);
+         paintShape(*sit,  topIdx,mtx, m_browser->getVolumeMode() );
    }
 
    if ( m_browser->getTableManager()->getVisibilityChld(*sit) && sit->testBit(FWGeometryTableManagerBase::kExpanded) )
@@ -194,7 +190,7 @@ void FWEveDetectorGeo::paintChildNodesRecurse (FWGeometryTableManagerBase::Entri
       if (m_filterOff)
       {
          if ( m_browser->getTableManager()->getVisibility(*it))
-            paintShape(*it, cnt , nm);
+            paintShape(*it, cnt , nm, m_browser->getVolumeMode() );
 
          if  ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel  || it->testBit(FWGeometryTableManagerBase::kExpanded) )) {
             paintChildNodesRecurse(it,cnt , nm);
@@ -203,9 +199,8 @@ void FWEveDetectorGeo::paintChildNodesRecurse (FWGeometryTableManagerBase::Entri
       }
       else
       {
-         //         m_browser->getTableManager()->assertNodeFilterCache(*it);
          if ( m_browser->getTableManager()->getVisibility(*it))
-            paintShape(*it,cnt , nm);
+            paintShape(*it,cnt , nm, m_browser->getVolumeMode()  );
 
          if ( m_browser->getTableManager()->getVisibilityChld(*it) && ( it->m_level < m_maxLevel || m_browser->getIgnoreVisLevelWhenFilter() ))
          {
@@ -237,6 +232,7 @@ TString  FWEveDetectorGeo::GetHighlightTooltip()
 
 void FWEveOverlap::Paint(Option_t*)
 {
+   // printf("PAINPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTT \n");
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
    FWGeometryTableManagerBase::Entries_i parentIt = m_browser->getTableManager()->refEntries().begin();
@@ -249,7 +245,7 @@ void FWEveOverlap::Paint(Option_t*)
       if (it->m_parent == 0)
       {
          if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-            paintShape(*it, cnt, *(it->m_node->GetMatrix()));
+            paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
 
          parentIt = it;
          visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
@@ -258,7 +254,7 @@ void FWEveOverlap::Paint(Option_t*)
       {  
          TGeoHMatrix nm = *(parentIt->m_node->GetMatrix());
          nm.Multiply(it->m_node->GetMatrix());
-         paintShape(*it, cnt , nm);
+         paintShape(*it, cnt , nm, false);
       }
    }
 }
