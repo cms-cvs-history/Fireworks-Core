@@ -25,6 +25,7 @@
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/src/FWGeometryTableView.h"
+#include "Fireworks/Core/src/FWOverlapTableView.h"
 #include "Fireworks/Core/interface/FWTextProjected.h"
 
 #ifdef __CINT__
@@ -72,5 +73,6 @@
 
 #pragma link C++ class FWGeometryTableViewBase;
 #pragma link C++ class FWGeometryTableView;
+#pragma link C++ class FWOverlapTableView;
 
 #endif
