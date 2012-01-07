@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.1 2012/01/06 00:27:34 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -29,7 +29,7 @@ public:
    virtual ~FWOverlapTableManager();
 
    virtual void recalculateVisibility();
-   void importOverlaps( TGeoNode* , TObjArray*, TEvePointSet*);
+   void importOverlaps();
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
@@ -39,7 +39,7 @@ private:
    FWOverlapTableManager(const FWOverlapTableManager&); // stop default
    const FWOverlapTableManager& operator=(const FWOverlapTableManager&); // stop default
 
-   // FWOverlapTableView* m_browser;
+   FWOverlapTableView* m_browser;
 };
 
 

@@ -8,14 +8,16 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.1 2012/01/06 00:27:34 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
 //
 
 // system include files
 
 // user include files
 #include "Fireworks/Core/src/FWOverlapTableManager.h"
+#include "Fireworks/Core/src/FWOverlapTableView.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
+#include "Fireworks/Core/interface/fwLog.h"
 
 #include "TEvePointSet.h"
 #include "TGeoVolume.h"
@@ -25,12 +27,14 @@
 #include "TGeoMatrix.h"
 #include "TEveUtil.h"
 
+#include "TGeoNode.h"
 #include "TGeoOverlap.h"
 #include "TGeoManager.h"
 #include "TPolyMarker3D.h"
 
-FWOverlapTableManager::FWOverlapTableManager(FWOverlapTableView* ):
-   FWGeometryTableManagerBase()
+FWOverlapTableManager::FWOverlapTableManager(FWOverlapTableView* v ):
+   FWGeometryTableManagerBase(),
+   m_browser(v)
 {
 }
 
@@ -38,23 +42,25 @@ FWOverlapTableManager::~FWOverlapTableManager()
 {
 }
 
-void FWOverlapTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVolumes, TEvePointSet* iPnts)
+void FWOverlapTableManager::importOverlaps()
 {
+   m_entries.clear();
   
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+   if (gGeoManager->cd(m_browser->getPath()) == 0)
+   {
 
-   //   m_entries[m_browser->getTopNodeIdx()].m_node->CheckOverlaps(1.0);
-   //   gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/");
-   gGeoManager->cd("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2");
+      fwLog(fwlog::kError) << "Path not valid." << std::endl;
+      return;
+   }
 
    gGeoManager->GetCurrentNode()->CheckOverlaps(1.0);
    TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
 
-   //   TEvePointSet* pointSet = m_browser->overlapPnts();
-
+   TGeoNode* top_node = gGeoManager->GetCurrentNode();
 
    NodeInfo topNodeInfo;
-   topNodeInfo.m_node   = top_node;
+   topNodeInfo.m_node   = top_node; 
    topNodeInfo.m_level  = 0;
    topNodeInfo.m_parent = -1;
    m_entries.push_back( topNodeInfo);
@@ -183,7 +189,7 @@ void FWOverlapTableManager::importOverlaps( TGeoNode*  top_node, TObjArray* iVol
       }
    }
 
-   iPnts->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
+   m_browser->getMarker()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
 }
 
 //_____________________________________________________________________________
@@ -221,6 +227,13 @@ bool  FWOverlapTableManager::nodeIsParent(const NodeInfo& data) const
 
 const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
 {
-   return data.name();
+   if (data.m_parent == -1)
+   {
+      TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+      return Form("%s [%d]", data.name(), gGeoManager->GetListOfOverlaps()->GetSize());
+   }
+   else
+   {
+      return data.name();
+   }
 }
-
