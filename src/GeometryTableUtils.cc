@@ -15,22 +15,9 @@
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
-#include "Fireworks/Core/src/FWPopupMenu.cc"
 
 
 #include "Fireworks/Core/interface/fwLog.h"
-
-enum GeoMenuOptions {
-   kSetTopNode,
-   kSetTopNodeCam,
-   kVisOn,
-   kVisOff,
-   kInspectMaterial,
-   kInspectShape,
-   kCamera,
-   kTableDebug
-};
-
 
 class PipiScene :public TEveScene
 {
@@ -105,24 +92,8 @@ public:
                                  win_x, win_y,
                                  mask);
 
-         FWPopupMenu* nodePopup = new FWPopupMenu();
-         nodePopup->AddEntry("Set As Top Node", kSetTopNode);
-         nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
-         nodePopup->AddEntry("Rnr On For All Children", kVisOn);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("Set Camera Center", kCamera);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
-         nodePopup->AddEntry("InspectShape", kInspectShape);
-         nodePopup->AddEntry("Table Debug", kTableDebug);
 
-         nodePopup->PlaceMenu(win_x, win_y,true,true);
-         nodePopup->Connect("Activated(Int_t)",
-                            "FWGeometryTableViewBase",
-                            const_cast<FWGeometryTableViewBase*>( m_GeoViewer),
-                            "chosenItemFrom3DView(Int_t)");
+         m_GeoViewer->popupMenu(win_x, win_y);
       }
    }
 
