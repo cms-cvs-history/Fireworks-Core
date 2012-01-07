@@ -64,26 +64,17 @@ public:
    };
 
 
-   FWGeometryTableViewBase(TEveWindowSlot*, FWViewType::EType, FWColorManager*, TGeoNode*, TObjArray*);
+   FWGeometryTableViewBase(TEveWindowSlot*, FWViewType::EType, FWColorManager*);
    virtual ~FWGeometryTableViewBase();
   
-   void cellClicked(Int_t iRow, Int_t iColumn, 
+    void cellClicked(Int_t iRow, Int_t iColumn, 
                     Int_t iButton, Int_t iKeyMod, 
                     Int_t iGlobalX, Int_t iGlobalY);
   
-   void chosenItem(int);
-   void chosenItemFrom3DView(int);
+   // void chosenItemFrom3DView(int);
    void selectView(int);
-
-   void printTable();
-
-   void cdNode(int);
-   void cdTop();
-   void cdUp();
-   void setPath(int, std::string&);
-
+   virtual void popupMenu(int, int) {}
  
-   int getTopNodeIdx() const { return m_topNodeIdx.value(); }
    bool getEnableHighlight() { return m_enableHighlight.value(); } 
    virtual  FWGeometryTableManagerBase*  getTableManager() { return 0; }
    virtual void setFrom(const FWConfiguration&);
@@ -99,12 +90,10 @@ public:
    void refreshTable3D();
 
 protected:
-   virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes) = 0;
    virtual TEveElement* getEveGeoElement() const { return 0;}
    virtual void assertEveGeoElement() {}
 
-#ifndef __CINT__     
-   FWLongParameter         m_topNodeIdx;   
+#ifndef __CINT__      
    FWBoolParameter         m_enableHighlight; 
 #endif
 

@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.10 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.11 2012/01/06 23:19:40 amraktad Exp $
 //
 
 // system include files
@@ -16,6 +16,7 @@
 
 // user include files
 #include "Fireworks/Core/src/FWGeometryTableView.h"
+#include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/interface/FWViewType.h"
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
 #include "Fireworks/Core/interface/CmsShowViewPopup.h"
@@ -23,17 +24,39 @@
 #include "Fireworks/Core/interface/fwLog.h"
 
 #include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
+#include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/Core/src/FWValidatorBase.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
+#include "Fireworks/Core/src/FWPopupMenu.cc"
 
+#include "KeySymbols.h"
 #include "TGButton.h"
 #include "TGLabel.h"
 #include "TGListBox.h"
-#include "KeySymbols.h"
+#include "TGLViewer.h"
+#include "TGeoMatrix.h"
+#include "TGeoBBox.h"
+
+#include "TEveViewer.h"
+#include "TEveManager.h"
+#include "TGeoManager.h"
+#include "TGLCamera.h"
+
 //==============================================================================
 //==============================================================================
 //==============================================================================
 //==============================================================================
+
+enum GeoMenuOptions {
+   kSetTopNode,
+   kSetTopNodeCam,
+   kVisOn,
+   kVisOff,
+   kInspectMaterial,
+   kInspectShape,
+   kCamera,
+   kTableDebug
+};
 
 class FWGeoMaterialValidator : public FWValidatorBase 
 {
@@ -116,12 +139,13 @@ public:
 //==============================================================================
 //==============================================================================
 
-FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes)
-   : FWGeometryTableViewBase(iParent, FWViewType::kGeometryTable, colMng, tn, volumes),
+FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng)
+   : FWGeometryTableViewBase(iParent, FWViewType::kGeometryTable, colMng),
      m_tableManager(0),
      m_filterEntry(0),
      m_filterValidator(0),
-     m_eveTopNode(0),
+     m_eveTopNode(0),   
+     m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
      m_mode(this, "Mode:", 0l, 0l, 1l),
      m_filter(this,"Materials:",std::string()),
      m_disableTopNode(this,"HideTopNode", true),
@@ -137,12 +161,12 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    {
       TGTextButton* rb = new TGTextButton (hp, "CdTop");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0) );
-      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdTop()");
+      rb->Connect("Clicked()","FWGeometryTableView",this,"cdTop()");
    } 
    {
       TGTextButton* rb = new TGTextButton (hp, "CdUp");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
-      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdUp()");
+      rb->Connect("Clicked()","FWGeometryTableView",this,"cdUp()");
    }
   
    {
@@ -165,8 +189,11 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    m_frame->AddFrame(hp,new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 4, 2, 2, 0));
 
    m_tableManager = new FWGeometryTableManager(this);
-   initGeometry(tn, volumes);
-
+   {
+      TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+      m_tableManager->loadGeometry( gGeoManager->GetTopNode(), gGeoManager->GetListOfVolumes());
+   }
+   cdTop();
 
 
    m_mode.addEntry(kNode, "Node");
@@ -187,13 +214,6 @@ FWGeometryTableView::~FWGeometryTableView()
 {
 }
 
-
-
-void FWGeometryTableView::initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes)
-{ 
-   m_tableManager->loadGeometry(iGeoTopNode, iVolumes);
-   cdTop();
-}
 
 
 FWGeometryTableManagerBase* FWGeometryTableView::getTableManager()
@@ -286,4 +306,158 @@ TEveElement* FWGeometryTableView::getEveGeoElement() const
 {
   
    return m_eveTopNode;
+}
+
+void
+FWGeometryTableView::printTable()
+{
+   // print all entries
+   //getTableManager()->printChildren(-1);
+   std::cout << "TODO .... \n";
+}
+
+//______________________________________________________________________________
+
+
+void FWGeometryTableView::cdNode(int idx)
+{
+   std::string p;
+   getTableManager()->getNodePath(idx, p);
+   setPath(idx, p);
+}
+
+void FWGeometryTableView::cdTop()
+{
+   std::string path = "/" ;
+   path += getTableManager()->refEntries().at(0).name();
+   setPath(-1, path ); 
+}
+
+void FWGeometryTableView::cdUp()
+{   
+   if ( getTopNodeIdx() != -1)
+   {
+      int pIdx   = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
+      std::string p;
+      getTableManager()->getNodePath(pIdx, p);
+      setPath(pIdx, p);
+   }
+}
+//______________________________________________________________________________
+
+void FWGeometryTableView::setPath(int parentIdx, std::string& path)
+{
+   m_topNodeIdx.set(parentIdx);
+#ifdef PERFTOOL_BROWSER  
+   ProfilerStart(Form("cdPath%d.prof", parentIdx));
+#endif
+
+   getTableManager()->topGeoNodeChanged(parentIdx);
+
+   printf("END Set Path to [%s], curren node \n", path.c_str()); 
+
+   FWGUIManager::getGUIManager()->updateStatus(path.c_str());
+#ifdef PERFTOOL_BROWSER  
+   ProfilerStop();
+#endif 
+   refreshTable3D();
+
+}
+
+void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
+{ 
+   FWGeometryTableViewBase::setFrom(iFrom);
+   cdNode(m_topNodeIdx.value());
+}
+
+//______________________________________________________________________________
+
+void FWGeometryTableView::popupMenu(int x, int y)
+{
+
+   FWPopupMenu* nodePopup = new FWPopupMenu();
+   nodePopup->AddEntry("Set As Top Node", kSetTopNode);
+   nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
+   nodePopup->AddEntry("Rnr On For All Children", kVisOn);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Set Camera Center", kCamera);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
+   nodePopup->AddEntry("InspectShape", kInspectShape);
+   nodePopup->AddEntry("Table Debug", kTableDebug);
+
+   nodePopup->PlaceMenu(x, y,true,true);
+   nodePopup->Connect("Activated(Int_t)",
+                      "FWGeometryTableView",
+                      this,
+                      "chosenItem(Int_t)");
+}
+
+//______________________________________________________________________________
+
+void FWGeometryTableView::chosenItem(int x)
+{
+   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->refSelected();
+   printf("chosen item %s \n", ni.name());
+
+   TGeoVolume* gv = ni.m_node->GetVolume();
+   bool visible = true;
+   bool resetHome = false;
+   if (gv)
+   {
+      switch (x) {
+         case kVisOff:
+            visible = false;
+         case kVisOn:
+            getTableManager()->setDaughtersSelfVisibility(visible);
+            refreshTable3D();
+            break;
+
+         case kInspectMaterial:
+            gv->InspectMaterial();
+            break;
+         case kInspectShape:
+            gv->InspectShape();
+            break;
+         case kTableDebug:
+            std::cout << "node name " << ni.name() << "parent " <<getTableManager()->refEntries()[ni.m_parent].name() <<  std::endl;
+            break;
+
+         case kSetTopNode:
+            cdNode(getTableManager()->m_selectedIdx);
+            break;
+
+         case kSetTopNodeCam:
+            cdNode(getTableManager()->m_selectedIdx);
+            resetHome = true;
+         case kCamera:
+         {
+            TGeoHMatrix mtx;
+            getTableManager()->getNodeMatrix( ni, mtx);
+
+            static double pnt[3];
+            TGeoBBox* bb = static_cast<TGeoBBox*>( ni.m_node->GetVolume()->GetShape());
+            const double* origin = bb->GetOrigin();
+            mtx.LocalToMaster(origin, pnt);
+
+            TEveElementList* vl = gEve->GetViewers();
+            for (TEveElement::List_i it = vl->BeginChildren(); it != vl->EndChildren(); ++it)
+            {
+               TEveViewer* v = ((TEveViewer*)(*it));
+               TString name = v->GetElementName();
+               if (name.Contains("3D"))
+               {
+                  v->GetGLViewer()->SetDrawCameraCenter(true);
+                  TGLCamera& cam = v->GetGLViewer()->CurrentCamera();
+                  cam.SetExternalCenter(true);
+                  cam.SetCenterVec(pnt[0], pnt[1], pnt[2]);
+               }
+            }
+            if (resetHome) gEve->FullRedraw3D(true, true);
+            break;
+         }
+      }
+   }
 }

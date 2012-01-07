@@ -13,7 +13,7 @@
 #include "Fireworks/Core/interface/FWColorManager.h"
 #include "Fireworks/Core/interface/FWParameterSetterBase.h"
 #include "Fireworks/Core/src/FWColorSelect.h"
-
+#include "Fireworks/Core/src/FWPopupMenu.cc"
 
 
 #include "TGFileDialog.h"
@@ -111,9 +111,8 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
 //==============================================================================
 
 
-FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes )
+FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng )
    : FWViewBase(type),
-     m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
      m_enableHighlight(this,"EnableHiglight", false),
      m_colorManager(colMng),
      m_colorPopup(0),
@@ -331,108 +330,21 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
       getTableManager()->dataChanged();
 
    }
-   else if (iColumn == FWGeometryTableManagerBase::kName)
+   else if  (iColumn == FWGeometryTableManagerBase::kName)
    {
-      FWPopupMenu* nodePopup = new FWPopupMenu();
-      if (typeId() == FWViewType::kGeometryTable)
-      {
-         nodePopup->AddEntry("Set As Top Node", kSetTopNode);
-         nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
-         nodePopup->AddEntry("Rnr On For All Children", kVisOn);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("Set Camera Center", kCamera);
-         nodePopup->AddSeparator();
-         nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
-         nodePopup->AddEntry("InspectShape", kInspectShape);
-         nodePopup->AddEntry("Table Debug", kTableDebug);
-      }
-      else
-      {
-         nodePopup->AddEntry("Set Camera Center", kCamera);
-      }
-      nodePopup->PlaceMenu(x,y,true,true);
-      nodePopup->Connect("Activated(Int_t)",
-                         "FWGeometryTableViewBase",
-                         const_cast<FWGeometryTableViewBase*>(this),
-                         "chosenItem(Int_t)");
+      popupMenu(x, y);
    }
 }
 
 
-
+/*
 
 void FWGeometryTableViewBase::chosenItemFrom3DView(int x)
 {
   assert(x >=0);
   chosenItem(x);
-}
+  }*/
 
-void FWGeometryTableViewBase::chosenItem(int x)
-{
-   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->refSelected();
-   // printf("chosen item %s \n", ni.name());
-
-   TGeoVolume* gv = ni.m_node->GetVolume();
-   bool visible = true;
-   bool resetHome = false;
-   if (gv)
-   {
-      switch (x) {
-        case kVisOff:
-            visible = false;
-        case kVisOn:
-           getTableManager()->setDaughtersSelfVisibility(visible);
-            refreshTable3D();
-            break;
-
-         case kInspectMaterial:
-            gv->InspectMaterial();
-            break;
-         case kInspectShape:
-            gv->InspectShape();
-            break;
-         case kTableDebug:
-              std::cout << "node name " << ni.name() << "parent " <<getTableManager()->refEntries()[ni.m_parent].name() <<  std::endl;
-              break;
-
-         case kSetTopNode:
-            cdNode(getTableManager()->m_selectedIdx);
-            break;
-
-         case kSetTopNodeCam:
-            cdNode(getTableManager()->m_selectedIdx);
-            resetHome = true;
-         case kCamera:
-         {
-            TGeoHMatrix mtx;
-            getTableManager()->getNodeMatrix( ni, mtx);
-
-            static double pnt[3];
-            TGeoBBox* bb = static_cast<TGeoBBox*>( ni.m_node->GetVolume()->GetShape());
-            const double* origin = bb->GetOrigin();
-            mtx.LocalToMaster(origin, pnt);
-
-            TEveElementList* vl = gEve->GetViewers();
-            for (TEveElement::List_i it = vl->BeginChildren(); it != vl->EndChildren(); ++it)
-            {
-               TEveViewer* v = ((TEveViewer*)(*it));
-               TString name = v->GetElementName();
-               if (name.Contains("3D"))
-               {
-                  v->GetGLViewer()->SetDrawCameraCenter(true);
-                  TGLCamera& cam = v->GetGLViewer()->CurrentCamera();
-                  cam.SetExternalCenter(true);
-                  cam.SetCenterVec(pnt[0], pnt[1], pnt[2]);
-               }
-            }
-            if (resetHome) gEve->FullRedraw3D(true, true);
-            break;
-         }
-      }
-   }
-}
 
 void FWGeometryTableViewBase::setBackgroundColor()
 {
@@ -460,61 +372,6 @@ void FWGeometryTableViewBase::nodeColorChangeRequested(Color_t col)
    }
 }
 
-void
-FWGeometryTableViewBase::printTable()
-{
-   // print all entries
-   //getTableManager()->printChildren(-1);
-   std::cout << "TODO .... \n";
-}
-
-//______________________________________________________________________________
-
-
-void FWGeometryTableViewBase::cdNode(int idx)
-{
-   std::string p;
-   getTableManager()->getNodePath(idx, p);
-   setPath(idx, p);
-}
-
-void FWGeometryTableViewBase::cdTop()
-{
-   std::string path = "/" ;
-   path += getTableManager()->refEntries().at(0).name();
-   setPath(-1, path ); 
-}
-
-void FWGeometryTableViewBase::cdUp()
-{   
-   if ( getTopNodeIdx() != -1)
-   {
-      int pIdx   = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
-      std::string p;
-      getTableManager()->getNodePath(pIdx, p);
-      setPath(pIdx, p);
-   }
-}
-//______________________________________________________________________________
-
-void FWGeometryTableViewBase::setPath(int parentIdx, std::string& path)
-{
-   m_topNodeIdx.set(parentIdx);
-#ifdef PERFTOOL_BROWSER  
-   ProfilerStart(Form("cdPath%d.prof", parentIdx));
-#endif
-
-   getTableManager()->topGeoNodeChanged(parentIdx);
-
-   printf("END Set Path to [%s], curren node \n", path.c_str()); 
-
-   FWGUIManager::getGUIManager()->updateStatus(path.c_str());
-#ifdef PERFTOOL_BROWSER  
-   ProfilerStop();
-#endif 
-   refreshTable3D();
-
-}
 //______________________________________________________________________________
 
 void FWGeometryTableViewBase::refreshTable3D()
@@ -557,9 +414,6 @@ void FWGeometryTableViewBase::setFrom(const FWConfiguration& iFrom)
       (*it)->setFrom(iFrom);
 
    }  
-
-   //   resetSetters();
-   cdNode(m_topNodeIdx.value());
    m_viewersConfig = iFrom.valueForKey("Viewers");
 
    m_enableRedraw = true;

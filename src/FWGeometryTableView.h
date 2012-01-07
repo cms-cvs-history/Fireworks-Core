@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.2 2012/01/06 00:27:34 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.3 2012/01/06 23:19:40 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -29,7 +29,7 @@ class FWEveDetectorGeo;
 class FWGeometryTableView : public FWGeometryTableViewBase
 {
 public:
-   FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng, TGeoNode* tn, TObjArray* volumes);
+   FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng);
    virtual ~FWGeometryTableView();
    virtual void popuateController(ViewerParameterGUI&) const;
    virtual  FWGeometryTableManagerBase*  getTableManager();
@@ -46,8 +46,22 @@ public:
 
    bool drawTopNode() const { return !m_disableTopNode.value(); }
 
+   void cdNode(int);
+   void cdTop();
+   void cdUp();
+   void setPath(int, std::string&);
+
+   void printTable();
+
+   int getTopNodeIdx() const { return m_topNodeIdx.value(); }
+
+   virtual void setFrom(const FWConfiguration&);
+
+   virtual void popupMenu(int, int);
+   void chosenItem(int);
+
 protected:
-   virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes);
+   // virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes);
    virtual TEveElement* getEveGeoElement() const;
    virtual void assertEveGeoElement();
 
@@ -64,6 +78,7 @@ private:
    FWEveDetectorGeo*         m_eveTopNode;
 
 #ifndef __CINT__
+   FWLongParameter         m_topNodeIdx;  
    FWEnumParameter         m_mode;
    FWStringParameter       m_filter; 
    FWBoolParameter         m_disableTopNode;
