@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.11 2012/01/06 23:19:40 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.12 2012/01/07 04:26:37 amraktad Exp $
 //
 
 // system include files
@@ -278,8 +278,8 @@ void FWGeometryTableView::updateFilter(std::string& exp)
 
 //==============================================================================
 
-void FWGeometryTableView::popuateController(ViewerParameterGUI&) const
-{/*
+void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
+{
    gui.requestTab("Style").
       addParam(&m_disableTopNode).
       addParam(&m_mode).
@@ -288,7 +288,6 @@ void FWGeometryTableView::popuateController(ViewerParameterGUI&) const
       addParam(&m_visLevelFilter).
       separator().
       addParam(&m_enableHighlight);
- */
 }
 
 //______________________________________________________________________________
@@ -304,7 +303,6 @@ void  FWGeometryTableView::assertEveGeoElement()
 
 TEveElement* FWGeometryTableView::getEveGeoElement() const
 {
-  
    return m_eveTopNode;
 }
 

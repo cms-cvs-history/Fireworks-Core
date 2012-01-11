@@ -31,6 +31,7 @@ class TGeoManager;
 class TEveWindowSlot;
 class TEveWindowFrame;
 class TEveElement;
+class  TEvePointSet;
 
 class FWTableWidget;
 class FWGeometryTableManagerBase;
@@ -87,11 +88,12 @@ public:
 
    void setBackgroundColor();
    void populate3DViewsFromConfig();
-   void refreshTable3D();
+   virtual void refreshTable3D();
 
 protected:
    virtual TEveElement* getEveGeoElement() const { return 0;}
    virtual void assertEveGeoElement() {}
+   virtual TEvePointSet* getEveMarker() const { return 0;}
 
 #ifndef __CINT__      
    FWBoolParameter         m_enableHighlight; 
@@ -112,6 +114,8 @@ protected:
 
    const FWConfiguration*  m_viewersConfig;
 
+  
+  bool m_enableRedraw;
 
 #ifndef __CINT__
    // std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;
@@ -126,8 +130,6 @@ private:
    FWGeometryTableViewBase(const FWGeometryTableViewBase&); // stop default
 
    const FWGeometryTableViewBase& operator=(const FWGeometryTableViewBase&); // stop default
-
-   bool m_enableRedraw;
 
    ClassDef(FWGeometryTableViewBase, 0);
 };

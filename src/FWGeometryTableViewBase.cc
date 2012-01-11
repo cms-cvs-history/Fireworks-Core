@@ -26,6 +26,7 @@
 #include "TGMenu.h"
 #include "TGComboBox.h"
 // #define PERFTOOL_BROWSER
+#include "TEvePointSet.h"
 #include "TGeoShape.h"
 #include "TGeoBBox.h"
 #include "TEveManager.h"
@@ -199,6 +200,10 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
             m_viewBox->setElement(getEveGeoElement());
 
             s->AddElement(getEveGeoElement());
+            if (getEveMarker()) {
+               TEveSceneInfo* sgsi =(TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
+               sgsi->GetScene()->AddElement(getEveMarker());
+            }
             gEve->FullRedraw3D(false, true);
          }   
       }
@@ -216,17 +221,19 @@ FWGeometryTableViewBase::selectView(int idx)
    TEveSceneInfo* si = (TEveSceneInfo*)v->FindChild(Form("SI - %s",v->GetElementName()));
    assertEveGeoElement();
    m_viewBox->setElement(getEveGeoElement());
-
+   TEveSceneInfo* sgsi =(TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
 
    if (si == 0) {
       TEveScene* s = new PipiScene(this, v->GetElementName());
       gEve->AddElement(s, gEve->GetScenes());
       s->AddElement(getEveGeoElement());
+      if (getEveMarker()) sgsi->AddElement(getEveMarker());
       v->AddScene(s);
    }
    else
    {
       si->GetScene()->RemoveElement(getEveGeoElement());
+      if (getEveMarker()) sgsi->GetScene()->RemoveElement(getEveMarker());
    }
 
    getEveGeoElement()->ElementChanged();

@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.3 2012/01/07 04:27:41 amraktad Exp $
 //
 
 // system include files
@@ -42,26 +42,50 @@ FWOverlapTableManager::~FWOverlapTableManager()
 {
 }
 
-void FWOverlapTableManager::importOverlaps()
+
+//---------------------------------------------------------------------------------
+void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
-   m_entries.clear();
   
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-   if (gGeoManager->cd(m_browser->getPath()) == 0)
-   {
+   m_levelOffset = 0;
+   if (!iPath.empty()) {
+      size_t ps = iPath.size();
+      if (ps > 1 && iPath[ps-1] == '/') 
+         iPath = iPath.substr(0, ps-1);
 
-      fwLog(fwlog::kError) << "Path not valid." << std::endl;
-      return;
+      std::string::iterator bi = iPath.begin();
+      bi++;
+      // first level offset  0
+      while (bi != iPath.end())  { if (*bi == '/') { bi++; break;};  bi++;} 
+      // printf("ffff %s \n", iPath.c_str());
+      for (std::string::iterator i = bi; i != iPath.end(); ++i)
+      {
+         if (*i == '/') m_levelOffset++;
+      }
+      //   printf("level offset %d \n", m_levelOffset);
+    
+      if (gGeoManager->GetCurrentNavigator()->CheckPath(iPath.c_str()) == 0)
+      {
+         fwLog(fwlog::kError) << "IPath  [" << iPath <<"] not valid." << std::endl;
+         return;
+      }
+      gGeoManager->cd(iPath.c_str());
    }
-
-   gGeoManager->GetCurrentNode()->CheckOverlaps(1.0);
+   else
+   {
+      gGeoManager->cd("");
+   }
+  
+   gGeoManager->GetCurrentNode()->CheckOverlaps(iPrecision);
    TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
 
    TGeoNode* top_node = gGeoManager->GetCurrentNode();
 
+   m_entries.clear();
    NodeInfo topNodeInfo;
    topNodeInfo.m_node   = top_node; 
-   topNodeInfo.m_level  = 0;
+   topNodeInfo.m_level  = m_levelOffset;
    topNodeInfo.m_parent = -1;
    m_entries.push_back( topNodeInfo);
 
@@ -75,6 +99,7 @@ void FWOverlapTableManager::importOverlaps()
       TGeoNode*    top_gnode (top_git.Next());
       while((ovl = (TGeoOverlap*)next_ovl())) 
       {
+
          if (1) printf(Form("Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
                             ovl->IsExtrusion(),  ovl->IsOverlap(),
                             ovl->GetFirstVolume()->GetName(),
@@ -133,6 +158,11 @@ void FWOverlapTableManager::importOverlaps()
                      //______________________________________________________________________________
                      //______________________________________________________________________________
                      {
+
+                        // if ( ovl->IsOverlap() && m_browser->m_rnrOverlap.value() == false ) continue;
+
+                        ///if ( ovl->IsExtrusion() && m_browser->m_rnrExtrusion.value() == false ) continue;
+
                         TString mname  = ovl->IsExtrusion() ? "Extr: " : "Ovlp: ";
                         mname += motherv->GetName();
                         TString mtitle = top_node->GetVolume()->GetName();
@@ -142,7 +172,9 @@ void FWOverlapTableManager::importOverlaps()
                         }
 
                         //  printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
-                    
+
+                        m_browser->m_markerIndices.push_back(m_entries.size());
+                       
                         TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
                         mother_node->SetNameTitle(mname.Data(), mtitle.Data());
                         m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld | kExpanded));
@@ -166,9 +198,15 @@ void FWOverlapTableManager::importOverlaps()
                            motherm.LocalToMaster(pl, pg);
                            // pnts->SetNextPoint(pg[0], pg[1], pg[2]);
                            // printf("set point %f %f %f\n", pg[0], pg[1], pg[2]);
+                          /*
                            pnts.push_back( pg[0]);
                            pnts.push_back( pg[1]);
                            pnts.push_back( pg[2]);
+                           */
+
+                          m_browser->m_markerVertices.push_back( pg[0]);
+                          m_browser->m_markerVertices.push_back( pg[1]);
+                          m_browser->m_markerVertices.push_back( pg[2]);
 
                         }
 
@@ -189,7 +227,7 @@ void FWOverlapTableManager::importOverlaps()
       }
    }
 
-   m_browser->getMarker()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
+   m_browser->getEveMarker()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
 }
 
 //_____________________________________________________________________________
@@ -205,8 +243,17 @@ void FWOverlapTableManager::recalculateVisibility( )
    for (FWGeometryTableManagerBase::Entries_i i = m_entries.begin(); i!= m_entries.end(); ++i, ++cnt)
    {
       if (i->m_parent == 0) {
-         rnrChld = i->testBit(FWGeometryTableManagerBase::kExpanded);
-         m_row_to_index.push_back(cnt);
+        if ((m_browser->m_rnrOverlap.value() && (strncmp(i->m_node->GetName(), "Ovlp", 3) == 0)) ||
+            (m_browser->m_rnrExtrusion.value() && (strncmp(i->m_node->GetName(), "Extr", 3) == 0)) )
+         if (1)
+         {
+            rnrChld = i->testBit(FWGeometryTableManagerBase::kExpanded);
+            m_row_to_index.push_back(cnt);
+         }
+         else
+         {
+            rnrChld = false;
+         }
       }
       else if (rnrChld)
       {
@@ -229,8 +276,15 @@ const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
 {
    if (data.m_parent == -1)
    {
-      TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-      return Form("%s [%d]", data.name(), gGeoManager->GetListOfOverlaps()->GetSize());
+     int ne = 0;
+     int no = 0;
+     TGeoOverlap* ovl;
+     TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+     TIter next_ovl(gGeoManager->GetListOfOverlaps());
+     while((ovl = (TGeoOverlap*)next_ovl())) 
+       ovl->IsOverlap() ? no++ : ne++;
+     
+     return Form("%s Ovl[%d] Ext[%d]", data.m_node->GetName(), no, ne);
    }
    else
    {

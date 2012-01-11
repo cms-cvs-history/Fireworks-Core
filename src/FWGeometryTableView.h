@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.3 2012/01/06 23:19:40 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.4 2012/01/07 04:26:37 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -31,7 +31,7 @@ class FWGeometryTableView : public FWGeometryTableViewBase
 public:
    FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng);
    virtual ~FWGeometryTableView();
-   virtual void popuateController(ViewerParameterGUI&) const;
+   virtual void populateController(ViewerParameterGUI&) const;
    virtual  FWGeometryTableManagerBase*  getTableManager();
 
    void filterListCallback();

@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id: FWOverlapTableView.h,v 1.1.2.2 2012/01/06 00:27:34 amraktad Exp $
+// $Id: FWOverlapTableView.h,v 1.1.2.3 2012/01/07 04:27:41 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -38,23 +38,30 @@ public:
    // virtual void setFrom(const FWConfiguration&);
    //   virtual void addTo(FWConfiguration&) const;
    virtual  FWGeometryTableManagerBase*  getTableManager(); 
-
-   void pathListCallback();
-   void pathTextEntryCallback();
+   
+  void pathListCallback();
+   //  void pathTextEntryCallback();
    void recalculate();
-   TEvePointSet* getMarker() const { return m_marker; }
-   const char* getPath() const { return m_path.value().c_str(); }
+   virtual TEvePointSet* getEveMarker() const { return m_marker; }
 
    virtual void setFrom(const FWConfiguration&);
-
+   virtual void populateController(ViewerParameterGUI&) const;
+ 
+   void drawPoints();
+   void pointSize();
+   //  std::string getPathTextEntry() const;
+  
+  virtual void refreshTable3D();
 protected:
    virtual TEveElement* getEveGeoElement() const;
    virtual void assertEveGeoElement();
 
-private:
+private:  
+  
    FWOverlapTableView(const FWOverlapTableView&); // stop default
    const FWOverlapTableView& operator=(const FWOverlapTableView&); // stop default
-
+  
+public:
    // ---------- member data --------------------------------
 
    FWOverlapTableManager *m_tableManager;
@@ -64,10 +71,20 @@ private:
 
    FWGUIValidatingTextEntry* m_pathEntry;
    FWGeoPathValidator*       m_pathValidator;
-
+  
+  std::vector<float>  m_markerVertices;
+  std::vector<int>    m_markerIndices;
+  
 #ifndef __CINT__
    FWStringParameter       m_path; 
    FWDoubleParameter       m_precision;
+
+   FWBoolParameter         m_rnrOverlap;
+   FWBoolParameter         m_rnrExtrusion;
+
+   FWBoolParameter         m_drawPoints;
+   FWLongParameter         m_pointSize;
+   
 #endif
    ClassDef(FWOverlapTableView, 0);
 };

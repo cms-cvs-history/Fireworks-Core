@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.6 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.7 2012/01/06 23:08:38 amraktad Exp $
 //
 
 // system include files
@@ -244,11 +244,20 @@ void FWEveOverlap::Paint(Option_t*)
    {
       if (it->m_parent == 0)
       {
+        
+        if ((m_browser->m_rnrOverlap.value() && (strncmp(it->m_node->GetName(), "Ovlp", 3) == 0)) ||
+            (m_browser->m_rnrExtrusion.value() && (strncmp(it->m_node->GetName(), "Extr", 3) == 0)) )
+        {          
          if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
             paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
+          
+          visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
+        }
+        else {
+          visChld = false;
+        }
 
          parentIt = it;
-         visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
       }
       else if (visChld && it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
       {  

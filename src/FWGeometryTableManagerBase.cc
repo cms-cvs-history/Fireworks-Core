@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -375,6 +375,7 @@ FWGeometryTableManagerBase::Entries_i FWGeometryTableManagerBase::refSelected()
    std::advance(i,m_selectedIdx );
    return  i; //m_entries[m_selectedIdx];
 }
+
 //______________________________________________________________________________
 
 void FWGeometryTableManagerBase::getNodePath(int idx, std::string& path) const
