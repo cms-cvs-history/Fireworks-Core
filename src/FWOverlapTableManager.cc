@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.3 2012/01/07 04:27:41 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.4 2012/01/11 01:12:53 amraktad Exp $
 //
 
 // system include files
@@ -46,7 +46,6 @@ FWOverlapTableManager::~FWOverlapTableManager()
 //---------------------------------------------------------------------------------
 void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
-  
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
    m_levelOffset = 0;
    if (!iPath.empty()) {
@@ -83,6 +82,10 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    TGeoNode* top_node = gGeoManager->GetCurrentNode();
 
    m_entries.clear();
+   m_browser->m_markerVertices.clear();
+   m_browser->m_markerIndices.clear();
+
+
    NodeInfo topNodeInfo;
    topNodeInfo.m_node   = top_node; 
    topNodeInfo.m_level  = m_levelOffset;
@@ -105,6 +108,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                             ovl->GetFirstVolume()->GetName(),
                             ovl->GetSecondVolume()->GetName()));
 
+      reiterate:
          TGeoNode    *n1 =  0, *n2 =  0, *gnode;
          TGeoVolume  *v1 =  0, *v2 =  0, *gvol;
          Int_t        l1 = -1,  l2 = -1;
@@ -171,7 +175,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                            mtitle += git.GetNode(l)->GetVolume()->GetName();
                         }
 
-                        //  printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
+                        printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
 
                         m_browser->m_markerIndices.push_back(m_entries.size());
                        
@@ -198,15 +202,15 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                            motherm.LocalToMaster(pl, pg);
                            // pnts->SetNextPoint(pg[0], pg[1], pg[2]);
                            // printf("set point %f %f %f\n", pg[0], pg[1], pg[2]);
-                          /*
-                           pnts.push_back( pg[0]);
-                           pnts.push_back( pg[1]);
-                           pnts.push_back( pg[2]);
+                           /*
+                             pnts.push_back( pg[0]);
+                             pnts.push_back( pg[1]);
+                             pnts.push_back( pg[2]);
                            */
 
-                          m_browser->m_markerVertices.push_back( pg[0]);
-                          m_browser->m_markerVertices.push_back( pg[1]);
-                          m_browser->m_markerVertices.push_back( pg[2]);
+                           m_browser->m_markerVertices.push_back( pg[0]);
+                           m_browser->m_markerVertices.push_back( pg[1]);
+                           m_browser->m_markerVertices.push_back( pg[2]);
 
                         }
 
@@ -222,6 +226,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
             printf( "  Could not find both volumes, resetting geo-iterator.");
             top_git.Reset();
             top_gnode = top_git.Next();
+            goto reiterate;
          }
 
       }
