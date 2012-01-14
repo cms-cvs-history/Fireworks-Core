@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.4 2012/01/07 04:27:41 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.5 2012/01/11 01:12:53 amraktad Exp $
 //
 
 // system include files
@@ -44,6 +44,8 @@
 #include "TGNumberEntry.h"
 #include "TGListBox.h"
 #include "TGButton.h"
+
+static const std::string sUpdateMsg = "Please press Apply button to update overlaps.\n";
 
 class FWGeoPathValidator : public FWValidatorBase 
 {
@@ -106,10 +108,11 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_marker(0),
    m_pathEntry(0),
    m_pathValidator(0),
+   m_numEntry(0),
    m_path(this,"Path:", std::string("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2")),
-   m_precision(this, "Precision", 0.001, 0., 10.),
+   m_precision(this, "Precision", 1., 0.001, 10.),
    m_rnrOverlap(this, "Overlap", true),
-   m_rnrExtrusion(this, "Extrusion", false),
+   m_rnrExtrusion(this, "Extrusion", true),
    m_drawPoints(this, "DrawPoints", true),
    m_pointSize(this, "PointSize:", 1l, 0l, 10l)
 {
@@ -121,6 +124,18 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
       m_viewBox = new FWViewCombo(hp, this);
       hp->AddFrame( m_viewBox,new TGLayoutHints(kLHintsExpandY, 2, 2, 0, 0));
    }
+
+   {
+      TGTextButton* rb = new TGTextButton (hp, "CdTop");
+      hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0) );
+      rb->Connect("Clicked()","FWOverlapTableView",this,"cdTop()");
+   } 
+   {
+      TGTextButton* rb = new TGTextButton (hp, "CdUp");
+      hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
+      rb->Connect("Clicked()","FWOverlapTableView",this,"cdUp()");
+   }
+
    { 
       hp->AddFrame(new TGLabel(hp, "Path:"), new TGLayoutHints(kLHintsBottom, 10, 0, 0, 2));
       m_pathEntry = new FWGUIValidatingTextEntry(hp);
@@ -138,12 +153,13 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
 
    {
       hp->AddFrame(new TGLabel(hp, "Precision:"), new TGLayoutHints(kLHintsBottom, 10, 0, 0, 2));
-      TGNumberEntry* rb = new TGNumberEntry(hp,  m_precision.value(), 5, -1, TGNumberFormat::kNESReal, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, m_precision.min(), m_precision.max());
-      hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
-      rb->Connect("Clicked()","FWOverlapTableView",this,"recalculate()");
+      m_numEntry = new TGNumberEntry(hp,  m_precision.value(), 5, -1, TGNumberFormat::kNESReal, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, m_precision.min(), m_precision.max());
+      hp->AddFrame(m_numEntry, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
+     m_numEntry->Connect("ValueSet(Long_t)","FWOverlapTableView",this,"precisionCallback(Long_t)");
+     // m_numEntry->Connect("ValueChanged(Long_t)","FWOverlapTableView",this,"precisionCallback1(Long_t)");
    }
    {
-      TGTextButton* rb = new TGTextButton (hp, "recalculate");
+      TGTextButton* rb = new TGTextButton (hp, "Apply");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
       rb->Connect("Clicked()","FWOverlapTableView",this,"recalculate()");
    }
@@ -202,8 +218,7 @@ void FWOverlapTableView::assertEveGeoElement()
       m_eveTopNode = new  FWEveOverlap(this);
       m_eveTopNode->SetElementNameTitle("overlapNode", "opverlapNodetitle");
       m_eveTopNode->IncDenyDestroy();
-      //      m_eveTopNode->AddElement( m_marker);
-     // gEve->AddElement(m_eveTopNode);
+
    }
 }
 //______________________________________________________________________________
@@ -213,20 +228,21 @@ TEveElement* FWOverlapTableView::getEveGeoElement() const
 {
    return m_eveTopNode;
 }
-/*
+
 //______________________________________________________________________________
-void FWOverlapTableView::pathTextEntryCallback()
+void FWOverlapTableView::precisionCallback(Long_t )
 {
-   std::cout << "text entry click ed " <<m_pathEntry->GetText() << std::endl ;
-   //  recalculate();
-   m_path.set(m_pathEntry->GetText());
+   std::cout << " ----------------------------- PRECISION \n" <<  m_numEntry->GetNumber();
+   m_precision.set( m_numEntry->GetNumber());
+   std::cout << sUpdateMsg;
 }
-*/
+
+
 //______________________________________________________________________________
 
 void FWOverlapTableView::pathListCallback()
 { 
-   std::cout << "list click ed " << m_pathEntry->GetText()  <<" \n" ;
+   std::cout << "text click ed " << m_pathEntry->GetText()  <<" \n" ;
    std::string bPath = m_pathEntry->GetText();
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
    if (gGeoManager->GetCurrentNavigator()->CheckPath(bPath.c_str()) == 0 )
@@ -235,10 +251,11 @@ void FWOverlapTableView::pathListCallback()
       return;
    
    }
-   m_path.set(m_pathEntry->GetText());
+
+   std::cout << sUpdateMsg;
 }
 
-//______________________________________________________________________________
+
 
 void FWOverlapTableView::recalculate()
 {
@@ -246,6 +263,22 @@ void FWOverlapTableView::recalculate()
    m_tableManager->importOverlaps(m_path.value(), m_precision.value());
    refreshTable3D();
 }
+
+void FWOverlapTableView::cdUp()
+{
+   TString dt = m_pathEntry->GetDisplayText();
+   dt.Remove(dt.Last('/'));
+   m_pathEntry->SetText(dt.Data(), true);
+
+   std::cout << sUpdateMsg;
+}
+
+void FWOverlapTableView::cdTop()
+{
+   m_pathEntry->SetText("/", true);
+   std::cout << sUpdateMsg;
+}
+
 
 //______________________________________________________________________________
 void FWOverlapTableView::setFrom(const FWConfiguration& iFrom)
@@ -288,27 +321,27 @@ void FWOverlapTableView::pointSize()
 //______________________________________________________________________________
 void FWOverlapTableView::refreshTable3D()
 {
-  if (!m_enableRedraw) return;
+   if (!m_enableRedraw) return;
   
-  getTableManager()->redrawTable(true);
-  getEveGeoElement()->ElementChanged();
+   getTableManager()->redrawTable(true);
+   getEveGeoElement()->ElementChanged();
   
-  std::vector<float> pnts;
-  int cnt = 0;
-  for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
-  {
-    FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(*i);
-    if (strncmp(data.name(),  "Ovl", 3) && m_rnrExtrusion.value() || strncmp(data.name(),  "Ext", 3) && m_rnrOverlap.value()  )
-    {
-      pnts.push_back(m_markerVertices[cnt]);
-      pnts.push_back(m_markerVertices[cnt+1]);
-      pnts.push_back(m_markerVertices[cnt+2]);
-    }
-  } 
-  printf("MARKER SIZE %d \n", (int)pnts.size());
+   std::vector<float> pnts;
+   int cnt = 0;
+   for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
+   {
+      FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(*i);
+      if ((strncmp(data.name(),  "Ovl", 3) && m_rnrExtrusion.value()) ||
+          (strncmp(data.name(),  "Ext", 3) && m_rnrOverlap.value() ))
+      {
+         pnts.push_back(m_markerVertices[cnt]);
+         pnts.push_back(m_markerVertices[cnt+1]);
+         pnts.push_back(m_markerVertices[cnt+2]);
+      }
+   } 
   
-  m_marker->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
-  m_marker->ElementChanged();
-  gEve->FullRedraw3D(false, true);
+   m_marker->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
+   m_marker->ElementChanged();
+   gEve->FullRedraw3D(false, true);
   
 }

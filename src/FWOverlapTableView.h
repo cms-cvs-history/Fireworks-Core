@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id: FWOverlapTableView.h,v 1.1.2.3 2012/01/07 04:27:41 amraktad Exp $
+// $Id: FWOverlapTableView.h,v 1.1.2.4 2012/01/11 01:12:54 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -27,7 +27,7 @@ class TEvePointSet;
 class FWEveOverlap;
 class FWGUIValidatingTextEntry;
 class FWGeoPathValidator;
-
+class TGNumberEntry;
 
 class FWOverlapTableView : public FWGeometryTableViewBase
 {
@@ -35,12 +35,10 @@ public:
    FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* colMng);
    virtual ~FWOverlapTableView();
 
-   // virtual void setFrom(const FWConfiguration&);
-   //   virtual void addTo(FWConfiguration&) const;
    virtual  FWGeometryTableManagerBase*  getTableManager(); 
    
   void pathListCallback();
-   //  void pathTextEntryCallback();
+  void precisionCallback(Long_t);
    void recalculate();
    virtual TEvePointSet* getEveMarker() const { return m_marker; }
 
@@ -49,8 +47,8 @@ public:
  
    void drawPoints();
    void pointSize();
-   //  std::string getPathTextEntry() const;
-  
+   void cdUp();
+   void cdTop();  
   virtual void refreshTable3D();
 protected:
    virtual TEveElement* getEveGeoElement() const;
@@ -71,6 +69,7 @@ public:
 
    FWGUIValidatingTextEntry* m_pathEntry;
    FWGeoPathValidator*       m_pathValidator;
+   TGNumberEntry*  m_numEntry;
   
   std::vector<float>  m_markerVertices;
   std::vector<int>    m_markerIndices;
