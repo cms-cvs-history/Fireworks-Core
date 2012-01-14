@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.4 2012/01/11 01:12:53 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.5 2012/01/14 02:24:38 amraktad Exp $
 //
 
 // system include files
@@ -46,6 +46,9 @@ FWOverlapTableManager::~FWOverlapTableManager()
 //---------------------------------------------------------------------------------
 void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
+
+   printf("\n Import START eps=%f path %s \n", iPrecision, iPath.c_str());
+
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
    m_levelOffset = 0;
    if (!iPath.empty()) {
@@ -93,7 +96,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    m_entries.push_back( topNodeInfo);
 
    std::vector<float> pnts;
-
+   int ovlCnt = 0;
    {
       TIter next_ovl(lOverlaps);
       TGeoOverlap *ovl;
@@ -103,7 +106,8 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       while((ovl = (TGeoOverlap*)next_ovl())) 
       {
 
-         if (1) printf(Form("Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
+         if (1) printf(Form("[%d/%d] Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
+                            ovlCnt++,lOverlaps->GetSize(),
                             ovl->IsExtrusion(),  ovl->IsOverlap(),
                             ovl->GetFirstVolume()->GetName(),
                             ovl->GetSecondVolume()->GetName()));
@@ -121,7 +125,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                top_git = git; top_gnode = gnode;
 
                n1 = gnode; v1 = gvol;  l1 = git.GetLevel();
-               //printf("  Found first  vol lvl=%d \n", l1);
+               //printf("  Found first  vol lvl=%d \n", l1); 
                if( ovl->IsOverlap())
                   git.Skip();
 
@@ -175,9 +179,8 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                            mtitle += git.GetNode(l)->GetVolume()->GetName();
                         }
 
-                        printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
+                        //  printf("Importing %s '%s' from %s",mname.Data(), mtitle.Data(),ovl->GetName());
 
-                        m_browser->m_markerIndices.push_back(m_entries.size());
                        
                         TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
                         mother_node->SetNameTitle(mname.Data(), mtitle.Data());
@@ -208,6 +211,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                              pnts.push_back( pg[2]);
                            */
 
+                           m_browser->m_markerIndices.push_back(parentIdx);
                            m_browser->m_markerVertices.push_back( pg[0]);
                            m_browser->m_markerVertices.push_back( pg[1]);
                            m_browser->m_markerVertices.push_back( pg[2]);
@@ -232,7 +236,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       }
    }
 
-   m_browser->getEveMarker()->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
+   printf("Import END eps=%f \n", iPrecision);
 }
 
 //_____________________________________________________________________________
@@ -250,7 +254,6 @@ void FWOverlapTableManager::recalculateVisibility( )
       if (i->m_parent == 0) {
         if ((m_browser->m_rnrOverlap.value() && (strncmp(i->m_node->GetName(), "Ovlp", 3) == 0)) ||
             (m_browser->m_rnrExtrusion.value() && (strncmp(i->m_node->GetName(), "Extr", 3) == 0)) )
-         if (1)
          {
             rnrChld = i->testBit(FWGeometryTableManagerBase::kExpanded);
             m_row_to_index.push_back(cnt);
