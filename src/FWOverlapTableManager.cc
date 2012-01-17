@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.5 2012/01/14 02:24:38 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.6 2012/01/14 04:01:45 amraktad Exp $
 //
 
 // system include files
@@ -81,7 +81,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
   
    gGeoManager->GetCurrentNode()->CheckOverlaps(iPrecision);
    TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
-
+  
    TGeoNode* top_node = gGeoManager->GetCurrentNode();
 
    m_entries.clear();
@@ -96,7 +96,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    m_entries.push_back( topNodeInfo);
 
    std::vector<float> pnts;
-   int ovlCnt = 0;
+   int ovlCnt = 1;
    {
       TIter next_ovl(lOverlaps);
       TGeoOverlap *ovl;
@@ -107,7 +107,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       {
 
          if (1) printf(Form("[%d/%d] Scanning for Extp=%d, Ovlp=%d: vol1=%-12s vol2=%-12s \n",
-                            ovlCnt++,lOverlaps->GetSize(),
+                            ovlCnt++,lOverlaps->GetEntries(),
                             ovl->IsExtrusion(),  ovl->IsOverlap(),
                             ovl->GetFirstVolume()->GetName(),
                             ovl->GetSecondVolume()->GetName()));
@@ -166,12 +166,8 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                      //______________________________________________________________________________
                      //______________________________________________________________________________
                      {
-
-                        // if ( ovl->IsOverlap() && m_browser->m_rnrOverlap.value() == false ) continue;
-
-                        ///if ( ovl->IsExtrusion() && m_browser->m_rnrExtrusion.value() == false ) continue;
-
                         TString mname  = ovl->IsExtrusion() ? "Extr: " : "Ovlp: ";
+                        mname += Form("%2.3f ", ovl->GetOverlap() );
                         mname += motherv->GetName();
                         TString mtitle = top_node->GetVolume()->GetName();
                         for(Int_t l=1; l<motherl; ++l) {
@@ -189,11 +185,11 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
                         TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
                         gnode1->SetName(Form ("%s", v1->GetName()));
-                        m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), l1));
+                        m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), motherl + 1));
                         if (ovl->IsOverlap()) {
                            TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
                            gnode2->SetName(Form ("%s", v2->GetName()));
-                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
+                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), motherl +1));
                         }
 
                         TPolyMarker3D* pm = ovl->GetPolyMarker();
@@ -203,14 +199,6 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                            double pg[3];
                            pm->GetPoint(j, pl[0], pl[1], pl[2]);
                            motherm.LocalToMaster(pl, pg);
-                           // pnts->SetNextPoint(pg[0], pg[1], pg[2]);
-                           // printf("set point %f %f %f\n", pg[0], pg[1], pg[2]);
-                           /*
-                             pnts.push_back( pg[0]);
-                             pnts.push_back( pg[1]);
-                             pnts.push_back( pg[2]);
-                           */
-
                            m_browser->m_markerIndices.push_back(parentIdx);
                            m_browser->m_markerVertices.push_back( pg[0]);
                            m_browser->m_markerVertices.push_back( pg[1]);
