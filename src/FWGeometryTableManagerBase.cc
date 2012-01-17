@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.3 2012/01/11 01:12:53 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -257,8 +257,7 @@ FWTableCellRendererBase* FWGeometryTableManagerBase::cellRenderer(int iSortedRow
       renderer->setIsOpen( data.testBit(FWGeometryTableManagerBase::kExpanded));
 
       int level = data.m_level - m_levelOffset;
-
-      if (data.m_node->GetNdaughters())
+      if (nodeIsParent(data))
          renderer->setIndentation(20*level);
       else
          renderer->setIndentation(20*level + FWTextTreeCellRenderer::iconWidth());
