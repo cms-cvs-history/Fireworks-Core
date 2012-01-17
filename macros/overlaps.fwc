@@ -64,25 +64,25 @@
  <config name="GUI" version="1">
   <config name="main window" version="3">
    <config name="x" version="0">
-     <string>6</string>
+     <string>166</string>
    </config>
    <config name="y" version="0">
-     <string>27</string>
+     <string>44</string>
    </config>
    <config name="width" version="0">
-     <string>1519</string>
+     <string>909</string>
    </config>
    <config name="height" version="0">
-     <string>821</string>
+     <string>683</string>
    </config>
    <config name="summaryWeight" version="0">
-     <string>20</string>
+     <string>0.220997</string>
    </config>
    <config name="leftWeight" version="0">
-     <string>0.596026</string>
+     <string>0.747305</string>
    </config>
    <config name="rightWeight" version="0">
-     <string>1.40397</string>
+     <string>1.25269</string>
    </config>
   </config>
   <config name="views" version="1">
@@ -278,29 +278,23 @@
     </config>
    </config>
    <config name="Overlap Table" version="1">
-    <config name="Mode:" version="0">
-      <string>0</string>
+    <config name="Path:" version="0">
+      <string>/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2</string>
     </config>
-    <config name="Materials:" version="0">
-      <string></string>
-    </config>
-    <config name="HideTopNode" version="0">
+    <config name="Precision" version="0">
       <string>1</string>
     </config>
-    <config name="ExpandList:" version="0">
+    <config name="Overlap" version="0">
       <string>1</string>
     </config>
-    <config name="VisLevel:" version="0">
-      <string>3</string>
-    </config>
-    <config name="IgnoreVisLevelOnFilter" version="0">
+    <config name="Extrusion" version="0">
       <string>1</string>
     </config>
-    <config name="TopNodeIndex" version="0">
-      <string>-1</string>
+    <config name="DrawPoints" version="0">
+      <string>1</string>
     </config>
-    <config name="EnableHiglight" version="0">
-      <string>0</string>
+    <config name="PointSize:" version="0">
+      <string>1</string>
     </config>
     <config name="Viewers" version="1">
      <config name="3D Tower" version="1">
@@ -311,7 +305,7 @@
   <config name="view area" version="3">
    <config name="3D Tower" version="3">
     <config name="weight" version="0">
-      <string>0.596026</string>
+      <string>0.747305</string>
     </config>
     <config name="undocked" version="0">
       <string>0</string>
