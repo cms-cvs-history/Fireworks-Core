@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.7 2012/01/06 23:08:38 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.8 2012/01/11 01:12:53 amraktad Exp $
 //
 
 // system include files
@@ -272,5 +272,27 @@ void FWEveOverlap::Paint(Option_t*)
 
 TString  FWEveOverlap::GetHighlightTooltip()
 {
-   return Form("Overlap %d", m_browser->getTableManager()->m_highlightIdx);
+  if ( m_browser->getTableManager()->m_highlightIdx < 0) 
+  {
+    return Form("TopNode ");
+  }
+  
+  FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(m_browser->getTableManager()->m_highlightIdx);
+  if (data.m_parent == 0)
+  {
+    return data.name();
+  }
+  else {
+
+    TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
+    int sc =  strlen(pname.Data());
+    while (sc > 0) {
+      if (pname[sc] == ' ') break;
+      sc--;
+    }
+    pname.Resize(sc);
+
+    return Form("%s, %s", data.name(), pname.Data());
+  }
+
 }
