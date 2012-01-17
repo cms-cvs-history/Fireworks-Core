@@ -114,7 +114,7 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
 
 FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng )
    : FWViewBase(type),
-     m_enableHighlight(this,"EnableHiglight", false),
+     m_enableHighlight(this,"EnableHighlight", true),
      m_colorManager(colMng),
      m_colorPopup(0),
      m_eveWindow(0),
