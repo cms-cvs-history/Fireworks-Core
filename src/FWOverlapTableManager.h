@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.3 2012/01/07 04:27:41 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.4 2012/01/11 01:12:53 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -30,6 +30,12 @@ public:
 
    virtual void recalculateVisibility();
    void importOverlaps(std::string path, double precision);
+
+   // virtual int numberOfColumns() const {return 4;}
+
+   virtual std::vector<std::string> getTitles() const;
+ 
+   FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;

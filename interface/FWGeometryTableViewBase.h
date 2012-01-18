@@ -68,7 +68,7 @@ public:
    FWGeometryTableViewBase(TEveWindowSlot*, FWViewType::EType, FWColorManager*);
    virtual ~FWGeometryTableViewBase();
   
-    void cellClicked(Int_t iRow, Int_t iColumn, 
+  virtual  void cellClicked(Int_t iRow, Int_t iColumn, 
                     Int_t iButton, Int_t iKeyMod, 
                     Int_t iGlobalX, Int_t iGlobalY);
   

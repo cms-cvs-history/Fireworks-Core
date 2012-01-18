@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.3 2012/01/11 01:12:53 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.4 2012/01/17 06:29:34 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -371,7 +371,8 @@ void FWGeometryTableManagerBase::redrawTable(bool setExpand)
 FWGeometryTableManagerBase::Entries_i FWGeometryTableManagerBase::refSelected()
 {
    Entries_i i = m_entries.begin();
-   std::advance(i,m_selectedIdx );
+   if (m_selectedIdx > 0)
+      std::advance(i,m_selectedIdx );
    return  i; //m_entries[m_selectedIdx];
 }
 

@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.6 2012/01/14 04:01:45 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.7 2012/01/17 06:34:00 amraktad Exp $
 //
 
 // system include files
@@ -43,6 +43,19 @@ FWOverlapTableManager::~FWOverlapTableManager()
 }
 
 
+
+std::vector<std::string> FWOverlapTableManager::getTitles() const 
+{
+   std::vector<std::string> returnValue;
+   returnValue.reserve(numberOfColumns());
+
+   returnValue.push_back("Name");
+   returnValue.push_back("Color");
+   returnValue.push_back("RnrSelf");
+   returnValue.push_back("RnrChildren");
+   returnValue.push_back("RnrMarker");
+   return returnValue;
+}
 //---------------------------------------------------------------------------------
 void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
@@ -93,6 +106,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    topNodeInfo.m_node   = top_node; 
    topNodeInfo.m_level  = m_levelOffset;
    topNodeInfo.m_parent = -1;
+   topNodeInfo.resetBit(kVisNodeSelf);
    m_entries.push_back( topNodeInfo);
 
    std::vector<float> pnts;
@@ -180,16 +194,24 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                        
                         TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
                         mother_node->SetNameTitle(mname.Data(), mtitle.Data());
-                        m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld | kExpanded));
+                        m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld |  kFlag1));
                         int parentIdx = m_entries.size() -1;
 
-                        TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
-                        gnode1->SetName(Form ("%s", v1->GetName()));
-                        m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), motherl + 1));
                         if (ovl->IsOverlap()) {
+                           TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
+                           gnode1->SetName(Form ("%s", v1->GetName()));
+                           m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), motherl + 1));
+                     
                            TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
                            gnode2->SetName(Form ("%s", v2->GetName()));
                            m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), motherl +1));
+                        }
+                        else
+                        {   
+                           TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
+                           gnode2->SetName(Form ("%s", v2->GetName()));
+                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), motherl +1));
+                   
                         }
 
                         TPolyMarker3D* pm = ovl->GetPolyMarker();
@@ -285,5 +307,47 @@ const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
    else
    {
       return data.name();
+   }
+}
+
+FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
+{  
+   if (m_row_to_index.empty()) return &m_renderer;
+   if (iCol == 4 )
+   {
+      int unsortedRow =  m_row_to_index[iSortedRowNumber];
+      ESelectionState sstate = nodeSelectionState(unsortedRow);
+      if (sstate == kSelected)
+      {
+         m_highlightContext->SetBackground(0xc86464);
+      }
+      else if (sstate == kHighlighted )
+      {
+         m_highlightContext->SetBackground(0x6464c8);
+      }
+      else if ( sstate == kFiltered )
+      {
+         if (iCol == kMaterial)
+            m_highlightContext->SetBackground(0xdddddd);
+         else 
+            sstate = kNone;
+      }
+      bool isSelected = sstate != kNone;
+
+      //      FWTextTreeCellRenderer* renderer = &m_renderer;
+      if (unsortedRow < 0) printf("!!!!!!!!!!!!!!!! error %d %d \n",unsortedRow,  iSortedRowNumber);
+
+
+      const NodeInfo& data = m_entries[unsortedRow];
+      if (data.m_parent == 0) 
+         m_renderer.setData(data.testBit(FWGeometryTableManagerBase::kFlag1) ? "On" : "-" , isSelected);
+      else 
+         m_renderer.setData("", isSelected);
+
+      return &m_renderer;
+   }
+   else 
+   {
+      return  FWGeometryTableManagerBase::cellRenderer(iSortedRowNumber, iCol);
    }
 }

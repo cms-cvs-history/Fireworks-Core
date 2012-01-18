@@ -308,7 +308,7 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
          bool elementChanged = false;
          if (iColumn ==  FWGeometryTableManagerBase::kVisSelf)
          {
-            if (iRow == 0 )
+            if (iRow == 0 &&  typeId() == FWViewType::kGeometryTable)
             {
                fwLog(fwlog::kInfo) << "Top node self-visibility disabled. Change setting in the view controller! \n";
                return;
@@ -326,10 +326,18 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
          }
 
 
+         if (iColumn ==  4)
+         {
+            // used in overlaps for marker
+            ni.switchBit(FWGeometryTableManagerBase::kFlag1);
+            elementChanged = true;
+         }
+
          if (elementChanged)
          {
-            getEveGeoElement()->ElementChanged();
-            gEve->RegisterRedraw3D();
+            //getEveGeoElement()->ElementChanged();
+            //gEve->RegisterRedraw3D();
+            refreshTable3D();
          }
       }
         

@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id: FWOverlapTableView.h,v 1.1.2.4 2012/01/11 01:12:54 amraktad Exp $
+// $Id: FWOverlapTableView.h,v 1.1.2.5 2012/01/14 05:54:17 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -37,8 +37,8 @@ public:
 
    virtual  FWGeometryTableManagerBase*  getTableManager(); 
    
-  void pathListCallback();
-  void precisionCallback(Long_t);
+   void pathListCallback();
+   void precisionCallback(Long_t);
    void recalculate();
    virtual TEvePointSet* getEveMarker() const { return m_marker; }
 
@@ -49,11 +49,12 @@ public:
    void pointSize();
    void cdUp();
    void cdTop();  
-  virtual void refreshTable3D();
+   virtual void refreshTable3D();
+   virtual void  popupMenu(int x, int y);
+   virtual void chosenItem(int x);
 protected:
    virtual TEveElement* getEveGeoElement() const;
    virtual void assertEveGeoElement();
-
 private:  
   
    FWOverlapTableView(const FWOverlapTableView&); // stop default
@@ -71,8 +72,8 @@ public:
    FWGeoPathValidator*       m_pathValidator;
    TGNumberEntry*  m_numEntry;
   
-  std::vector<float>  m_markerVertices;
-  std::vector<int>    m_markerIndices;
+   std::vector<float>  m_markerVertices;
+   std::vector<int>    m_markerIndices;
   
 #ifndef __CINT__
    FWStringParameter       m_path; 

@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.8 2012/01/11 01:12:53 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.9 2012/01/17 06:28:33 amraktad Exp $
 //
 
 // system include files
@@ -249,8 +249,10 @@ void FWEveOverlap::Paint(Option_t*)
             (m_browser->m_rnrExtrusion.value() && (strncmp(it->m_node->GetName(), "Extr", 3) == 0)) )
         {          
          if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
+         {
             paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-          
+            printf("paint mother \n");
+         }
           visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
         }
         else {
@@ -290,9 +292,10 @@ TString  FWEveOverlap::GetHighlightTooltip()
       if (pname[sc] == ' ') break;
       sc--;
     }
+    TString mother = pname[sc];
     pname.Resize(sc);
 
-    return Form("%s, %s", data.name(), pname.Data());
+    return Form("%s, %s, mother %s", data.name(), pname.Data(), mother.Data());
   }
 
 }

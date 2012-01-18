@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManagerBase.h,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.h,v 1.1.2.2 2012/01/06 23:19:39 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -54,7 +54,10 @@ public:
       kFilterCached    =  BIT(3),
 
       kVisNodeSelf     =  BIT(4),
-      kVisNodeChld     =  BIT(5)
+      kVisNodeChld     =  BIT(5),
+
+      kFlag1            =  BIT(6),
+      kFlag2            =  BIT(7)
    };
 
    struct NodeInfo
