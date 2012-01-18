@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.6 2012/01/14 05:54:17 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.7 2012/01/18 02:38:36 amraktad Exp $
 //
 
 // system include files
@@ -48,7 +48,7 @@
 #include "TGButton.h"
 #include "TEveViewer.h"
 
-static const std::string sUpdateMsg = "Please press Apply button to update overlaps.\n";
+static const std::string sUpdateMsg = " Please press Apply button to update overlaps.\n";
 
 enum OvlMenuOptions {
    kVisOff,
@@ -120,7 +120,7 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_pathEntry(0),
    m_pathValidator(0),
    m_numEntry(0),
-   m_path(this,"Path:", std::string("/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2")),
+   m_path(this,"Path:", std::string("/cms:World_1/cms:CMSE_1")),
    m_precision(this, "Precision", 1., 0.001, 10.),
    m_rnrOverlap(this, "Overlap", true),
    m_rnrExtrusion(this, "Extrusion", true),
@@ -183,7 +183,8 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_marker->SetMarkerSize(5);
    m_marker->SetMainColor(kRed);
    m_marker->IncDenyDestroy();
-   m_tableManager->importOverlaps(m_path.value(), m_precision.value());
+
+   //   m_tableManager->importOverlaps(m_path.value(), m_precision.value());
 
 
    m_drawPoints.changed_.connect(boost::bind(&FWOverlapTableView::drawPoints,this));
@@ -271,6 +272,7 @@ void FWOverlapTableView::pathListCallback()
 void FWOverlapTableView::recalculate()
 {
    m_path.set(m_pathEntry->GetText());
+   m_precision.set(m_numEntry->GetNumber());
    m_tableManager->importOverlaps(m_path.value(), m_precision.value());
    refreshTable3D();
 }
@@ -294,9 +296,20 @@ void FWOverlapTableView::cdTop()
 //______________________________________________________________________________
 void FWOverlapTableView::setFrom(const FWConfiguration& iFrom)
 {
-   FWGeometryTableViewBase::setFrom(iFrom);
+  m_enableRedraw = false;
+   for(const_iterator it =begin(), itEnd = end();
+       it != itEnd;
+       ++it) {
+      (*it)->setFrom(iFrom);
+
+   }  
+   m_viewersConfig = iFrom.valueForKey("Viewers");
+
    m_pathEntry->SetText(m_path.value().c_str());
    m_pathEntry->SetCursorPosition(m_path.value().size());
+   m_numEntry->SetNumber(m_precision.value());
+   m_enableRedraw = true;
+   recalculate();
 }
 
 //______________________________________________________________________________
@@ -429,7 +442,7 @@ void FWOverlapTableView::refreshTable3D()
    std::vector<float> pnts;
    int cnt = 0;
 
-   std::cout << "WOverlapTableView::refreshTable3D() "<< std::endl;
+   //   std::cout << "WOverlapTableView::refreshTable3D() "<< std::endl;
    for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
    {
       FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(*i);
