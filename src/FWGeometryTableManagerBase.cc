@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.4 2012/01/17 06:29:34 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.5 2012/01/18 02:38:36 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -351,7 +351,7 @@ void FWGeometryTableManagerBase::getNodeMatrix(const NodeInfo& data, TGeoHMatrix
 //______________________________________________________________________________
 void FWGeometryTableManagerBase::redrawTable(bool setExpand) 
 {
-   std::cerr << "GeometryTableManagerBase::redrawTable ------------------------------------- \n";
+   //   std::cerr << "GeometryTableManagerBase::redrawTable ------------------------------------- \n";
    if (m_entries.empty()) return;
 
    if (setExpand) checkExpandLevel();

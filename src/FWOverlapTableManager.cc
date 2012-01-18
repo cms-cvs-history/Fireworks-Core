@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.7 2012/01/17 06:34:00 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.8 2012/01/18 02:38:36 amraktad Exp $
 //
 
 // system include files
@@ -255,7 +255,6 @@ void FWOverlapTableManager::recalculateVisibility( )
 {
    m_row_to_index.clear();
 
-   printf("FWGeometryTableManagerBase::recalculateVisibilityOverlap \n");
    m_row_to_index.push_back(0);
    int cnt = 0;
    bool rnrChld = false;
