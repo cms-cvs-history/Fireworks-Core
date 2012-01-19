@@ -375,6 +375,8 @@ void FWGeometryTableViewBase::setBackgroundColor()
    gClient->NeedRedraw(m_tableWidget);
 }
 
+//______________________________________________________________________________
+
 void FWGeometryTableViewBase::nodeColorChangeRequested(Color_t col)
 {
    //   printf("color change %d \n", colorHackRowIdx);
@@ -386,6 +388,8 @@ void FWGeometryTableViewBase::nodeColorChangeRequested(Color_t col)
       colorHackRowIdx = -1;
    }
 }
+
+
 
 //______________________________________________________________________________
 

@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.9 2012/01/17 06:28:33 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.10 2012/01/18 02:38:36 amraktad Exp $
 //
 
 // system include files
@@ -35,6 +35,7 @@
 #include "TGeoBoolNode.h"
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
+#include "TGeoOverlap.h"
 #include "TVirtualGeoPainter.h"
 
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
@@ -274,28 +275,30 @@ void FWEveOverlap::Paint(Option_t*)
 
 TString  FWEveOverlap::GetHighlightTooltip()
 {
-  if ( m_browser->getTableManager()->m_highlightIdx < 0) 
-  {
-    return Form("TopNode ");
-  }
+   if ( m_browser->getTableManager()->m_highlightIdx < 0) 
+   {
+      return Form("TopNode ");
+   }
   
-  FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(m_browser->getTableManager()->m_highlightIdx);
-  if (data.m_parent == 0)
-  {
-    return data.name();
-  }
-  else {
+   FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(m_browser->getTableManager()->m_highlightIdx);
+   if (data.m_parent == 0)
+   {
+      return data.name();
+   }
+   else {
 
-    TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
-    int sc =  strlen(pname.Data());
-    while (sc > 0) {
-      if (pname[sc] == ' ') break;
-      sc--;
-    }
-    TString mother = pname[sc];
-    pname.Resize(sc);
+      TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
+      const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(m_browser->getTableManager()->m_highlightIdx);
+      if (ovl->IsOverlap())
+      {
+         int nidx = (m_browser->getTableManager()->m_highlightIdx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
+         return Form("%s\noverlap = %.4f cm\nmother = %s\nn2 = %s", data.name(), ovl->GetOverlap(), 
+                     m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName(), m_browser->getTableManager()->refEntries().at(nidx).name());
+      }
+      else   
+      {
+         return Form("%s \n extrusion = %.4f cm \nmother = %s", data.name(), ovl->GetOverlap(), m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
+      }
 
-    return Form("%s, %s, mother %s", data.name(), pname.Data(), mother.Data());
-  }
-
+   }
 }

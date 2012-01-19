@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManagerBase.h,v 1.1.2.2 2012/01/06 23:19:39 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.h,v 1.1.2.3 2012/01/18 02:38:36 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -155,7 +155,9 @@ public:
 
    bool nodeImported(int idx) const;
    // geo stuff
-   Entries_i refSelected();
+
+   NodeInfo* getSelected();
+
    Entries_v& refEntries() {return m_entries;}
 
    void loadGeometry( TGeoNode* , TObjArray*);

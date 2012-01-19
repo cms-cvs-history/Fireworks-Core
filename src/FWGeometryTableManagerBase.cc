@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.5 2012/01/18 02:38:36 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.6 2012/01/18 03:37:50 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -104,7 +104,7 @@ void FWGeometryTableManagerBase::ColorBoxRenderer::draw(Drawable_t iID, int iX, 
 FWGeometryTableManagerBase::FWGeometryTableManagerBase()
    :   
    m_highlightIdx(-1),
-   m_selectedIdx(0),
+   m_selectedIdx(-1),
    m_selectedColumn(-1),
    m_levelOffset(0)
 { 
@@ -368,12 +368,12 @@ void FWGeometryTableManagerBase::redrawTable(bool setExpand)
 
 //==============================================================================
 
-FWGeometryTableManagerBase::Entries_i FWGeometryTableManagerBase::refSelected()
+FWGeometryTableManagerBase::NodeInfo* FWGeometryTableManagerBase::getSelected()
 {
-   Entries_i i = m_entries.begin();
-   if (m_selectedIdx > 0)
-      std::advance(i,m_selectedIdx );
-   return  i; //m_entries[m_selectedIdx];
+   if (m_selectedIdx >= 0)
+      return &m_entries[m_selectedIdx];
+   else
+      return 0;
 }
 
 //______________________________________________________________________________

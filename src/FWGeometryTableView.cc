@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.12 2012/01/07 04:26:37 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.13 2012/01/11 01:12:53 amraktad Exp $
 //
 
 // system include files
@@ -397,7 +397,7 @@ void FWGeometryTableView::popupMenu(int x, int y)
 
 void FWGeometryTableView::chosenItem(int x)
 {
-   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->refSelected();
+   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->getSelected();
    printf("chosen item %s \n", ni.name());
 
    TGeoVolume* gv = ni.m_node->GetVolume();

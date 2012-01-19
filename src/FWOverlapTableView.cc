@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.7 2012/01/18 02:38:36 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.8 2012/01/18 03:36:24 amraktad Exp $
 //
 
 // system include files
@@ -47,15 +47,18 @@
 #include "TGListBox.h"
 #include "TGButton.h"
 #include "TEveViewer.h"
+#include "TGeoOverlap.h"
 
 static const std::string sUpdateMsg = " Please press Apply button to update overlaps.\n";
 
 enum OvlMenuOptions {
    kVisOff,
    kVisOnOvl,
-   kVisOnMother,
+   kVisOnAllMother,
+   kVisMother,
+   kSwitchVis,
    kCamera,
-   kTableDebug
+   kPrintOvl
 };
 
 class FWGeoPathValidator : public FWValidatorBase 
@@ -288,7 +291,7 @@ void FWOverlapTableView::cdUp()
 
 void FWOverlapTableView::cdTop()
 {
-   m_pathEntry->SetText("/", true);
+   m_pathEntry->SetText("/cms:World_1", true);
    std::cout << sUpdateMsg;
 }
 
@@ -344,12 +347,34 @@ void FWOverlapTableView::pointSize()
 
 void FWOverlapTableView::popupMenu(int x, int y)
 {
+   if (getTableManager()->getSelected() == 0) return;
+
    FWPopupMenu* nodePopup = new FWPopupMenu();
-   nodePopup->AddEntry("Rnr Off Everyting", kVisOff);
-   nodePopup->AddEntry("Rnr On Overlaps, Extrusins", kVisOnOvl);
-   nodePopup->AddEntry("Rnr On Mother Volumes", kVisOnMother);
+
+  
+   {
+      if (getTableManager()->getSelected()->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
+         nodePopup->AddEntry("Rnr Self Off ", kSwitchVis);
+      else    
+         nodePopup->AddEntry("Rnr Self On ", kSwitchVis);
+
+   }
+   if (getTableManager()->getSelected()->m_parent > 0)
+   {
+      FWGeometryTableManagerBase::NodeInfo& data = getTableManager()->refEntries().at(getTableManager()->getSelected()->m_parent);
+      if (data.testBit(FWGeometryTableManagerBase::kVisNodeSelf))
+         nodePopup->AddEntry("Rnr Mother Off ", kVisMother);
+      else    
+         nodePopup->AddEntry("Rnr Mother On ", kVisMother);
+
+   }
+   nodePopup->AddEntry("Print Overlap Info", kPrintOvl);
    nodePopup->AddSeparator();
    nodePopup->AddEntry("Set Camera Center", kCamera);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Rnr Off Everything", kVisOff);
+   nodePopup->AddEntry("Rnr On Overlaps, Extrusions", kVisOnOvl);
+   nodePopup->AddEntry("Rnr On Mother Volumes", kVisOnAllMother);
 
 
    nodePopup->PlaceMenu(x, y,true,true);
@@ -366,12 +391,11 @@ void FWOverlapTableView::chosenItem(int x)
 {
    if (x < 0) {  printf("ERROT FWOverlapTableView::chosenItem"); return;}
 
-   //0.00  if (getTableManager()->refSelected() == 0) return;
 
-   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->refSelected();
-   printf("chosen item %s \n", ni.name());
+   FWGeometryTableManagerBase::NodeInfo* ni = getTableManager()->getSelected();
+   printf("chosen item %s \n", ni->name());
 
-   TGeoVolume* gv = ni.m_node->GetVolume();
+   TGeoVolume* gv = ni->m_node->GetVolume();
    bool resetHome = false;
    if (gv)
    {
@@ -393,19 +417,25 @@ void FWOverlapTableView::chosenItem(int x)
                i->setBit(FWGeometryTableManagerBase::kFlag1);
             }
             break;
-         case kVisOnMother:
+         case kVisOnAllMother:
             // std::cout << "VIS On mOTH \n";
             for (FWGeometryTableManagerBase::Entries_i i = m_tableManager->refEntries().begin(); i !=  m_tableManager->refEntries().end(); ++i)
                if (i->m_parent == 0 )i->setBit(FWGeometryTableManagerBase::kVisNodeSelf);
             break;
 
+         case kVisMother:
+            m_tableManager->refEntries().at(ni->m_parent).switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
+            break;
+         case kSwitchVis:
+            ni->switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
+            break;
          case kCamera:
          {
             TGeoHMatrix mtx;
-            getTableManager()->getNodeMatrix( ni, mtx);
+            getTableManager()->getNodeMatrix( *ni, mtx);
 
             static double pnt[3];
-            TGeoBBox* bb = static_cast<TGeoBBox*>( ni.m_node->GetVolume()->GetShape());
+            TGeoBBox* bb = static_cast<TGeoBBox*>( ni->m_node->GetVolume()->GetShape());
             const double* origin = bb->GetOrigin();
             mtx.LocalToMaster(origin, pnt);
 
@@ -424,6 +454,23 @@ void FWOverlapTableView::chosenItem(int x)
             }
             if (resetHome) gEve->FullRedraw3D(true, true);
             break;
+         }
+         case kPrintOvl:
+         {
+            //            printf("Prin %s \n", ni->name());
+            /*
+            std::cout << std::endl << std::endl;
+            int ovlIdx = 0;
+            for (int i = 0; i <= x; ++i)
+            {
+               if (m_tableManager->refEntries().at(i).m_parent == 0) ovlIdx++;
+            }
+            TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+            TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
+            lOverlaps->At(ovlIdx)->Print();
+            */
+            std::cout << "=============================================================================" <<  std::endl << std::endl;
+            m_tableManager->referenceOverlap(x)->Print();
          }
       }
    }
