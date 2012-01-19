@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.10 2012/01/18 02:38:36 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.11 2012/01/19 00:07:25 amraktad Exp $
 //
 
 // system include files
@@ -243,22 +243,26 @@ void FWEveOverlap::Paint(Option_t*)
    for (FWGeometryTableManagerBase::Entries_i it = parentIt;
         it != m_browser->getTableManager()->refEntries().end(); ++it, ++cnt)
    {
-      if (it->m_parent == 0)
-      {
-        
-        if ((m_browser->m_rnrOverlap.value() && (strncmp(it->m_node->GetName(), "Ovlp", 3) == 0)) ||
-            (m_browser->m_rnrExtrusion.value() && (strncmp(it->m_node->GetName(), "Extr", 3) == 0)) )
-        {          
+      if (it->m_parent == -1)
+      { 
          if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-         {
             paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-            printf("paint mother \n");
+      }
+      else if (it->m_parent == 0)
+      {      
+         if ((m_browser->m_rnrOverlap.value() && (strncmp(it->m_node->GetName(), "Ovlp", 3) == 0)) ||
+             (m_browser->m_rnrExtrusion.value() && (strncmp(it->m_node->GetName(), "Extr", 3) == 0)) )
+         {          
+            if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
+            {
+               paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
+               printf("paint mother \n");
+            }
+            visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
          }
-          visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
-        }
-        else {
-          visChld = false;
-        }
+         else {
+            visChld = false;
+         }
 
          parentIt = it;
       }
@@ -281,7 +285,7 @@ TString  FWEveOverlap::GetHighlightTooltip()
    }
   
    FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(m_browser->getTableManager()->m_highlightIdx);
-   if (data.m_parent == 0)
+   if (data.m_parent <= 0)
    {
       return data.name();
    }
