@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.11 2012/01/19 00:07:25 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.12 2012/01/19 03:44:51 amraktad Exp $
 //
 
 // system include files
@@ -290,19 +290,11 @@ TString  FWEveOverlap::GetHighlightTooltip()
       return data.name();
    }
    else {
-
       TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
+      TString text;
       const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(m_browser->getTableManager()->m_highlightIdx);
-      if (ovl->IsOverlap())
-      {
-         int nidx = (m_browser->getTableManager()->m_highlightIdx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
-         return Form("%s\noverlap = %.4f cm\nmother = %s\nn2 = %s", data.name(), ovl->GetOverlap(), 
-                     m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName(), m_browser->getTableManager()->refEntries().at(nidx).name());
-      }
-      else   
-      {
-         return Form("%s \n extrusion = %.4f cm \nmother = %s", data.name(), ovl->GetOverlap(), m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
-      }
-
+      text =  data.name();
+      text += Form("\noverlap = %.4f cm", ovl->GetOverlap());
+      return text.Data();
    }
 }

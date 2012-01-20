@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.5 2012/01/18 02:38:36 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.6 2012/01/19 00:07:26 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -39,6 +39,7 @@ public:
    FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
 
    const TGeoOverlap* referenceOverlap(int idx) const;
+
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
    virtual  const char* cellName(const NodeInfo& data) const;

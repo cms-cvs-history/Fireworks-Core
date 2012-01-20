@@ -326,9 +326,9 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
          }
 
 
-         if (iColumn ==  4)
+         if (iColumn ==  5)
          {
-            // used in overlaps for marker
+            // used in overlaps for RnrMarker column
             ni.switchBit(FWGeometryTableManagerBase::kFlag1);
             elementChanged = true;
          }

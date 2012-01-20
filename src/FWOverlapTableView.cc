@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.8 2012/01/18 03:36:24 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.9 2012/01/19 00:07:26 amraktad Exp $
 //
 
 // system include files
@@ -58,7 +58,8 @@ enum OvlMenuOptions {
    kVisMother,
    kSwitchVis,
    kCamera,
-   kPrintOvl
+   kPrintOvl,
+   kPrintPath
 };
 
 class FWGeoPathValidator : public FWValidatorBase 
@@ -276,6 +277,7 @@ void FWOverlapTableView::recalculate()
 {
    m_path.set(m_pathEntry->GetText());
    m_precision.set(m_numEntry->GetNumber());
+   std::cout << "                             $$$$ " << m_path.value() << std::endl;
    m_tableManager->importOverlaps(m_path.value(), m_precision.value());
    refreshTable3D();
 }
@@ -368,6 +370,8 @@ void FWOverlapTableView::popupMenu(int x, int y)
          nodePopup->AddEntry("Rnr Mother On ", kVisMother);
 
    }
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Print Path ", kPrintPath);
    nodePopup->AddEntry("Print Overlap Info", kPrintOvl);
    nodePopup->AddSeparator();
    nodePopup->AddEntry("Set Camera Center", kCamera);
@@ -387,19 +391,20 @@ void FWOverlapTableView::popupMenu(int x, int y)
 
 //______________________________________________________________________________
 
-void FWOverlapTableView::chosenItem(int x)
+void FWOverlapTableView::chosenItem(int menuIdx)
 {
-   if (x < 0) {  printf("ERROT FWOverlapTableView::chosenItem"); return;}
 
 
    FWGeometryTableManagerBase::NodeInfo* ni = getTableManager()->getSelected();
+   if ( ni == 0) {  printf("ERROR FWOverlapTableView::chosenItem"); return;}
+
    printf("chosen item %s \n", ni->name());
 
    TGeoVolume* gv = ni->m_node->GetVolume();
    bool resetHome = false;
    if (gv)
    {
-      switch (x) {
+      switch (menuIdx) {
          case kVisOff:
             // std::cout << "VIS OFF \n";
             for (FWGeometryTableManagerBase::Entries_i i = m_tableManager->refEntries().begin(); i !=  m_tableManager->refEntries().end(); ++i)
@@ -457,20 +462,15 @@ void FWOverlapTableView::chosenItem(int x)
          }
          case kPrintOvl:
          {
-            //            printf("Prin %s \n", ni->name());
-            /*
-            std::cout << std::endl << std::endl;
-            int ovlIdx = 0;
-            for (int i = 0; i <= x; ++i)
-            {
-               if (m_tableManager->refEntries().at(i).m_parent == 0) ovlIdx++;
-            }
-            TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-            TObjArray* lOverlaps = gGeoManager->GetListOfOverlaps();
-            lOverlaps->At(ovlIdx)->Print();
-            */
             std::cout << "=============================================================================" <<  std::endl << std::endl;
-            m_tableManager->referenceOverlap(x)->Print();
+            m_tableManager->referenceOverlap(m_tableManager->m_selectedIdx)->Print();
+            break;
+         }
+         case kPrintPath:
+         {
+
+            std::cout << "path: "<<  m_tableManager->refEntries().at(m_tableManager->m_selectedIdx).m_node->GetTitle() << std::endl;
+           
          }
       }
    }

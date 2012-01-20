@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.10 2012/01/19 00:07:25 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.11 2012/01/19 03:43:58 amraktad Exp $
 //
 
 // system include files
@@ -31,8 +31,6 @@
 #include "TGeoOverlap.h"
 #include "TGeoManager.h"
 #include "TPolyMarker3D.h"
-
-std::vector<std::string> cell_names;
 
 FWOverlapTableManager::FWOverlapTableManager(FWOverlapTableView* v ):
    FWGeometryTableManagerBase(),
@@ -67,6 +65,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
    m_levelOffset = 0;
+   
    if (!iPath.empty()) {
       size_t ps = iPath.size();
       if (ps > 1 && iPath[ps-1] == '/') 
@@ -76,7 +75,6 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       bi++;
       // first level offset  0
       while (bi != iPath.end())  { if (*bi == '/') { bi++; break;};  bi++;} 
-      // printf("ffff %s \n", iPath.c_str());
       for (std::string::iterator i = bi; i != iPath.end(); ++i)
       {
          if (*i == '/') m_levelOffset++;
@@ -104,15 +102,12 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    m_browser->m_markerVertices.clear();
    m_browser->m_markerIndices.clear();
 
-   cell_names.clear();
-
    NodeInfo topNodeInfo;
    topNodeInfo.m_node   = top_node; 
    topNodeInfo.m_level  = m_levelOffset;
    topNodeInfo.m_parent = -1;
    topNodeInfo.resetBit(kVisNodeSelf);
    m_entries.push_back( topNodeInfo);
-   cell_names.push_back(top_node->GetName());
 
    std::vector<float> pnts;
    int ovlCnt = 1;
@@ -142,10 +137,9 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
             if(gvol == ovl->GetFirstVolume())
             {
                git.GetPath(path1);
+               // std::cout << "path1 " << path1 << std::endl;
                top_git = git; top_gnode = gnode;
-
                n1 = gnode; v1 = gvol;  l1 = git.GetLevel();
-               //printf("  Found first  vol lvl=%d \n", l1); 
                if( ovl->IsOverlap())
                   git.Skip();
 
@@ -156,8 +150,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
                      git.GetPath(path2);
                      n2 = gnode; v2 = gvol; l2 = git.GetLevel();
-                     // printf("  Found second vol lvl=%d \n", l2);
-
+                     std::cout << "path2 " << path2 << std::endl;
 
                      Int_t       motherl;
                      TGeoNode*   mothern;
@@ -202,36 +195,31 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                      //______________________________________________________________________________
                      {
                         TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
+                        size_t ms = path.Length() + 1;
+                        size_t ps = 0;
+                        if (iPath.size() > 1) ps = iPath.size() -2; // add two characters to convert top volume name into top node name cmsWorld -> cmsWorld_1
 
                         m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld |  kFlag1));
-                        cell_names.push_back(path.Data());
                         int parentIdx = m_entries.size() -1;
 
                         TString mname  = ovl->IsExtrusion() ? "Extr: " : "Ovlp: ";
-                        mname += &path[iPath.size()];
-                        mother_node->SetName(mname);
+                        mname += &path[ps];
+                        mother_node->SetNameTitle(mname, path.Data());
 
-
-                        // if(ovl->IsOverlap())  path1=&path1[path.Length()+1];
-                        // path2=&path2[path.Length()+1];
                         if (ovl->IsOverlap()) {
                            TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
-                           gnode1->SetName(Form ("%s", v1->GetName()));
+                           gnode1->SetNameTitle(&path1[ms]   , path1.Data());
                            m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), l1));
-                           cell_names.push_back(path1.Data());
 
                            TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
-                           gnode2->SetName(Form ("%s", v2->GetName()));
+                           gnode2->SetNameTitle(&path2[ms], path2.Data());
                            m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
-                           cell_names.push_back(path2.Data());
                         }
                         else
                         {   
                            TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
-                           gnode2->SetName(Form ("%s", v2->GetName()));
-                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
-                           cell_names.push_back(path2.Data());
-                   
+                           gnode2->SetNameTitle(&path2[ms], path2.Data());
+                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));                   
                         }
 
                         TPolyMarker3D* pm = ovl->GetPolyMarker();
@@ -245,7 +233,6 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                            m_browser->m_markerVertices.push_back( pg[0]);
                            m_browser->m_markerVertices.push_back( pg[1]);
                            m_browser->m_markerVertices.push_back( pg[2]);
-
                         }
 
                      }
@@ -342,6 +329,7 @@ const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
       return data.name();
    }
 }
+
 //______________________________________________________________________________
 
 FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
