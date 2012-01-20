@@ -397,7 +397,7 @@ void FWGeometryTableViewBase::refreshTable3D()
 {
    if (!m_enableRedraw) return;
 
-   getTableManager()->redrawTable(true);
+   getTableManager()->redrawTable();
    if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
    gEve->FullRedraw3D(false, true);
 }

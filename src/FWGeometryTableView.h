@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.4 2012/01/07 04:26:37 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.5 2012/01/11 01:12:53 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -45,7 +45,7 @@ public:
    bool getIgnoreVisLevelWhenFilter() const  {return m_visLevelFilter.value(); }
 
    bool drawTopNode() const { return !m_disableTopNode.value(); }
-
+   void autoExpandCallback();
    void cdNode(int);
    void cdTop();
    void cdUp();

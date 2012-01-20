@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.13 2012/01/11 01:12:53 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.14 2012/01/19 00:07:25 amraktad Exp $
 //
 
 // system include files
@@ -200,7 +200,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    m_mode.addEntry(kVolume, "Volume");
    
    m_mode.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
-   m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D, this));
+   m_autoExpand.changed_.connect(boost::bind(&FWGeometryTableView::autoExpandCallback, this));
    m_visLevel.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
    m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
@@ -221,6 +221,11 @@ FWGeometryTableManagerBase* FWGeometryTableView::getTableManager()
    return m_tableManager;
 }
 
+void FWGeometryTableView::autoExpandCallback()
+{ 
+   if (!m_enableRedraw) return;
+   getTableManager()->redrawTable(true);
+}
    //______________________________________________________________________________
 void FWGeometryTableView::filterTextEntryCallback()
 {
@@ -352,7 +357,7 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 
    getTableManager()->topGeoNodeChanged(parentIdx);
 
-   printf("END Set Path to [%s], curren node \n", path.c_str()); 
+   printf("END Set Path to [%s], current node \n", path.c_str()); 
 
    FWGUIManager::getGUIManager()->updateStatus(path.c_str());
 #ifdef PERFTOOL_BROWSER  
@@ -364,8 +369,23 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 
 void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
 { 
-   FWGeometryTableViewBase::setFrom(iFrom);
+   m_enableRedraw = false;
+   for(const_iterator it =begin(), itEnd = end();
+       it != itEnd;
+       ++it) {
+
+      //      printf("set from %s \n",(*it)->name().c_str() );
+      (*it)->setFrom(iFrom);
+
+   }  
+   m_viewersConfig = iFrom.valueForKey("Viewers");
+
    cdNode(m_topNodeIdx.value());
+   m_enableRedraw = true;
+
+   getTableManager()->redrawTable(true);
+   if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
+   gEve->FullRedraw3D(false, true);
 }
 
 //______________________________________________________________________________
