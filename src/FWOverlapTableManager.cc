@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.11 2012/01/19 03:43:58 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.12 2012/01/20 01:55:15 amraktad Exp $
 //
 
 // system include files
@@ -150,8 +150,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
                      git.GetPath(path2);
                      n2 = gnode; v2 = gvol; l2 = git.GetLevel();
-                     std::cout << "path2 " << path2 << std::endl;
-
+                     // std::cout << "path2 " << path2 << std::endl;
                      Int_t       motherl;
                      TGeoNode*   mothern;
                      TGeoVolume* motherv;
@@ -384,7 +383,7 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
       if (iCol == 4)
       {
          if (data.m_parent == 0 ) 
-            m_renderer.setData(Form("%.3f ", referenceOverlap(unsortedRow)->GetOverlap() ),  isSelected);
+            m_renderer.setData(Form("%g ", referenceOverlap(unsortedRow)->GetOverlap() ),  isSelected);
          else
             m_renderer.setData("",  isSelected);
       }

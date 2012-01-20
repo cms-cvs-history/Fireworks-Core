@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.12 2012/01/19 03:44:51 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.13 2012/01/20 01:55:15 amraktad Exp $
 //
 
 // system include files
@@ -256,7 +256,6 @@ void FWEveOverlap::Paint(Option_t*)
             if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
             {
                paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-               printf("paint mother \n");
             }
             visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
          }
@@ -294,7 +293,17 @@ TString  FWEveOverlap::GetHighlightTooltip()
       TString text;
       const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(m_browser->getTableManager()->m_highlightIdx);
       text =  data.name();
-      text += Form("\noverlap = %.4f cm", ovl->GetOverlap());
+      text += Form("\noverlap = %g cm", ovl->GetOverlap());
+
+      if (ovl->IsOverlap()) 
+      {
+         int nidx = (m_browser->getTableManager()->m_highlightIdx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
+         text += Form("\noverlaping node = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
+      }
+      else
+      {  
+         text += Form("\nextruding mother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
+      }
       return text.Data();
    }
 }
