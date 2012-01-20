@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.9 2012/01/19 00:07:26 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.10 2012/01/20 01:55:15 amraktad Exp $
 //
 
 // system include files
@@ -21,6 +21,7 @@
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
 #include "Fireworks/Core/interface/CmsShowViewPopup.h"
 #include "Fireworks/Core/src/FWPopupMenu.cc"
+#include "Fireworks/Core/interface/fwLog.h"
 
 #include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
 #include "Fireworks/Core/src/FWValidatorBase.h"
@@ -125,7 +126,7 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_pathValidator(0),
    m_numEntry(0),
    m_path(this,"Path:", std::string("/cms:World_1/cms:CMSE_1")),
-   m_precision(this, "Precision", 1., 0.001, 10.),
+   m_precision(this, "Precision", 1., 0.000001, 10.),
    m_rnrOverlap(this, "Overlap", true),
    m_rnrExtrusion(this, "Extrusion", true),
    m_drawPoints(this, "DrawPoints", true),
@@ -160,7 +161,6 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
       hp->AddFrame(m_pathEntry, new TGLayoutHints(kLHintsExpandX,  1, 2, 1, 0));
       m_pathEntry->setMaxListBoxHeight(150);
       m_pathEntry->getListBox()->Connect("Selected(int)", "FWOverlapTableView",  this, "pathListCallback()");
-      //      m_pathEntry->Connect("ReturnPressed()", "FWOverlapTableView",  this, "pathTextEntryCallback()");
       m_pathEntry->Connect("ReturnPressed()", "FWOverlapTableView",  this, "pathListCallback()");
 
       gVirtualX->GrabKey( m_pathEntry->GetId(),gVirtualX->KeysymToKeycode((int)kKey_A),  kKeyControlMask, true);
@@ -170,8 +170,7 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
       hp->AddFrame(new TGLabel(hp, "Precision:"), new TGLayoutHints(kLHintsBottom, 10, 0, 0, 2));
       m_numEntry = new TGNumberEntry(hp,  m_precision.value(), 5, -1, TGNumberFormat::kNESReal, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, m_precision.min(), m_precision.max());
       hp->AddFrame(m_numEntry, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
-     m_numEntry->Connect("ValueSet(Long_t)","FWOverlapTableView",this,"precisionCallback(Long_t)");
-     // m_numEntry->Connect("ValueChanged(Long_t)","FWOverlapTableView",this,"precisionCallback1(Long_t)");
+      m_numEntry->Connect("ValueSet(Long_t)","FWOverlapTableView",this,"precisionCallback(Long_t)");
    }
    {
       TGTextButton* rb = new TGTextButton (hp, "Apply");
@@ -181,20 +180,18 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_frame->AddFrame(hp,new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 4, 2, 2, 0));
    m_tableManager = new FWOverlapTableManager(this);
 
-   std::cerr << " FWOverlapTableView::initGeometry \n";
+   // std::cerr << " FWOverlapTableView::initGeometry \n";
    assertEveGeoElement();
    m_marker = new TEvePointSet();
    m_marker->SetMarkerSize(5);
    m_marker->SetMainColor(kRed);
    m_marker->IncDenyDestroy();
 
-   //   m_tableManager->importOverlaps(m_path.value(), m_precision.value());
-
 
    m_drawPoints.changed_.connect(boost::bind(&FWOverlapTableView::drawPoints,this));
-  m_pointSize.changed_.connect(boost::bind(&FWOverlapTableView::pointSize,this));
-  m_rnrOverlap.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
-  m_rnrExtrusion.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
+   m_pointSize.changed_.connect(boost::bind(&FWOverlapTableView::pointSize,this));
+   m_rnrOverlap.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
+   m_rnrExtrusion.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
   
    postConst();
 }
@@ -206,20 +203,6 @@ FWOverlapTableView::~FWOverlapTableView()
    if (m_marker) m_marker->DecDenyDestroy();
 }
 
-/*
-std::string  FWOverlapTableView::getTextEntryPath()
-{
-   std::string bPath = m_path.value();
-   if (!bPath.empty()) {
-      size_t ps = bPath.size();
-      if (ps > 1 && bPath[ps-1] == '/') 
-      {
-         bPath = bPath.substr(0, ps-1);
-         m_path.set(bPath);
-      }
-   }
-
-   }*/
 //______________________________________________________________________________
 FWGeometryTableManagerBase* FWOverlapTableView::getTableManager()
 {
@@ -248,7 +231,7 @@ TEveElement* FWOverlapTableView::getEveGeoElement() const
 //______________________________________________________________________________
 void FWOverlapTableView::precisionCallback(Long_t )
 {
-   std::cout << " ----------------------------- PRECISION \n" <<  m_numEntry->GetNumber();
+   // std::cout << " ----------------------------- PRECISION \n" <<  m_numEntry->GetNumber();
    m_precision.set( m_numEntry->GetNumber());
    std::cout << sUpdateMsg;
 }
@@ -258,12 +241,11 @@ void FWOverlapTableView::precisionCallback(Long_t )
 
 void FWOverlapTableView::pathListCallback()
 { 
-   std::cout << "text click ed " << m_pathEntry->GetText()  <<" \n" ;
    std::string bPath = m_pathEntry->GetText();
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
    if (gGeoManager->GetCurrentNavigator()->CheckPath(bPath.c_str()) == 0 )
    {
-      printf("Can't complete. Path %s  not valid \n", bPath.c_str());
+      fwLog(fwlog::kError) << Form(" Path %s  not valid \n", bPath.c_str());
       return;
    
    }
@@ -396,9 +378,13 @@ void FWOverlapTableView::chosenItem(int menuIdx)
 
 
    FWGeometryTableManagerBase::NodeInfo* ni = getTableManager()->getSelected();
-   if ( ni == 0) {  printf("ERROR FWOverlapTableView::chosenItem"); return;}
+   if ( ni == 0)
+   {  
+      fwLog(fwlog::kInfo) << ("FWOverlapTableView::chosenItem() no entry selected!");
+      return;
+   }
 
-   printf("chosen item %s \n", ni->name());
+   // printf(" FWOverlapTableView::chosenItem chosen item %s \n", ni->name());
 
    TGeoVolume* gv = ni->m_node->GetVolume();
    bool resetHome = false;
@@ -469,7 +455,7 @@ void FWOverlapTableView::chosenItem(int menuIdx)
          case kPrintPath:
          {
 
-            std::cout << "path: "<<  m_tableManager->refEntries().at(m_tableManager->m_selectedIdx).m_node->GetTitle() << std::endl;
+            std::cout << "\npath: "<<  m_tableManager->refEntries().at(m_tableManager->m_selectedIdx).m_node->GetTitle() << std::endl;
            
          }
       }
