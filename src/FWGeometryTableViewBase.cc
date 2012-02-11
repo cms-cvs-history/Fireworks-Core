@@ -65,13 +65,13 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
          {     
             bool added = false;          
             m_viewPopup->AddEntry(v->GetElementName(), idx);
-            TEveSceneInfo* si = ( TEveSceneInfo*)v->FindChild(Form("SI - %s",v->GetElementName() ));
-            if (m_el && si) {
-               for (TEveElement::List_i eit = m_el->BeginParents(); eit != m_el->EndParents(); ++eit ){
-                  if (*eit == si->GetScene()) {
-                     added = true;
-                     break;
-                  }
+
+            for (TEveElement::List_i eit = v->BeginChildren(); eit != v->EndChildren(); ++eit )
+            {
+               TEveScene* s = ((TEveSceneInfo*)*eit)->GetScene();
+               if (m_el && s->HasChildren() && s->FirstChild() == m_el) {
+                  added = true;
+                  break;
                }
             }
             map = true;
@@ -100,7 +100,7 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
       }
       else
       {
-         fwLog(fwlog::kError) << "No 3D View added. \n";
+         fwLog(fwlog::kInfo) << "No 3D View added. \n";
       }
    }
    return true;
@@ -134,10 +134,6 @@ FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewT
 
 void FWGeometryTableViewBase::postConst()
 {
-   m_settersFrame = new TGHorizontalFrame(m_frame);
-   m_frame->AddFrame( m_settersFrame, new TGLayoutHints(kLHintsExpandX,4,2,2,2));
-   m_settersFrame->SetCleanup(kDeepCleanup);
-
    m_tableWidget = new FWTableWidget(getTableManager(), m_frame); 
    m_frame->AddFrame(m_tableWidget,new TGLayoutHints(kLHintsExpandX|kLHintsExpandY,2,2,0,0));
    m_tableWidget->SetBackgroundColor(0xffffff);
@@ -186,14 +182,13 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
          for(FWConfiguration::KeyValuesIt it = keyVals->begin(); it!= keyVals->end(); ++it) {
     
             TString sname = it->first;
-            if (strncmp(sname.Data(), "EventScene ", 11) == false) 
+            TEveViewer* v = dynamic_cast<TEveViewer*>(viewers->FindChild(sname.Data()));
+            if (!v)
             {
-               sname = &sname.Data()[11];
+               fwLog(fwlog::kError)  << "FWGeometryTableViewBase::populate3DViewsFromConfig no viewer found\n";
+               return;
             }
-            //             std::cerr << sname.Data() << std::endl;
-            TEveViewer* v = dynamic_cast<TEveViewer*>(viewers->FindChild(sname));
-
-            TEveScene* s = new PipiScene(this, v->GetElementName());
+            TEveScene* s = new PipiScene(this, Form("%s %s", typeName().c_str(), v->GetElementName()));
             gEve->AddElement(s, gEve->GetScenes());
             v->AddScene(s);  
             assertEveGeoElement();
@@ -201,8 +196,7 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
 
             s->AddElement(getEveGeoElement());
             if (getEveMarker()) {
-               TEveSceneInfo* sgsi =(TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
-               sgsi->GetScene()->AddElement(getEveMarker());
+               s->AddElement(getEveMarker());
             }
             gEve->FullRedraw3D(false, true);
          }   
@@ -215,29 +209,38 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
 void 
 FWGeometryTableViewBase::selectView(int idx)
 {
+   // callback from sleclect view popup menu
+
+   assertEveGeoElement();
+   m_viewBox->setElement(getEveGeoElement());
+
    TEveElement::List_i it = gEve->GetViewers()->BeginChildren();
    std::advance(it, idx);
    TEveViewer* v = (TEveViewer*)(*it);
-   TEveSceneInfo* si = (TEveSceneInfo*)v->FindChild(Form("SI - %s",v->GetElementName()));
-   assertEveGeoElement();
-   m_viewBox->setElement(getEveGeoElement());
-   TEveSceneInfo* sgsi =(TEveSceneInfo*)v->FindChild(Form("SI - GeoScene %s",v->GetElementName()));
 
-   if (si == 0) {
-      TEveScene* s = new PipiScene(this, v->GetElementName());
+   TEveScene* s = 0;         
+   for (TEveElement::List_i eit = v->BeginChildren(); eit != v->EndChildren(); ++eit ){
+      TEveScene* ts = ((TEveSceneInfo*)*eit)->GetScene();
+      if (getEveGeoElement() && ts->HasChildren() && (*ts->BeginChildren()) == getEveGeoElement()) {
+         s = ts;
+         break;
+      }
+   }
+
+   if (s == 0) {
+      s = new PipiScene(this, Form("%s %s", typeName().c_str(), v->GetElementName()));
       gEve->AddElement(s, gEve->GetScenes());
       s->AddElement(getEveGeoElement());
-      if (getEveMarker()) sgsi->AddElement(getEveMarker());
+      if (getEveMarker()) s->AddElement(getEveMarker());
       v->AddScene(s);
    }
    else
    {
-      si->GetScene()->RemoveElement(getEveGeoElement());
-      if (getEveMarker()) sgsi->GetScene()->RemoveElement(getEveMarker());
+      s->RemoveElement(getEveGeoElement());
+      if (getEveMarker()) s->RemoveElement(getEveMarker());
    }
 
    getEveGeoElement()->ElementChanged();
-
    gEve->Redraw3D();
 }
 
@@ -410,12 +413,16 @@ void FWGeometryTableViewBase::addTo(FWConfiguration& iTo) const
    FWConfigurableParameterizable::addTo(iTo);
 
    FWConfiguration viewers(1);
-   for (TEveElement::List_i it = getEveGeoElement()->BeginParents(); it != getEveGeoElement()->EndParents(); ++it )
-   {
-      FWConfiguration tempArea;
-      TEveScene* scene = dynamic_cast<TEveScene*>(*it);
-      std::string n = scene->GetElementName();
-      viewers.addKeyValue(n, tempArea);
+   if (getEveGeoElement()) {
+      for (TEveElement::List_i it = getEveGeoElement()->BeginParents(); it != getEveGeoElement()->EndParents(); ++it )
+      {
+         FWConfiguration tempArea;
+         TEveScene* scene = dynamic_cast<TEveScene*>(*it);
+         const char*  n= scene->GetElementName();
+         int tsize = typeName().size() + 1;
+         printf("add to %s -> [%s] \n", scene->GetElementName(), &n[tsize]);
+         viewers.addKeyValue( &n[tsize], tempArea);
+      }
    }
    iTo.addKeyValue("Viewers", viewers, true);
 }
