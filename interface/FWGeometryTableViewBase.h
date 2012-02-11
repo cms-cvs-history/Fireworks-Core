@@ -102,7 +102,7 @@ protected:
    FWColorManager         *m_colorManager;
    FWTableWidget          *m_tableWidget;
 
-   TGCompositeFrame       *m_settersFrame;
+ //  TGCompositeFrame       *m_settersFrame;
 
    FWColorPopup           *m_colorPopup;
 
