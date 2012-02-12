@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.12 2012/01/20 01:55:15 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.13 2012/01/20 02:44:12 amraktad Exp $
 //
 
 // system include files
@@ -26,7 +26,7 @@
 #include "TGeoBBox.h"
 #include "TGeoMatrix.h"
 #include "TEveUtil.h"
-
+#include "TObjString.h"
 #include "TGeoNode.h"
 #include "TGeoOverlap.h"
 #include "TGeoManager.h"
@@ -71,15 +71,6 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       if (ps > 1 && iPath[ps-1] == '/') 
          iPath = iPath.substr(0, ps-1);
 
-      std::string::iterator bi = iPath.begin();
-      bi++;
-      // first level offset  0
-      while (bi != iPath.end())  { if (*bi == '/') { bi++; break;};  bi++;} 
-      for (std::string::iterator i = bi; i != iPath.end(); ++i)
-      {
-         if (*i == '/') m_levelOffset++;
-      }
-      //   printf("level offset %d \n", m_levelOffset);
     
       if (gGeoManager->GetCurrentNavigator()->CheckPath(iPath.c_str()) == 0)
       {
@@ -104,7 +95,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
    NodeInfo topNodeInfo;
    topNodeInfo.m_node   = top_node; 
-   topNodeInfo.m_level  = m_levelOffset;
+   topNodeInfo.m_level  = 0;
    topNodeInfo.m_parent = -1;
    topNodeInfo.resetBit(kVisNodeSelf);
    m_entries.push_back( topNodeInfo);
@@ -115,7 +106,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       TIter next_ovl(lOverlaps);
       TGeoOverlap *ovl;
 
-      TGeoIterator top_git   (gGeoManager->GetTopVolume());
+      TGeoIterator top_git   (gGeoManager->GetCurrentVolume());
       TGeoNode*    top_gnode (top_git.Next());
       while((ovl = (TGeoOverlap*)next_ovl())) 
       {
@@ -126,115 +117,57 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
                             ovl->GetSecondVolume()->GetName()));
 
       reiterate:
-         TGeoNode    *n1 =  0, *n2 =  0, *gnode;
-         TGeoVolume  *v1 =  0, *v2 =  0, *gvol;
-         Int_t        l1 = -1,  l2 = -1;
+         Overlap fwo(ovl);
          TGeoIterator git(top_git);
-         TString path, path1, path2;
-         gnode = top_gnode;
+         TGeoNode* gnode = top_gnode;
          do {
-            gvol = gnode->GetVolume();
+            TGeoVolume* gvol = gnode->GetVolume();
             if(gvol == ovl->GetFirstVolume())
             {
-               git.GetPath(path1);
-               // std::cout << "path1 " << path1 << std::endl;
                top_git = git; top_gnode = gnode;
-               n1 = gnode; v1 = gvol;  l1 = git.GetLevel();
+               fwo.n1 = gnode; fwo.v1 = gvol;  fwo.l1 = git.GetLevel();
+               git.GetPath(fwo.iteratorPath1);
                if( ovl->IsOverlap())
                   git.Skip();
 
-               while((gnode = git.Next()) != 0) {
-
+               while((gnode = git.Next()) != 0)
+               {
                   gvol = gnode->GetVolume();
                   if(gvol == ovl->GetSecondVolume()) {
-
-                     git.GetPath(path2);
-                     n2 = gnode; v2 = gvol; l2 = git.GetLevel();
-                     // std::cout << "path2 " << path2 << std::endl;
-                     Int_t       motherl;
-                     TGeoNode*   mothern;
-                     TGeoVolume* motherv;
-                     if(ovl->IsExtrusion()) {
-                        motherl = l1;
-                        mothern = n1;
-                        motherv = v1;
-
-                        path = path1;
-                     } else {
-                        motherl = TMath::Min(l1, l2);
+                     fwo.n2 = gnode; fwo.v2 = gvol; fwo.l2 = git.GetLevel();
+                     git.GetPath(fwo.iteratorPath2);
+                     if(ovl->IsExtrusion()) 
+                     {
+                        fwo.motherl = fwo.l1;
+                        fwo.mothern = fwo.n1;
+                        fwo.motherv = fwo.v1;
+                     }
+                     else 
+                     {
+                        fwo.motherl = TMath::Min(fwo.l1, fwo.l2);
                         do {
-                           --motherl;
-                           mothern = motherl > 0 ? git.GetNode(motherl) : top_node;
-                           motherv = mothern->GetVolume();
-                        } while(motherv->IsAssembly());
-
-                        int ldiff = l1- motherl;
-                        int scs = path1.Length();
-                        do
-                        {
-                           scs--;
-                           if (path1[scs] == '/') ldiff--;
-                        }while(scs > 0 && ldiff >0);
-                        path = path1;
-                        path.Resize(scs);
+                           --fwo.motherl;
+                           if (fwo.motherl > 0 ) 
+                           {
+                              fwo.mothern = git.GetNode(fwo.motherl);
+                           }
+                           else
+                           {
+                              fwo.mothern = top_node;
+                              break;
+                           }
+                        } while(fwo.mothern->GetVolume()->IsAssembly());
+                        fwo.motherv = fwo.mothern->GetVolume();
                      }
 
-                     TGeoHMatrix motherm;
-                     {
-                        TGeoNode *node = git.GetTopVolume()->GetNode(git.GetIndex(1));
-                        motherm.Multiply(node->GetMatrix());
-                        for (Int_t i=2; i<=motherl; i++) {
-                           node = node->GetDaughter(git.GetIndex(i));
-                           motherm.Multiply(node->GetMatrix());
-                        }
+                     TGeoNode *node = git.GetTopVolume()->GetNode(git.GetIndex(1));
+                     fwo.motherm.Multiply(node->GetMatrix());
+                     for (Int_t i=2; i<=fwo.motherl; i++) {
+                        node = node->GetDaughter(git.GetIndex(i));
+                        fwo.motherm.Multiply(node->GetMatrix());
                      }
 
-                     //______________________________________________________________________________
-                     //______________________________________________________________________________
-                     //______________________________________________________________________________
-                     {
-                        TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*)motherv, new TGeoHMatrix(motherm));
-                        size_t ms = path.Length() + 1;
-                        size_t ps = 0;
-                        if (iPath.size() > 1) ps = iPath.size() -2; // add two characters to convert top volume name into top node name cmsWorld -> cmsWorld_1
-
-                        m_entries.push_back(NodeInfo(mother_node, 0, motherv->GetLineColor(), motherl, kVisNodeChld |  kFlag1));
-                        int parentIdx = m_entries.size() -1;
-
-                        TString mname  = ovl->IsExtrusion() ? "Extr: " : "Ovlp: ";
-                        mname += &path[ps];
-                        mother_node->SetNameTitle(mname, path.Data());
-
-                        if (ovl->IsOverlap()) {
-                           TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(v1, ovl->GetFirstMatrix());
-                           gnode1->SetNameTitle(&path1[ms]   , path1.Data());
-                           m_entries.push_back(NodeInfo(gnode1, parentIdx, v1->GetLineColor(), l1));
-
-                           TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
-                           gnode2->SetNameTitle(&path2[ms], path2.Data());
-                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));
-                        }
-                        else
-                        {   
-                           TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(v2, ovl->GetSecondMatrix());
-                           gnode2->SetNameTitle(&path2[ms], path2.Data());
-                           m_entries.push_back(NodeInfo(gnode2, parentIdx, v2->GetLineColor(), l2));                   
-                        }
-
-                        TPolyMarker3D* pm = ovl->GetPolyMarker();
-                        for (int j=0; j<pm->GetN(); ++j )
-                        {
-                           double pl[3];
-                           double pg[3];
-                           pm->GetPoint(j, pl[0], pl[1], pl[2]);
-                           motherm.LocalToMaster(pl, pg);
-                           m_browser->m_markerIndices.push_back(parentIdx);
-                           m_browser->m_markerVertices.push_back( pg[0]);
-                           m_browser->m_markerVertices.push_back( pg[1]);
-                           m_browser->m_markerVertices.push_back( pg[2]);
-                        }
-
-                     }
+                     addOverlapEntry(fwo);
                      break;
                   }
                }
@@ -242,7 +175,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
             }
          } while((gnode = git.Next()) != 0);
 
-         if(v2 == 0) {
+         if(fwo.v2 == 0) {
             printf( "  Could not find both volumes, resetting geo-iterator.");
             top_git.Reset();
             top_gnode = top_git.Next();
@@ -254,6 +187,59 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 
    printf("Import END eps=%f \n", iPrecision);
 }
+
+//______________________________________________________________________________
+
+void FWOverlapTableManager::addOverlapEntry(Overlap& fwo)
+{                      
+      TGeoNodeMatrix* mother_node = new TGeoNodeMatrix((const TGeoVolume*) fwo.motherv, new TGeoHMatrix( fwo.motherm));
+      TString mname;
+      if (fwo.ovl->IsOverlap()) 
+      {
+         mname  = "Ovl: ";
+         if (fwo.motherl > 0)
+         {
+            TObjArray* x = fwo.iteratorPath1.Tokenize("/");
+            for(int i = 0; i<fwo.motherl; ++i)
+               mname += ((TObjString*)x->At(i))->GetString();
+         }
+         else 
+            mname += "TOPNODE";
+      }
+      else
+      {
+         mname  = "Extr: " + fwo.iteratorPath1;
+      }
+      mother_node->SetNameTitle(mname.Data(), mname.Data());
+      m_entries.push_back(NodeInfo(mother_node, 0, fwo.motherv->GetLineColor(), fwo.motherl+1, kVisNodeChld |  kFlag1));
+      int parentIdx = m_entries.size() -1;
+
+      if (fwo.ovl->IsOverlap()) {
+         TGeoNodeMatrix* gnode1 = new TGeoNodeMatrix(fwo.v1, fwo.ovl->GetFirstMatrix());
+         gnode1->SetNameTitle(fwo.iteratorPath1.Data(), fwo.iteratorPath1.Data());
+         m_entries.push_back(NodeInfo(gnode1, parentIdx, fwo.v1->GetLineColor(), fwo.l1+1));
+      }
+
+
+      TGeoNodeMatrix* gnode2 = new TGeoNodeMatrix(fwo.v2, fwo.ovl->GetSecondMatrix());
+      gnode2->SetNameTitle(fwo.iteratorPath1.Data(), fwo.iteratorPath1.Data());
+      m_entries.push_back(NodeInfo(gnode2, parentIdx, fwo.v2->GetLineColor(), fwo.l2+1));                   
+
+
+      TPolyMarker3D* pm = fwo.ovl->GetPolyMarker();
+      for (int j=0; j<pm->GetN(); ++j )
+      {
+         double pl[3];
+         double pg[3];
+         pm->GetPoint(j, pl[0], pl[1], pl[2]);
+         fwo.motherm.LocalToMaster(pl, pg);
+         m_browser->m_markerIndices.push_back(parentIdx);
+         m_browser->m_markerVertices.push_back( pg[0]);
+         m_browser->m_markerVertices.push_back( pg[1]);
+         m_browser->m_markerVertices.push_back( pg[2]);
+      }
+}
+
 
 //_____________________________________________________________________________
 
@@ -289,7 +275,7 @@ void FWOverlapTableManager::recalculateVisibility( )
 
 bool  FWOverlapTableManager::nodeIsParent(const NodeInfo& data) const
 {
-   return   data.m_parent == 0;
+   return   data.m_parent <= 0 ;
 }
 
 //______________________________________________________________________________
@@ -368,7 +354,7 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
 
       m_renderer.setIsOpen( data.testBit(FWGeometryTableManagerBase::kExpanded));
 
-      int level = data.m_level - m_levelOffset;
+      int level = data.m_level ;
       if (nodeIsParent(data))
          m_renderer.setIndentation(20*level);
       else
