@@ -166,6 +166,17 @@ FWGeometryTableViewBase::~FWGeometryTableViewBase()
    delete getTableManager();
 }
 
+
+namespace {
+TEveScene* getMarkerScene(TEveViewer* v)
+{
+  TEveElement* si = v->FindChild(Form("SI - GeoScene %s", v->GetElementName()));
+  if(si) 
+    return ((TEveSceneInfo*)(si))->GetScene();
+  else
+    return 0;
+}
+}
 //==============================================================================
 
 
@@ -196,14 +207,13 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
 
             s->AddElement(getEveGeoElement());
             if (getEveMarker()) {
-               s->AddElement(getEveMarker());
+               getMarkerScene(v)->AddElement(getEveMarker());
             }
             gEve->FullRedraw3D(false, true);
          }   
       }
    }
 }
-
 //==============================================================================
 
 void 
@@ -231,13 +241,13 @@ FWGeometryTableViewBase::selectView(int idx)
       s = new PipiScene(this, Form("%s %s", typeName().c_str(), v->GetElementName()));
       gEve->AddElement(s, gEve->GetScenes());
       s->AddElement(getEveGeoElement());
-      if (getEveMarker()) s->AddElement(getEveMarker());
+      if (getEveMarker()) getMarkerScene(v)->AddElement(getEveMarker());
       v->AddScene(s);
    }
    else
    {
       s->RemoveElement(getEveGeoElement());
-      if (getEveMarker()) s->RemoveElement(getEveMarker());
+      if (getEveMarker()) getMarkerScene(v)->RemoveElement(getEveMarker());
    }
 
    getEveGeoElement()->ElementChanged();
