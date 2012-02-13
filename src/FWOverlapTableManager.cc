@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.14 2012/02/12 02:01:42 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.15 2012/02/13 01:10:21 amraktad Exp $
 //
 
 // system include files
@@ -98,6 +98,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
   topNodeInfo.resetBit(kVisNodeSelf);
   m_entries.push_back( topNodeInfo);
   
+    
   
   TGeoVolume* topVol = topNode->GetVolume();
   // ========================================================
@@ -119,21 +120,34 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
   topVol->CheckOverlaps(iPrecision);
   icheck++;
   TGeoIterator next(topVol);
+   if (gGeoManager->GetListOfOverlaps()->GetEntriesFast()) {
+     int newCnt =  gGeoManager->GetListOfOverlaps()->GetEntriesFast();
+     for (int i=0; i<newCnt; ++i)
+       addOverlapEntry((TGeoOverlap*)gGeoManager->GetListOfOverlaps()->At(i), new TGeoHMatrix(*geom->GetCurrentMatrix()), topNode, next); 
+     oldS= newCnt;
+   }
+  
   TGeoNode *node;
+  geom->GetCurrentMatrix()->Print();
+  
+  TString path;
+
   while ((node=next())) {
     icheck++;
     if (!node->GetVolume()->IsSelected()) {
+      // next.GetPath(path);
       geom->GetGeomPainter()->OpProgress(node->GetVolume()->GetName(),icheck,ncheck,timer,kFALSE);
       node->GetVolume()->SelectVolume(kFALSE);
       node->GetVolume()->CheckOverlaps(iPrecision);
       
       if (oldS !=  gGeoManager->GetListOfOverlaps()->GetEntriesFast()) {
         int newCnt =  gGeoManager->GetListOfOverlaps()->GetEntriesFast();
-        TGeoHMatrix* motherm = new TGeoHMatrix();
+        TGeoHMatrix* motherm = new TGeoHMatrix(*geom->GetCurrentMatrix());        
         {
           TGeoNode* ni = topNode;
           for (Int_t i=1; i<=next.GetLevel(); i++) {
             ni = ni->GetDaughter(next.GetIndex(i));
+            // printf("mult matrix %s \n", ni->GetName());
             motherm->Multiply(ni->GetMatrix());
           }
         }
