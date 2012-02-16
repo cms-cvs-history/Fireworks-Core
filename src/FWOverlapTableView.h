@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id: FWOverlapTableView.h,v 1.1.2.5 2012/01/14 05:54:17 amraktad Exp $
+// $Id: FWOverlapTableView.h,v 1.1.2.6 2012/01/18 02:38:36 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -32,6 +32,7 @@ class TGNumberEntry;
 class FWOverlapTableView : public FWGeometryTableViewBase
 {
 public:
+
    FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* colMng);
    virtual ~FWOverlapTableView();
 
@@ -40,7 +41,6 @@ public:
    void pathListCallback();
    void precisionCallback(Long_t);
    void recalculate();
-   virtual TEvePointSet* getEveMarker() const { return m_marker; }
 
    virtual void setFrom(const FWConfiguration&);
    virtual void populateController(ViewerParameterGUI&) const;
@@ -50,11 +50,11 @@ public:
    void cdUp();
    void cdTop();  
    virtual void refreshTable3D();
-   virtual void  popupMenu(int x, int y);
+   //   virtual void  popupMenu(int x, int y);
    virtual void chosenItem(int x);
 protected:
    virtual TEveElement* getEveGeoElement() const;
-   virtual void assertEveGeoElement();
+
 private:  
   
    FWOverlapTableView(const FWOverlapTableView&); // stop default
@@ -64,9 +64,6 @@ public:
    // ---------- member data --------------------------------
 
    FWOverlapTableManager *m_tableManager;
-
-   FWEveOverlap*         m_eveTopNode;
-   TEvePointSet*         m_marker;
 
    FWGUIValidatingTextEntry* m_pathEntry;
    FWGeoPathValidator*       m_pathValidator;

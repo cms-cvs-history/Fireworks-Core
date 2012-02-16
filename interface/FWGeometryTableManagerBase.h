@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManagerBase.h,v 1.1.2.3 2012/01/18 02:38:36 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.h,v 1.1.2.4 2012/01/19 00:07:25 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -43,21 +43,17 @@ class FWGeometryTableManagerBase : public FWTableManagerBase
    friend class FWGeometryTableViewBase;
 
 public:
-   enum   ECol   { kName, kColor,  kVisSelf, kVisChild, kMaterial, kNumCol };
-   enum   ESelectionState { kNone, kSelected, kHighlighted, kFiltered };
+   //   enum   ESelectionState { kNone, kSelected, kHighlighted, kFiltered };
 
    enum Bits
    {
       kExpanded        =  BIT(0),
-      kMatches         =  BIT(1),
-      kChildMatches    =  BIT(2),
-      kFilterCached    =  BIT(3),
 
-      kVisNodeSelf     =  BIT(4),
-      kVisNodeChld     =  BIT(5),
+      kVisNodeSelf     =  BIT(1),
+      kVisNodeChld     =  BIT(2),
 
-      kFlag1            =  BIT(6),
-      kFlag2            =  BIT(7)
+      kHighlighted   =  BIT(3),
+      kSelected      =  BIT(4)
    };
 
    struct NodeInfo
@@ -126,7 +122,7 @@ public:
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const { return false; }
-   virtual ESelectionState nodeSelectionState(int idx) const;
+   //   virtual ESelectionState nodeSelectionState(int idx) const;
 
 public:
    FWGeometryTableManagerBase();
@@ -138,19 +134,17 @@ public:
    
    virtual int unsortedRowNumber(int unsorted) const;
    virtual int numberOfRows() const;
-   virtual int numberOfColumns() const;
    virtual std::vector<std::string> getTitles() const;
-   virtual FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
 
    virtual const std::string title() const;
 
-   int selectedRow() const;
-   int selectedColumn() const;
-   virtual bool rowIsSelected(int row) const;
+   //int selectedRow() const;
+   //int selectedColumn() const;
+   //virtual bool rowIsSelected(int row) const;
 
    std::vector<int> rowToIndex() { return m_row_to_index; }
 
-   void setSelection(int row, int column, int mask); 
+   //   void setSelection(int row, int column, int mask); 
    virtual void implSort(int, bool) {}
 
    bool nodeImported(int idx) const;
@@ -166,6 +160,7 @@ public:
    void getNodePath(int, std::string&) const;
 
    int getLevelOffset() const { return m_levelOffset; }
+   void setLevelOffset(int x) { m_levelOffset =x; }
 
    void setDaughtersSelfVisibility(bool);
 
@@ -180,21 +175,20 @@ public:
 
    static  void getNNodesTotal(TGeoNode* geoNode, int& off);
 
-   // private:
+
+   // protected:
    FWGeometryTableManagerBase(const FWGeometryTableManagerBase&); // stop default
    const FWGeometryTableManagerBase& operator=(const FWGeometryTableManagerBase&); // stop default
 
    
    bool firstColumnClicked(int row, int xPos);
-   void changeSelection(int iRow, int iColumn);
+   //   void changeSelection(int iRow, int iColumn);
+
    void redrawTable(bool setExpand = false);
 
    virtual void recalculateVisibility() = 0;
 
-   // signal callbacks
-   void topGeoNodeChanged(int);
 
-   void checkExpandLevel();
    // ---------- member data --------------------------------
    
    
@@ -204,8 +198,6 @@ public:
    mutable ColorBoxRenderer       m_colorBoxRenderer;  
 
    std::vector<int>  m_row_to_index;
-   int               m_selectedIdx;
-   int               m_selectedColumn;
    
    Entries_v          m_entries;
 

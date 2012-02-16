@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel
 //         Created:  Fri Jul  8 00:40:37 CEST 2011
-// $Id: FWGeometryTableViewManager.cc,v 1.6.2.2 2012/01/04 02:39:46 amraktad Exp $
+// $Id: FWGeometryTableViewManager.cc,v 1.6.2.3 2012/01/07 04:24:56 amraktad Exp $
 //
 
 #include <boost/bind.hpp>
@@ -90,7 +90,7 @@ FWGeometryTableViewManager::initGeoManager()
    gGeoManager = 0;
    
    TFile* file = FWGeometry::findFile( m_fileName.c_str() );
-
+   //
    try 
    {
      if ( ! file )

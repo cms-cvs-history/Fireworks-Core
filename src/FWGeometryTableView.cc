@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.14 2012/01/19 00:07:25 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.15 2012/01/20 03:09:54 amraktad Exp $
 //
 
 // system include files
@@ -16,6 +16,7 @@
 
 // user include files
 #include "Fireworks/Core/src/FWGeometryTableView.h"
+#include "Fireworks/Core/src/FWGeoTopNodeScene.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/interface/FWViewType.h"
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -27,7 +28,6 @@
 #include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/Core/src/FWValidatorBase.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
-#include "Fireworks/Core/src/FWPopupMenu.cc"
 
 #include "KeySymbols.h"
 #include "TGButton.h"
@@ -38,6 +38,7 @@
 #include "TGeoBBox.h"
 
 #include "TEveViewer.h"
+#include "TEveScene.h"
 #include "TEveManager.h"
 #include "TGeoManager.h"
 #include "TGLCamera.h"
@@ -47,16 +48,6 @@
 //==============================================================================
 //==============================================================================
 
-enum GeoMenuOptions {
-   kSetTopNode,
-   kSetTopNodeCam,
-   kVisOn,
-   kVisOff,
-   kInspectMaterial,
-   kInspectShape,
-   kCamera,
-   kTableDebug
-};
 
 class FWGeoMaterialValidator : public FWValidatorBase 
 {
@@ -144,7 +135,6 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
      m_tableManager(0),
      m_filterEntry(0),
      m_filterValidator(0),
-     m_eveTopNode(0),   
      m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
      m_mode(this, "Mode:", 0l, 0l, 1l),
      m_filter(this,"Materials:",std::string()),
@@ -153,6 +143,18 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
      m_visLevel(this,"VisLevel:", 3l, 1l, 100l),
      m_visLevelFilter(this,"IgnoreVisLevelOnFilter", true)
 {
+   FWGeoTopNodeGLScene *gls = new FWGeoTopNodeGLScene(0);
+   m_eveScene  = new TEveScene(gls, "TopGeoNodeScene", "");
+   gEve->GetScenes()->AddElement(m_eveScene);
+
+   m_eveTopNode = new  FWEveDetectorGeo(this);
+   m_eveTopNode->IncDenyDestroy();
+   m_eveTopNode->SetPickable(true);
+   m_eveScene->AddElement(m_eveTopNode);
+ 
+   gls->fTopNodeJebo = m_eveTopNode;
+   m_eveTopNode->fSceneJebo   = gls;
+
 
 
    // top row
@@ -205,7 +207,7 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    m_visLevelFilter.changed_.connect(boost::bind(&FWGeometryTableView::refreshTable3D,this));
 
 
-   m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
+   m_disableTopNode.changed_.connect(boost::bind(&FWGeometryTableView::updateVisibilityTopNode,this));
    postConst();
 }
 
@@ -214,6 +216,26 @@ FWGeometryTableView::~FWGeometryTableView()
 {
 }
 
+
+//______________________________________________________________________________
+
+void  FWGeometryTableView::checkExpandLevel()
+{
+   // check expand state
+   int ae = m_autoExpand.value();
+   if ( m_topNodeIdx.value() > 0) 
+      ae += getTableManager()->refEntries().at(m_topNodeIdx.value()).m_level;
+
+   for (FWGeometryTableManagerBase::Entries_i i = getTableManager()->refEntries().begin(); i !=  getTableManager()->refEntries().end(); ++i)
+   {
+      if (i->m_level  < ae)
+         i->setBit(FWGeometryTableManagerBase::kExpanded);
+      else
+         i->resetBit(FWGeometryTableManagerBase::kExpanded);
+   } 
+}
+
+//______________________________________________________________________________
 
 
 FWGeometryTableManagerBase* FWGeometryTableView::getTableManager()
@@ -224,9 +246,12 @@ FWGeometryTableManagerBase* FWGeometryTableView::getTableManager()
 void FWGeometryTableView::autoExpandCallback()
 { 
    if (!m_enableRedraw) return;
+   checkExpandLevel();
    getTableManager()->redrawTable(true);
 }
-   //______________________________________________________________________________
+
+
+//______________________________________________________________________________
 void FWGeometryTableView::filterTextEntryCallback()
 {
    // std::cout << "text entry click ed \n" ;
@@ -242,6 +267,8 @@ void FWGeometryTableView::filterTextEntryCallback()
    }
 }
 
+//______________________________________________________________________________
+
 void FWGeometryTableView::filterListCallback()
 { 
    //   std::cout << "list click ed \n" ;
@@ -250,6 +277,7 @@ void FWGeometryTableView::filterListCallback()
    updateFilter(exp);
 }
 
+//______________________________________________________________________________
 
 
 void FWGeometryTableView::updateFilter(std::string& exp)
@@ -280,7 +308,6 @@ void FWGeometryTableView::updateFilter(std::string& exp)
 
 }
 
-
 //==============================================================================
 
 void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
@@ -290,25 +317,9 @@ void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
       addParam(&m_mode).
       addParam(&m_autoExpand).
       addParam(&m_visLevel).
-      addParam(&m_visLevelFilter).
-      separator().
-      addParam(&m_enableHighlight);
-}
-
-//______________________________________________________________________________
-void  FWGeometryTableView::assertEveGeoElement()
-{
- if (!m_eveTopNode )
-   {
-      printf("NEWFWEveDetectorGeo -------------------------------\n ");
-      m_eveTopNode = new  FWEveDetectorGeo(this);
-      m_eveTopNode->IncDenyDestroy();
-   }
-}
-
-TEveElement* FWGeometryTableView::getEveGeoElement() const
-{
-   return m_eveTopNode;
+      addParam(&m_visLevelFilter);
+      //      separator().
+      // addParam(&m_enableHighlight);
 }
 
 void
@@ -346,26 +357,31 @@ void FWGeometryTableView::cdUp()
       setPath(pIdx, p);
    }
 }
+
+//______________________________________________________________________________
+
+void FWGeometryTableView::updateVisibilityTopNode()
+{
+   getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
+   refreshTable3D();
+}
 //______________________________________________________________________________
 
 void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 {
+   //   printf("Set Path to [%s], current node \n", path.c_str());
    m_topNodeIdx.set(parentIdx);
-#ifdef PERFTOOL_BROWSER  
-   ProfilerStart(Form("cdPath%d.prof", parentIdx));
-#endif
+   getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
+   getTableManager()->setLevelOffset(getTableManager()->refEntries().at(getTopNodeIdx()).m_level);
 
-   getTableManager()->topGeoNodeChanged(parentIdx);
+   m_eveTopNode->clearSelection(); 
 
-   printf("END Set Path to [%s], current node \n", path.c_str()); 
-
+   checkExpandLevel();
+   refreshTable3D(); 
    FWGUIManager::getGUIManager()->updateStatus(path.c_str());
-#ifdef PERFTOOL_BROWSER  
-   ProfilerStop();
-#endif 
-   refreshTable3D();
-
 }
+
+//______________________________________________________________________________
 
 void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
 { 
@@ -383,42 +399,22 @@ void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
    cdNode(m_topNodeIdx.value());
    m_enableRedraw = true;
 
-   getTableManager()->redrawTable(true);
-   if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
+   checkExpandLevel();
+   refreshTable3D();
+   /*
+   getTableManager()->redrawTable();
+   m_eveTopNode->ElementChanged();
    gEve->FullRedraw3D(false, true);
+   */
 }
 
-//______________________________________________________________________________
-
-void FWGeometryTableView::popupMenu(int x, int y)
-{
-
-   FWPopupMenu* nodePopup = new FWPopupMenu();
-   nodePopup->AddEntry("Set As Top Node", kSetTopNode);
-   nodePopup->AddEntry("Set As Top Node And Camera Center", kSetTopNodeCam);
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("Rnr Off For All Children", kVisOff);
-   nodePopup->AddEntry("Rnr On For All Children", kVisOn);
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("Set Camera Center", kCamera);
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("InspectMaterial", kInspectMaterial);
-   nodePopup->AddEntry("InspectShape", kInspectShape);
-   nodePopup->AddEntry("Table Debug", kTableDebug);
-
-   nodePopup->PlaceMenu(x, y,true,true);
-   nodePopup->Connect("Activated(Int_t)",
-                      "FWGeometryTableView",
-                      this,
-                      "chosenItem(Int_t)");
-}
 
 //______________________________________________________________________________
 
 void FWGeometryTableView::chosenItem(int x)
 {
-   FWGeometryTableManagerBase::NodeInfo& ni = *getTableManager()->getSelected();
-   printf("chosen item %s \n", ni.name());
+   FWGeometryTableManagerBase::NodeInfo& ni = getTableManager()->refEntries().at(m_eveTopNode->getFirstSelectedTableIndex());
+   // printf("chosen item %s \n", ni.name());
 
    TGeoVolume* gv = ni.m_node->GetVolume();
    bool visible = true;
@@ -426,31 +422,29 @@ void FWGeometryTableView::chosenItem(int x)
    if (gv)
    {
       switch (x) {
-         case kVisOff:
+         case FWEveDetectorGeo::kGeoVisOff:
             visible = false;
-         case kVisOn:
+         case FWEveDetectorGeo::kGeoVisOn:
             getTableManager()->setDaughtersSelfVisibility(visible);
             refreshTable3D();
             break;
 
-         case kInspectMaterial:
+         case FWEveDetectorGeo::kGeoInspectMaterial:
             gv->InspectMaterial();
             break;
-         case kInspectShape:
+         case FWEveDetectorGeo::kGeoInspectShape:
             gv->InspectShape();
             break;
-         case kTableDebug:
-            std::cout << "node name " << ni.name() << "parent " <<getTableManager()->refEntries()[ni.m_parent].name() <<  std::endl;
-            break;
 
-         case kSetTopNode:
-            cdNode(getTableManager()->m_selectedIdx);
-            break;
+         case FWEveDetectorGeo::kGeoSetTopNode:
+            cdNode(m_eveTopNode->getFirstSelectedTableIndex());
+            break;         
 
-         case kSetTopNodeCam:
-            cdNode(getTableManager()->m_selectedIdx);
+         case FWEveDetectorGeo::kGeoSetTopNodeCam:
+            cdNode(m_eveTopNode->getFirstSelectedTableIndex());
             resetHome = true;
-         case kCamera:
+
+         case FWEveDetectorGeo::kGeoCamera:
          {
             TGeoHMatrix mtx;
             getTableManager()->getNodeMatrix( ni, mtx);
@@ -476,6 +470,8 @@ void FWGeometryTableView::chosenItem(int x)
             if (resetHome) gEve->FullRedraw3D(true, true);
             break;
          }
+         default:
+            fwLog(fwlog::kError) << "Entry not handled \n";
       }
    }
 }

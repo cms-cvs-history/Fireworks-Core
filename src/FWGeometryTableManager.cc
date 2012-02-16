@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:25 CET 2012
-// $Id: FWGeometryTableManager.cc,v 1.43.2.8 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeometryTableManager.cc,v 1.43.2.9 2012/01/06 23:19:39 amraktad Exp $
 //
 
 // system include files
@@ -41,6 +41,86 @@ const char* FWGeometryTableManager::cellName(const NodeInfo& data) const
       return Form("%s [%d]", data.m_node->GetName(), data.m_node->GetNdaughters()); 
 }
 
+//______________________________________________________________________________
+
+FWTableCellRendererBase* FWGeometryTableManager::cellRenderer(int iSortedRowNumber, int iCol) const
+{
+   FWTextTreeCellRenderer* renderer = &m_renderer;
+   if (m_row_to_index.empty()) return renderer;
+
+
+   int unsortedRow =  m_row_to_index[iSortedRowNumber];
+   if (unsortedRow < 0) printf("!!!!!!!!!!!!!!!! error %d %d \n",unsortedRow,  iSortedRowNumber);
+
+
+   const NodeInfo& data = m_entries[unsortedRow];
+   TGeoNode& gn = *data.m_node;
+   bool isSelected = data.testBit(kHighlighted) ||  data.testBit(kSelected);
+   // printf("cell render %s \n", data.name());
+   if (data.testBit(kSelected))
+   {
+      m_highlightContext->SetBackground(0xc86464);
+   }
+   else if (data.testBit(kHighlighted) )
+   {
+      m_highlightContext->SetBackground(0x6464c8);
+   }
+   else if (iCol == kMaterialColumn && data.testBit(kMatches) )
+   {
+         m_highlightContext->SetBackground(0xdddddd);
+   }
+
+
+   if (iCol == kNameColumn)
+   {
+      renderer->setData(cellName(data), isSelected); 
+
+
+      renderer->setIsParent(nodeIsParent(data));
+
+      renderer->setIsOpen( data.testBit(FWGeometryTableManagerBase::kExpanded));
+
+      int level = data.m_level - m_levelOffset;
+      if (nodeIsParent(data))
+         renderer->setIndentation(20*level);
+      else
+         renderer->setIndentation(20*level + FWTextTreeCellRenderer::iconWidth());
+
+      return renderer;
+   }
+   else
+   {
+      // printf("title %s \n",data.m_node->GetTitle() );
+      renderer->setIsParent(false);
+      renderer->setIndentation(0);
+      if (iCol == kColorColumn)
+      {
+         // m_colorBoxRenderer.setData(data.m_node->GetVolume()->GetLineColor(), isSelected);
+         m_colorBoxRenderer.setData(data.m_color, isSelected);
+         return  &m_colorBoxRenderer;
+      }
+      else if (iCol == kVisSelfColumn )
+      {
+         renderer->setData(getVisibility(data)  ? "On" : "-",  isSelected );
+         return renderer;
+      }
+      else if (iCol == kVisChildColumn )
+      {
+         renderer->setData( getVisibilityChld(data) ? "On" : "-",  isSelected);
+         return renderer;
+      }
+      else if (iCol == kMaterialColumn )
+      { 
+         renderer->setData( gn.GetVolume()->GetMaterial()->GetName(),  isSelected);
+         return renderer;
+      }
+      else
+      {  renderer->setData("ERROR", false);
+         return renderer;
+      }
+
+   }
+}
 //____________________________________________________________________________
 
 void FWGeometryTableManager::importChildren(int parent_idx)
@@ -179,8 +259,8 @@ void FWGeometryTableManager::loadGeometry( TGeoNode* iGeoTopNode, TObjArray* iVo
    topNodeInfo.m_node   = iGeoTopNode;
    topNodeInfo.m_level  = 0;
    topNodeInfo.m_parent = -1;
-   if (m_browser->getAutoExpand())
-      topNodeInfo.setBit(kExpanded);
+   topNodeInfo.setBitVal(kExpanded, m_browser->getAutoExpand());
+   topNodeInfo.setBitVal(kVisNodeSelf, m_browser->drawTopNode());
 
    getNNodesTotal(topNodeInfo.m_node , nTotal);
    m_entries.resize(nTotal+1);
@@ -200,27 +280,7 @@ void FWGeometryTableManager::loadGeometry( TGeoNode* iGeoTopNode, TObjArray* iVo
 //______________________________________________________________________________
 void FWGeometryTableManager::printMaterials()
 {
-   std::map<TGeoMaterial*, std::string> mlist;
-   Entries_i it = m_entries.begin();
-   std::advance(it, m_selectedIdx );
-   int nLevel = it->m_level;
-   it++;
-   while (it->m_level > nLevel)
-   {
-      TGeoMaterial* m = it->m_node->GetVolume()->GetMaterial();
-      if (mlist.find(m) == mlist.end())
-      {
-         mlist[m] = m->GetName();
-      } 
-      it++;
-   }
-
-   printf("size %d \n", (int)mlist.size());
-   for(std::map<TGeoMaterial*, std::string>::iterator i = mlist.begin(); i != mlist.end(); ++i)
-   {
-      printf("material %s \n", i->second.c_str());
-   }
-
+   std::cerr << "not implemented \n";
 }
 //______________________________________________________________________________
       
@@ -405,26 +465,3 @@ bool  FWGeometryTableManager::nodeIsParent(const NodeInfo& data) const
    return   (data.m_node->GetNdaughters() != 0) && (m_filterOff || data.testBit(kChildMatches) );
 }
 
-//______________________________________________________________________________
-
-FWGeometryTableManagerBase::ESelectionState FWGeometryTableManager::nodeSelectionState(int idx) const
-{
-   //   printf("WGeometryTableManagerBase::ESelectionState FWGeometryTableManager::nodeSelectionSta [%d ] ;;;; %d\n", idx, m_selectedIdx);
-   if (idx < 0) return FWGeometryTableManagerBase::kNone;
-
-
-   if (  m_selectedIdx == idx || ( m_selectedIdx > 0 && m_browser->getVolumeMode() && (m_entries[m_selectedIdx].m_node->GetVolume() == m_entries[idx].m_node->GetVolume()) ))
-   {
-      return FWGeometryTableManagerBase::kSelected;
-   }
-   if  (  m_highlightIdx == idx )
-   {
-      return FWGeometryTableManagerBase::kHighlighted;
-   }
-   else if ( (!m_filterOff &&  m_volumes[m_entries[idx].m_node->GetVolume()].m_matches) )
-   {
-      return FWGeometryTableManagerBase::kFiltered;
-   }
-
-   return FWGeometryTableManagerBase::kNone;
-}

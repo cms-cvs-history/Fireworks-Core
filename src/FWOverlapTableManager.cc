@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.15 2012/02/13 01:10:21 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.16 2012/02/13 02:30:33 amraktad Exp $
 //
 
 // system include files
@@ -128,7 +128,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    }
   
   TGeoNode *node;
-  geom->GetCurrentMatrix()->Print();
+  //  geom->GetCurrentMatrix()->Print();
   
   TString path;
 
@@ -187,9 +187,11 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, TGeoHMatrix* mothe
   TString path; it.GetPath(path);
   mname += path;
   mother_node->SetNameTitle(mname.Data(), mname.Data());
-  m_entries.push_back(NodeInfo(mother_node, 0, mothern->GetVolume()->GetLineColor(), motherl, kVisNodeChld |  kFlag1));
+  m_entries.push_back(NodeInfo(mother_node, 0, mothern->GetVolume()->GetLineColor(), motherl, kVisNodeChld |  kVisMarker));
+
   int parentIdx = m_entries.size() -1;
-  
+  if (ovl->IsOverlap()) m_entries.back().setBit(kOverlap);
+
   TString t = ovl->GetTitle();
   TObjArray* tx = t.Tokenize(" ");
   TString p1 = ((TObjString*)tx->At(0))->GetString();
@@ -221,6 +223,7 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, TGeoHMatrix* mothe
     m_browser->m_markerVertices.push_back( pg[1]);
     m_browser->m_markerVertices.push_back( pg[2]);
   }
+
 }
 
 
@@ -236,8 +239,8 @@ void FWOverlapTableManager::recalculateVisibility( )
    for (FWGeometryTableManagerBase::Entries_i i = m_entries.begin(); i!= m_entries.end(); ++i, ++cnt)
    {
       if (i->m_parent == 0) {
-        if ((m_browser->m_rnrOverlap.value() && (strncmp(i->m_node->GetName(), "Ovlp", 3) == 0)) ||
-            (m_browser->m_rnrExtrusion.value() && (strncmp(i->m_node->GetName(), "Extr", 3) == 0)) )
+        if ((m_browser->m_rnrOverlap.value() &&  i->testBit(FWOverlapTableManager::kOverlap)) ||
+            (m_browser->m_rnrExtrusion.value() && !i->testBit(FWOverlapTableManager::kOverlap)) )
          {
             rnrChld = i->testBit(FWGeometryTableManagerBase::kExpanded);
             m_row_to_index.push_back(cnt);
@@ -305,29 +308,20 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
    if (m_row_to_index.empty()) return &m_renderer;
 
    int unsortedRow =  m_row_to_index[iSortedRowNumber];
-   ESelectionState sstate = nodeSelectionState(unsortedRow);
-   if (sstate == kSelected)
-   {
-      m_highlightContext->SetBackground(0xc86464);
-   }
-   else if (sstate == kHighlighted )
-   {
-      m_highlightContext->SetBackground(0x6464c8);
-   }
-   else if ( sstate == kFiltered )
-   {
-      if (iCol == kMaterial)
-         m_highlightContext->SetBackground(0xdddddd);
-      else 
-         sstate = kNone;
-   }
-   bool isSelected = sstate != kNone;
 
-   //      FWTextTreeCellRenderer* renderer = &m_renderer;
    if (unsortedRow < 0) printf("!!!!!!!!!!!!!!!! error %d %d \n",unsortedRow,  iSortedRowNumber);
 
 
    const NodeInfo& data = m_entries[unsortedRow];
+   bool isSelected = data.testBit(kHighlighted) ||  data.testBit(kSelected);
+   if (data.testBit(kSelected))
+   {
+      m_highlightContext->SetBackground(0xc86464);
+   }
+   else if (data.testBit(kHighlighted) )
+   {
+      m_highlightContext->SetBackground(0x6464c8);
+   }
 
    if (iCol == 0)
    {
@@ -375,7 +369,7 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
       else if (iCol == 5)
       { 
          if (data.m_parent == 0) 
-            m_renderer.setData(data.testBit(FWGeometryTableManagerBase::kFlag1) ? "On" : "-" , isSelected);
+            m_renderer.setData(data.testBit(kVisMarker) ? "On" : "-" , isSelected);
          else 
             m_renderer.setData("", isSelected);
       }

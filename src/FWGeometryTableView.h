@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.5 2012/01/11 01:12:53 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.6 2012/01/20 03:09:54 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -29,6 +29,7 @@ class FWEveDetectorGeo;
 class FWGeometryTableView : public FWGeometryTableViewBase
 {
 public:
+
    FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager* colMng);
    virtual ~FWGeometryTableView();
    virtual void populateController(ViewerParameterGUI&) const;
@@ -50,20 +51,18 @@ public:
    void cdTop();
    void cdUp();
    void setPath(int, std::string&);
-
+   void checkExpandLevel();
    void printTable();
 
-   int getTopNodeIdx() const { return m_topNodeIdx.value(); }
+   int getTopNodeIdx() const { return TMath::Max((int)m_topNodeIdx.value(), 0); }
 
    virtual void setFrom(const FWConfiguration&);
 
-   virtual void popupMenu(int, int);
-   void chosenItem(int);
 
+   void chosenItem(int);
+   void updateVisibilityTopNode();
 protected:
    // virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes);
-   virtual TEveElement* getEveGeoElement() const;
-   virtual void assertEveGeoElement();
 
 private:
    FWGeometryTableView(const FWGeometryTableView&); // stop default
@@ -74,8 +73,6 @@ private:
 
    FWGUIValidatingTextEntry* m_filterEntry;
    FWGeoMaterialValidator*   m_filterValidator;
-
-   FWEveDetectorGeo*         m_eveTopNode;
 
 #ifndef __CINT__
    FWLongParameter         m_topNodeIdx;  

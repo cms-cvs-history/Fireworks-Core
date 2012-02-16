@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.10 2012/01/20 01:55:15 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.11 2012/01/20 02:43:14 amraktad Exp $
 //
 
 // system include files
@@ -16,6 +16,7 @@
 
 // user include files
 #include "Fireworks/Core/src/FWOverlapTableView.h"
+#include "Fireworks/Core/src/FWGeoTopNodeScene.h"
 #include "Fireworks/Core/src/FWOverlapTableManager.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
@@ -52,16 +53,6 @@
 
 static const std::string sUpdateMsg = " Please press Apply button to update overlaps.\n";
 
-enum OvlMenuOptions {
-   kVisOff,
-   kVisOnOvl,
-   kVisOnAllMother,
-   kVisMother,
-   kSwitchVis,
-   kCamera,
-   kPrintOvl,
-   kPrintPath
-};
 
 class FWGeoPathValidator : public FWValidatorBase 
 {
@@ -120,8 +111,6 @@ public:
 FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* colMng) : 
    FWGeometryTableViewBase(iParent, FWViewType::kOverlapTable, colMng),
    m_tableManager(0),
-   m_eveTopNode(0),
-   m_marker(0),
    m_pathEntry(0),
    m_pathValidator(0),
    m_numEntry(0),
@@ -181,13 +170,26 @@ FWOverlapTableView::FWOverlapTableView(TEveWindowSlot* iParent, FWColorManager* 
    m_tableManager = new FWOverlapTableManager(this);
 
    // std::cerr << " FWOverlapTableView::initGeometry \n";
-   assertEveGeoElement();
+
+   FWGeoTopNodeGLScene *gls = new FWGeoTopNodeGLScene(0);
+   m_eveScene  = new TEveScene(gls, "OverlapScene", "");
+   gEve->GetScenes()->AddElement(m_eveScene);
+
+   m_eveTopNode = new  FWEveOverlap(this);
+   m_eveTopNode->SetElementNameTitle("overlapNode", "opverlapNodetitle");
+   m_eveTopNode->IncDenyDestroy();
+   m_eveTopNode->SetPickable(true);
+   m_eveScene->AddElement(m_eveTopNode);
+
+   gls->fTopNodeJebo = m_eveTopNode;
+   m_eveTopNode->fSceneJebo   = gls;
+
    m_marker = new TEvePointSet();
    m_marker->SetMarkerSize(5);
    m_marker->SetMainColor(kRed);
    m_marker->IncDenyDestroy();
 
-
+  
    m_drawPoints.changed_.connect(boost::bind(&FWOverlapTableView::drawPoints,this));
    m_pointSize.changed_.connect(boost::bind(&FWOverlapTableView::pointSize,this));
    m_rnrOverlap.changed_.connect(boost::bind(&FWGeometryTableViewBase::refreshTable3D,this));
@@ -209,17 +211,6 @@ FWGeometryTableManagerBase* FWOverlapTableView::getTableManager()
    return m_tableManager;
 }
 
-//______________________________________________________________________________
-void FWOverlapTableView::assertEveGeoElement()
-{
-   if (!m_eveTopNode )
-   {
-      m_eveTopNode = new  FWEveOverlap(this);
-      m_eveTopNode->SetElementNameTitle("overlapNode", "opverlapNodetitle");
-      m_eveTopNode->IncDenyDestroy();
-
-   }
-}
 //______________________________________________________________________________
 
 
@@ -303,8 +294,8 @@ void FWOverlapTableView::setFrom(const FWConfiguration& iFrom)
 void FWOverlapTableView::populateController(ViewerParameterGUI& gui) const
 {
    gui.requestTab("Style").
-      addParam(&m_enableHighlight).
-      separator().
+      // addParam(&m_enableHighlight).
+      // separator().
       addParam(&m_rnrOverlap).
       addParam(&m_rnrExtrusion).
       separator().
@@ -327,48 +318,6 @@ void FWOverlapTableView::pointSize()
    m_marker->ElementChanged();
    gEve->Redraw3D();
 }
-//______________________________________________________________________________
-
-void FWOverlapTableView::popupMenu(int x, int y)
-{
-   if (getTableManager()->getSelected() == 0) return;
-
-   FWPopupMenu* nodePopup = new FWPopupMenu();
-
-  
-   {
-      if (getTableManager()->getSelected()->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
-         nodePopup->AddEntry("Rnr Self Off ", kSwitchVis);
-      else    
-         nodePopup->AddEntry("Rnr Self On ", kSwitchVis);
-
-   }
-   if (getTableManager()->getSelected()->m_parent > 0)
-   {
-      FWGeometryTableManagerBase::NodeInfo& data = getTableManager()->refEntries().at(getTableManager()->getSelected()->m_parent);
-      if (data.testBit(FWGeometryTableManagerBase::kVisNodeSelf))
-         nodePopup->AddEntry("Rnr Mother Off ", kVisMother);
-      else    
-         nodePopup->AddEntry("Rnr Mother On ", kVisMother);
-
-   }
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("Print Path ", kPrintPath);
-   nodePopup->AddEntry("Print Overlap Info", kPrintOvl);
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("Set Camera Center", kCamera);
-   nodePopup->AddSeparator();
-   nodePopup->AddEntry("Rnr Off Everything", kVisOff);
-   nodePopup->AddEntry("Rnr On Overlaps, Extrusions", kVisOnOvl);
-   nodePopup->AddEntry("Rnr On Mother Volumes", kVisOnAllMother);
-
-
-   nodePopup->PlaceMenu(x, y,true,true);
-   nodePopup->Connect("Activated(Int_t)",
-                      "FWOverlapTableView",
-                      this,
-                      "chosenItem(Int_t)");
-}
 
 
 //______________________________________________________________________________
@@ -376,57 +325,51 @@ void FWOverlapTableView::popupMenu(int x, int y)
 void FWOverlapTableView::chosenItem(int menuIdx)
 {
 
-
-   FWGeometryTableManagerBase::NodeInfo* ni = getTableManager()->getSelected();
-   if ( ni == 0)
-   {  
-      fwLog(fwlog::kInfo) << ("FWOverlapTableView::chosenItem() no entry selected!");
-      return;
-   }
-
+   FWGeometryTableManagerBase::NodeInfo& ni = getTableManager()->refEntries().at(m_eveTopNode->getFirstSelectedTableIndex());
+  
    // printf(" FWOverlapTableView::chosenItem chosen item %s \n", ni->name());
 
-   TGeoVolume* gv = ni->m_node->GetVolume();
+   TGeoVolume* gv = ni.m_node->GetVolume();
    bool resetHome = false;
    if (gv)
    {
       switch (menuIdx) {
-         case kVisOff:
+         case FWEveOverlap::kOvlVisOff:
             // std::cout << "VIS OFF \n";
             for (FWGeometryTableManagerBase::Entries_i i = m_tableManager->refEntries().begin(); i !=  m_tableManager->refEntries().end(); ++i)
             {
                i->resetBit(FWGeometryTableManagerBase::kVisNodeSelf);
-               i->resetBit(FWGeometryTableManagerBase::kFlag1);
+               i->resetBit(FWOverlapTableManager::kVisMarker);
 
             }
             break;
-         case kVisOnOvl:
+         case FWEveOverlap::kOvlVisOnOvl:
             // std::cout << "VIS ON ovl \n";
             for (FWGeometryTableManagerBase::Entries_i i = m_tableManager->refEntries().begin(); i !=  m_tableManager->refEntries().end(); ++i)
             {
                if (i->m_parent > 0 )i->setBit(FWGeometryTableManagerBase::kVisNodeSelf);
-               i->setBit(FWGeometryTableManagerBase::kFlag1);
+               i->setBit(FWOverlapTableManager::kVisMarker);
             }
             break;
-         case kVisOnAllMother:
+         case FWEveOverlap::kOvlVisOnAllMother:
             // std::cout << "VIS On mOTH \n";
             for (FWGeometryTableManagerBase::Entries_i i = m_tableManager->refEntries().begin(); i !=  m_tableManager->refEntries().end(); ++i)
                if (i->m_parent == 0 )i->setBit(FWGeometryTableManagerBase::kVisNodeSelf);
             break;
 
-         case kVisMother:
-            m_tableManager->refEntries().at(ni->m_parent).switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
+         case FWEveOverlap::kOvlVisMother:
+            m_tableManager->refEntries().at(ni.m_parent).switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
             break;
-         case kSwitchVis:
-            ni->switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
+         case FWEveOverlap::kOvlSwitchVis:
+            ni.switchBit(FWGeometryTableManagerBase::kVisNodeSelf);
             break;
-         case kCamera:
+         case FWEveOverlap::kOvlCamera:
          {
             TGeoHMatrix mtx;
-            getTableManager()->getNodeMatrix( *ni, mtx);
+            getTableManager()->getNodeMatrix( ni, mtx);
 
             static double pnt[3];
-            TGeoBBox* bb = static_cast<TGeoBBox*>( ni->m_node->GetVolume()->GetShape());
+            TGeoBBox* bb = static_cast<TGeoBBox*>( ni.m_node->GetVolume()->GetShape());
             const double* origin = bb->GetOrigin();
             mtx.LocalToMaster(origin, pnt);
 
@@ -446,16 +389,16 @@ void FWOverlapTableView::chosenItem(int menuIdx)
             if (resetHome) gEve->FullRedraw3D(true, true);
             break;
          }
-         case kPrintOvl:
+         case FWEveOverlap::kOvlPrintOvl:
          {
             std::cout << "=============================================================================" <<  std::endl << std::endl;
-            m_tableManager->referenceOverlap(m_tableManager->m_selectedIdx)->Print();
+            m_tableManager->referenceOverlap(m_eveTopNode->getFirstSelectedTableIndex())->Print();
             break;
          }
-         case kPrintPath:
+         case FWEveOverlap::kOvlPrintPath:
          {
 
-            std::cout << "\npath: "<<  m_tableManager->refEntries().at(m_tableManager->m_selectedIdx).m_node->GetTitle() << std::endl;
+            std::cout << "\npath: "<< ni.m_node->GetTitle() << std::endl;
            
          }
       }
@@ -479,7 +422,8 @@ void FWOverlapTableView::refreshTable3D()
    for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
    {
       FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(*i);
-      if ( data.testBit(FWGeometryTableManagerBase::kFlag1) )//&& ((strncmp(data.name(),  "Ovl", 3) && m_rnrExtrusion.value()) ||  (strncmp(data.name(),  "Ext", 3) && m_rnrOverlap.value() ))) 
+      if ( data.testBit(FWOverlapTableManager::kVisMarker)  && 
+	((data.testBit(FWOverlapTableManager::kOverlap) && m_rnrOverlap.value()) ||  (!data.testBit(FWOverlapTableManager::kOverlap) && m_rnrExtrusion.value() ))) 
       {
          pnts.push_back(m_markerVertices[cnt]);
          pnts.push_back(m_markerVertices[cnt+1]);

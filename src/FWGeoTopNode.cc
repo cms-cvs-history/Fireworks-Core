@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.13 2012/01/20 01:55:15 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.14 2012/01/20 02:44:12 amraktad Exp $
 //
 
 // system include files
@@ -16,6 +16,7 @@
 // user include files
 
 #include "TEveTrans.h"
+#include "TEveViewer.h"
 #include "TEveManager.h"
 #include "TEveUtil.h"
 
@@ -26,6 +27,8 @@
 #include "TVirtualViewer3D.h"
 #include "TColor.h"
 #include "TGLScenePad.h"
+#include "TGLPhysicalShape.h"
+#include "TGLSelectRecord.h"
 
 #include "TGeoShape.h"
 #include "TGeoVolume.h"
@@ -37,15 +40,206 @@
 #include "TGeoMatrix.h"
 #include "TGeoOverlap.h"
 #include "TVirtualGeoPainter.h"
+#include "Fireworks/Core/src/FWPopupMenu.cc"
 
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
+#include "Fireworks/Core/src/FWGeoTopNodeScene.h"
 #include "Fireworks/Core/src/FWGeometryTableView.h"
 #include "Fireworks/Core/src/FWOverlapTableView.h"
 #include "Fireworks/Core/src/FWGeometryTableManager.h"
 #include "Fireworks/Core/src/FWOverlapTableManager.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/interface/FWViewType.h"
+#include "Fireworks/Core/interface/fwLog.h"
 
+namespace{
+   UInt_t phyID(int tableIdx) { return UInt_t(tableIdx + 2);}
+   //  int tableIdx(UInt_t phyID) { return phyID - 2; }
+   int tableIdx(TGLPhysicalShape* ps) { return ps->ID() - 2; }
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::EraseFromSet(std::set<TGLPhysicalShape*>& sset, TGLPhysicalShape* id)
+{
+   sset.erase(id);
+   SetStateOf(id);
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::ClearSet(std::set<TGLPhysicalShape*>& sset)
+{
+   while (!sset.empty())
+   {
+      TGLPhysicalShape *id = *sset.begin();
+      sset.erase(id);
+      SetStateOf(id);
+   }
+}
+//______________________________________________________________________________
+void FWGeoTopNode::SetStateOf(TGLPhysicalShape* id)
+{
+   if (fSted.find(id) != fSted.end())
+      id->Select(1);
+   else if (fHted.find(id) != fHted.end())
+      id->Select(3);
+   else
+      id->Select(0);
+
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalShape*>& sset, TGLPhysicalShape* id)
+{
+   printf("FWGeoTopNode::ProcessSelection ===============================\n");
+
+   fSceneJebo->BeginUpdate();
+
+   if (sset.empty())
+   {
+      if (id)
+      {
+         sset.insert(id);
+         rec.SetSecSelResult(TGLSelectRecord::kEnteringSelection);
+      }  
+   }
+   else
+   {
+      if (id)
+      {
+         if (rec.GetMultiple())
+         {
+            if (sset.find(id) == sset.end())
+            {
+               sset.insert(id);
+               rec.SetSecSelResult(TGLSelectRecord::kModifyingInternalSelection);
+            }
+            else
+            {
+               EraseFromSet(sset, id);
+               if (sset.empty())
+                  rec.SetSecSelResult(TGLSelectRecord::kLeavingSelection);
+               else
+                  rec.SetSecSelResult(TGLSelectRecord::kModifyingInternalSelection);
+            }
+         }
+         else
+         {
+            if (sset.size() != 1 || sset.find(id) == sset.end())
+            {
+               ClearSet(sset);
+               sset.insert(id);
+               rec.SetSecSelResult(TGLSelectRecord::kModifyingInternalSelection);
+            }
+         }
+      }
+      else
+      {
+         if (!rec.GetMultiple())
+         {
+            ClearSet(sset);
+            rec.SetSecSelResult(TGLSelectRecord::kLeavingSelection);
+         }
+      }
+   }
+
+   if (id)
+   {
+      SetStateOf(id);
+   }
+
+   if (rec.GetSecSelResult() != TGLSelectRecord::kNone)
+   {
+      fSceneJebo->EndUpdate(kTRUE, kFALSE, kTRUE);
+      gEve->Redraw3D();
+
+
+      for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
+      {
+         i->resetBit(FWGeometryTableManagerBase::kHighlighted);
+         i->resetBit(FWGeometryTableManagerBase::kSelected);
+      }
+
+      for (std::set<TGLPhysicalShape*>::iterator it = fHted.begin(); it != fHted.end(); ++it)
+      {
+         //  printf("set HIGH \n");
+         tableManager()->refEntries().at(tableIdx(*it)).setBit(FWGeometryTableManagerBase::kHighlighted);
+      }
+      for (std::set<TGLPhysicalShape*>::iterator it = fSted.begin(); it != fSted.end(); ++it)
+      {
+         //  printf("SET TABLE selected BIT \n");
+         tableManager()->refEntries().at(tableIdx(*it)).setBit(FWGeometryTableManagerBase::kSelected);
+      }
+
+      tableManager()->dataChanged();
+   }
+   else
+   {
+      fSceneJebo->EndUpdate(kFALSE, kFALSE, kFALSE);
+   }
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::selectPhysicalFromTable( int tableIndex)
+{
+   //   printf("FWGeoTopNode::selectPhysicalFromTable \n");
+
+   ClearSet(fSted);
+
+   for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
+   {
+      i->resetBit(FWGeometryTableManagerBase::kHighlighted);
+      i->resetBit(FWGeometryTableManagerBase::kSelected);
+   }
+   tableManager()->refEntries().at(tableIndex).setBit(FWGeometryTableManagerBase::kSelected);
+   tableManager()->dataChanged(); 
+
+   TGLPhysicalShape* ps = fSceneJebo->FindPhysical(phyID(tableIndex));
+   if (ps) {
+      fSceneJebo->BeginUpdate();
+      fSted.insert(ps);
+      ps->Select(1);
+      fSceneJebo->EndUpdate(kTRUE, kFALSE, kTRUE);
+      gEve->Redraw3D();
+   }
+   else if ( tableManager()->refEntries().at(tableIndex).testBit(FWGeometryTableManagerBase::kVisNodeSelf));
+   {
+      fwLog(fwlog::kInfo) << "Object not drawn in GL viewer. \n" ;
+   }
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::printSelected() 
+{
+   for (std::set<TGLPhysicalShape*>::iterator it = fSted.begin(); it != fSted.end(); ++it)
+   {
+      printf("FWGeoTopNode::printSelected %s \n",  tableManager()->refEntries().at(tableIdx(*it)).name() );
+   }
+}
+
+//______________________________________________________________________________
+
+int FWGeoTopNode::getFirstSelectedTableIndex() 
+{
+   // Note: if object would be rendered, this would return fSted.begin().
+
+   if (fSted.size() <= 1)
+   {
+      int cnt = 0;
+      for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i, ++cnt)
+      {
+         if (i->testBit(FWGeometryTableManagerBase::kSelected)) return cnt; 
+      }
+   }
+   return -1;
+}
+
+//______________________________________________________________________________
+void FWGeoTopNode::ComputeBBox()
+{
+   // Fill bounding-box information. Virtual from TAttBBox.
+
+   BBoxZero(1.0f);
+}
 
 //______________________________________________________________________________
 void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
@@ -63,16 +257,19 @@ void FWGeoTopNode::setupBuffMtx(TBuffer3D& buff, const TGeoHMatrix& mat)
 }
 
 // ______________________________________________________________________
-void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t idx, const TGeoHMatrix& nm, bool volumeColor)
+void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t tableIndex, const TGeoHMatrix& nm, bool volumeColor)
 {
    static const TEveException eh("FWGeoTopNode::paintShape ");
  
-   UInt_t phyID = UInt_t(idx+1);
+   //  printf("paint sahpe %s idx %d\n", data.m_node->GetVolume()->GetName(), tableIndex );
 
    TGeoShape* shape = data.m_node->GetVolume()->GetShape();
+   
    TGeoCompositeShape* compositeShape = dynamic_cast<TGeoCompositeShape*>(shape);
    if (compositeShape)
    {
+      // fSceneJebo->fNextCompositeID = phyID(tableIndex);
+
       Double_t halfLengths[3] = { compositeShape->GetDX(), compositeShape->GetDY(), compositeShape->GetDZ() };
 
       TBuffer3D buff(TBuffer3DTypes::kComposite);
@@ -86,11 +283,9 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
       buff.SetSectionsValid(TBuffer3D::kCore|TBuffer3D::kBoundingBox);
 
       Bool_t paintComponents = kTRUE;
-
       // Start a composite shape, identified by this buffer
       if (TBuffer3D::GetCSLevel() == 0) {
-         TGLScenePad* sPad = dynamic_cast<TGLScenePad*>( gPad->GetViewer3D());
-         paintComponents = sPad->OpenCompositeWithPhyID(phyID, buff);
+         paintComponents = fSceneJebo->OpenCompositeWithPhyID(phyID(tableIndex), buff);
       }
 
       TBuffer3D::IncCSLevel();
@@ -99,11 +294,15 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
       TGeoHMatrix xxx;
       TGeoMatrix *gst = TGeoShape::GetTransform();
       TGeoShape::SetTransform(&xxx);
+
       if (paintComponents) compositeShape->GetBoolNode()->Paint("");
       TGeoShape::SetTransform(gst);
       // Close the composite shape
       if (TBuffer3D::DecCSLevel() == 0)
          gPad->GetViewer3D()->CloseComposite();
+
+
+      //  fSceneJebo->fNextCompositeID = 0;
    }
    else
    {
@@ -119,14 +318,14 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
       Int_t sections = TBuffer3D::kBoundingBox | TBuffer3D::kShapeSpecific;
       shape->GetBuffer3D(sections, kTRUE);
 
-      Int_t reqSec = gPad->GetViewer3D()->AddObject(phyID, buff);
+      Int_t reqSec = gPad->GetViewer3D()->AddObject(phyID(tableIndex), buff);
 
       if (reqSec != TBuffer3D::kNone) {
          // This shouldn't happen, but I suspect it does sometimes.
          if (reqSec & TBuffer3D::kCore)
             Warning(eh, "Core section required again for shape='%s'. This shouldn't happen.", GetName());
          shape->GetBuffer3D(reqSec, kTRUE);
-         reqSec = gPad->GetViewer3D()->AddObject(phyID, buff);
+         reqSec = gPad->GetViewer3D()->AddObject(phyID(tableIndex), buff);
       }
 
       if (reqSec != TBuffer3D::kNone)  
@@ -134,13 +333,65 @@ void FWGeoTopNode::paintShape(FWGeometryTableManagerBase::NodeInfo& data,  Int_t
    }
 }
 
+// ______________________________________________________________________
+void FWGeoTopNode::Paint(Option_t* opt)
+{
+   static const TEveException eh("TEveTopNodeJebo::Paint ");
+
+   TBuffer3D buff(TBuffer3DTypes::kGeneric);
+
+   // Section kCore
+   buff.fID           = this;
+   buff.fColor        = GetMainColor();
+   buff.fTransparency = GetMainTransparency();
+   if (HasMainTrans())  RefMainTrans().SetBuffer3D(buff);
+
+   buff.SetSectionsValid(TBuffer3D::kCore);
+
+   Int_t reqSections = gPad->GetViewer3D()->AddObject(1, buff);
+   if (reqSections != TBuffer3D::kNone)
+   {
+      Warning(eh, "IsA='%s'. Viewer3D requires more sections (%d). Only direct-rendering supported.",
+              ClassName(), reqSections);
+   }
+}
+
+// ______________________________________________________________________
+void FWGeoTopNode::UnSelected()
+{
+   ClearSet(fSted);
+   for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
+      i->resetBit(FWGeometryTableManagerBase::kSelected);
+      
+}
+// ______________________________________________________________________
+void FWGeoTopNode::UnHighlighted()
+{
+   ClearSet(fHted);
+   for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
+      i->resetBit(FWGeometryTableManagerBase::kHighlighted);
+     
+}   
+
 //==============================================================================
 //==============================================================================
 //==============================================================================
+FWEveDetectorGeo::FWEveDetectorGeo(FWGeometryTableView* v):
+   m_browser(v), m_maxLevel(0), m_filterOff(0)
+{
+} 
+
+FWGeometryTableManagerBase* FWEveDetectorGeo::tableManager()
+{
+   return m_browser->getTableManager();
+}
+//______________________________________________________________________________
 
 void FWEveDetectorGeo::Paint(Option_t* opt)
 {
-   // printf("PAINPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTT \n");
+   FWGeoTopNode::Paint();
+
+   //   printf("PAINPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTT  %d/%d \n",  m_browser->getTopNodeIdx(),  (int)m_browser->getTableManager()->refEntries().size());
    if (m_browser->getTableManager()->refEntries().empty()) return; 
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
@@ -157,11 +408,11 @@ void FWEveDetectorGeo::Paint(Option_t* opt)
       std::advance(sit, topIdx);
       m_browser->getTableManager()->getNodeMatrix(*sit, mtx);
 
-      if (m_browser->drawTopNode() && m_browser->getTableManager()->getVisibility(*sit))
+      if (sit->testBit(FWGeometryTableManagerBase::kVisNodeSelf) && m_browser->getTableManager()->getVisibility(*sit))
          paintShape(*sit,  topIdx,mtx, m_browser->getVolumeMode() );
    }
 
-   if ( m_browser->getTableManager()->getVisibilityChld(*sit) && sit->testBit(FWGeometryTableManagerBase::kExpanded) )
+   if ( m_browser->getTableManager()->getVisibilityChld(*sit))
       paintChildNodesRecurse( sit, topIdx, mtx);
 }
 
@@ -218,7 +469,8 @@ void FWEveDetectorGeo::paintChildNodesRecurse (FWGeometryTableManagerBase::Entri
 
 TString  FWEveDetectorGeo::GetHighlightTooltip()
 {
-   int idx = m_browser->getTableManager()->m_highlightIdx;
+   std::set<TGLPhysicalShape*>::iterator it = fHted.begin();
+   int idx = tableIdx(*it);
    if (idx > 0)
    {
       FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
@@ -227,13 +479,53 @@ TString  FWEveDetectorGeo::GetHighlightTooltip()
    return "error";
 }
 
+
+
+//______________________________________________________________________________
+
+void FWEveDetectorGeo::popupMenu(int x, int y)
+{  
+   if (getFirstSelectedTableIndex() < 0)
+   {
+      if (fSted.empty()) fwLog(fwlog::kInfo) << "No menu -- no node/entry selected \n";
+      return;
+   }
+   
+   FWPopupMenu* nodePopup = new FWPopupMenu();
+   nodePopup->AddEntry("Set As Top Node", kGeoSetTopNode);
+   nodePopup->AddEntry("Set As Top Node And Camera Center", kGeoSetTopNodeCam);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Rnr Off For All Children", kGeoVisOff);
+   nodePopup->AddEntry("Rnr On For All Children", kGeoVisOn);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Set Camera Center", kGeoCamera);
+   nodePopup->AddSeparator();
+   //   nodePopup->AddEntry("InspectMaterial", kGeoInspectMaterial); crashes !!!
+   nodePopup->AddEntry("InspectShape", kGeoInspectShape);
+
+   nodePopup->PlaceMenu(x, y,true,true);
+   nodePopup->Connect("Activated(Int_t)",
+                      "FWGeometryTableView",
+                       m_browser,
+                      "chosenItem(Int_t)");
+}
 //==============================================================================
 //==============================================================================
 //==============================================================================
+FWEveOverlap::FWEveOverlap(FWOverlapTableView* v):
+   m_browser(v)
+{
+} 
+FWGeometryTableManagerBase* FWEveOverlap::tableManager()
+{
+   return m_browser->getTableManager();
+}
+//______________________________________________________________________________
 
 void FWEveOverlap::Paint(Option_t*)
 {
-   // printf("PAINPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTPAINTT \n");
+   FWGeoTopNode::Paint();
+
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
    FWGeometryTableManagerBase::Entries_i parentIt = m_browser->getTableManager()->refEntries().begin();
@@ -250,8 +542,8 @@ void FWEveOverlap::Paint(Option_t*)
       }
       else if (it->m_parent == 0)
       {      
-         if ((m_browser->m_rnrOverlap.value() && (strncmp(it->m_node->GetName(), "Ovlp", 3) == 0)) ||
-             (m_browser->m_rnrExtrusion.value() && (strncmp(it->m_node->GetName(), "Extr", 3) == 0)) )
+         if ((m_browser->m_rnrOverlap.value() && it->testBit(FWOverlapTableManager::kOverlap)) ||
+             (m_browser->m_rnrExtrusion.value() && !it->testBit(FWOverlapTableManager::kOverlap)) )
          {          
             if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
             {
@@ -273,17 +565,55 @@ void FWEveOverlap::Paint(Option_t*)
       }
    }
 }
+//______________________________________________________________________________
+
+void FWEveOverlap::popupMenu(int x, int y)
+{
+ 
+   if (getFirstSelectedTableIndex() < 0)
+   {
+      if (fSted.empty()) fwLog(fwlog::kInfo) << "No menu -- no node/entry selected \n";
+      return;
+   }
+   FWPopupMenu* nodePopup = new FWPopupMenu();
+
+   
+   nodePopup->AddEntry("Switch Visibility Self ", kOvlSwitchVis);
+
+   nodePopup->AddEntry("Swithc Visibility Mother ", kOvlVisMother);
+
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Print Path ", kOvlPrintPath);
+   nodePopup->AddEntry("Print Overlap Info", kOvlPrintOvl);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Set Camera Center", kOvlCamera);
+   nodePopup->AddSeparator();
+   nodePopup->AddEntry("Rnr Off Everything", kOvlVisOff);
+   nodePopup->AddEntry("Rnr On Overlaps, Extrusions", kOvlVisOnOvl);
+   nodePopup->AddEntry("Rnr On Mother Volumes", kOvlVisOnAllMother);
+
+
+   nodePopup->PlaceMenu(x, y,true,true); 
+   nodePopup->Connect("Activated(Int_t)",
+                      "FWOverlapTableView",
+                      m_browser,
+                      "chosenItem(Int_t)");
+}
 
 //______________________________________________________________________________
 
 TString  FWEveOverlap::GetHighlightTooltip()
 {
-   if ( m_browser->getTableManager()->m_highlightIdx < 0) 
+   //   printf("highlight tooltio \n");
+
+   std::set<TGLPhysicalShape*>::iterator it = fHted.begin();
+   int idx = tableIdx(*it);
+   if ( idx < 0) 
    {
       return Form("TopNode ");
    }
   
-   FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(m_browser->getTableManager()->m_highlightIdx);
+   FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
    if (data.m_parent <= 0)
    {
       return data.name();
@@ -291,18 +621,18 @@ TString  FWEveOverlap::GetHighlightTooltip()
    else {
       TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
       TString text;
-      const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(m_browser->getTableManager()->m_highlightIdx);
+      const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(idx);
       text =  data.name();
       text += Form("\noverlap = %g cm", ovl->GetOverlap());
 
       if (ovl->IsOverlap()) 
       {
-         int nidx = (m_browser->getTableManager()->m_highlightIdx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
-         text += Form("\noverlaping node = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
+         int nidx = (idx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
+         text += Form("\nsister = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
       }
       else
       {  
-         text += Form("\nextruding mother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
+         text += Form("\nmother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
       }
       return text.Data();
    }

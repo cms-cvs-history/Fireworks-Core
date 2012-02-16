@@ -8,7 +8,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:57 CET 2011
-// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.6 2012/01/18 03:37:50 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.cc,v 1.1.2.7 2012/01/19 00:07:25 amraktad Exp $
 //
 
 //#define PERFTOOL_GEO_TABLE
@@ -21,8 +21,8 @@
 #include <google/profiler.h>
 #endif
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
-#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
-#include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
+//#include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
+//#include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
 #include "Fireworks/Core/src/FWColorBoxIcon.h"
 #include "Fireworks/TableWidget/interface/GlobalContexts.h"
 #include "Fireworks/TableWidget/src/FWTabularWidget.h"
@@ -104,8 +104,6 @@ void FWGeometryTableManagerBase::ColorBoxRenderer::draw(Drawable_t iID, int iX, 
 FWGeometryTableManagerBase::FWGeometryTableManagerBase()
    :   
    m_highlightIdx(-1),
-   m_selectedIdx(-1),
-   m_selectedColumn(-1),
    m_levelOffset(0)
 { 
    m_colorBoxRenderer.m_width  =  50;
@@ -138,11 +136,6 @@ int FWGeometryTableManagerBase::numberOfRows() const
    return m_row_to_index.size();
 }
 
-int FWGeometryTableManagerBase::numberOfColumns() const 
-{
-   return kNumCol;
-}
-   
 
 std::vector<std::string> FWGeometryTableManagerBase::getTitles() const 
 {
@@ -157,16 +150,18 @@ std::vector<std::string> FWGeometryTableManagerBase::getTitles() const
    return returnValue;
 }
   
+/*
 void FWGeometryTableManagerBase::setSelection (int row, int column, int mask) 
 {
    changeSelection(row, column);
 }
-
+*/
 const std::string FWGeometryTableManagerBase::title() const 
 {
    return "Geometry";
 }
 
+/*
 int FWGeometryTableManagerBase::selectedRow() const 
 {
    return m_selectedIdx;
@@ -190,7 +185,7 @@ void FWGeometryTableManagerBase::changeSelection(int iRow, int iColumn)
     m_selectedColumn = iColumn;
 
    visualPropertiesChanged();
-}    
+   }  */  
 
 void  FWGeometryTableManagerBase::setBackgroundToWhite(bool iToWhite )
 {
@@ -200,102 +195,6 @@ void  FWGeometryTableManagerBase::setBackgroundToWhite(bool iToWhite )
       m_renderer.setGraphicsContext(&TGFrame::GetWhiteGC());
    }
    m_renderer.setBlackIcon(iToWhite);
-}
-
-
-FWGeometryTableManagerBase::ESelectionState FWGeometryTableManagerBase::nodeSelectionState(int idx) const
-{
-   if (  m_selectedIdx == idx )
-      return kSelected;
-   if  (  m_highlightIdx == idx )
-      return kHighlighted;
-
-   return kNone;
-}
-
-
-//______________________________________________________________________________
-
-FWTableCellRendererBase* FWGeometryTableManagerBase::cellRenderer(int iSortedRowNumber, int iCol) const
-{
-   FWTextTreeCellRenderer* renderer = &m_renderer;
-   if (m_row_to_index.empty()) return renderer;
-
-
-   int unsortedRow =  m_row_to_index[iSortedRowNumber];
-   if (unsortedRow < 0) printf("!!!!!!!!!!!!!!!! error %d %d \n",unsortedRow,  iSortedRowNumber);
-
-
-   const NodeInfo& data = m_entries[unsortedRow];
-   TGeoNode& gn = *data.m_node;
-
-   ESelectionState sstate = nodeSelectionState(unsortedRow);
-   if (sstate == kSelected)
-   {
-      m_highlightContext->SetBackground(0xc86464);
-   }
-   else if (sstate == kHighlighted )
-   {
-      m_highlightContext->SetBackground(0x6464c8);
-   }
-   else if ( sstate == kFiltered )
-   {
-      if (iCol == kMaterial)
-         m_highlightContext->SetBackground(0xdddddd);
-      else 
-         sstate = kNone;
-   }
-   bool isSelected = sstate != kNone;
-
-   if (iCol == kName)
-   {
-      renderer->setData(cellName(data), isSelected); 
-
-
-      renderer->setIsParent(nodeIsParent(data));
-
-      renderer->setIsOpen( data.testBit(FWGeometryTableManagerBase::kExpanded));
-
-      int level = data.m_level - m_levelOffset;
-      if (nodeIsParent(data))
-         renderer->setIndentation(20*level);
-      else
-         renderer->setIndentation(20*level + FWTextTreeCellRenderer::iconWidth());
-
-      return renderer;
-   }
-   else
-   {
-      // printf("title %s \n",data.m_node->GetTitle() );
-      renderer->setIsParent(false);
-      renderer->setIndentation(0);
-      if (iCol == kColor)
-      {
-         // m_colorBoxRenderer.setData(data.m_node->GetVolume()->GetLineColor(), isSelected);
-         m_colorBoxRenderer.setData(data.m_color, isSelected);
-         return  &m_colorBoxRenderer;
-      }
-      else if (iCol == kVisSelf )
-      {
-         renderer->setData(getVisibility(data)  ? "On" : "-",  isSelected );
-         return renderer;
-      }
-      else if (iCol == kVisChild )
-      {
-         renderer->setData( getVisibilityChld(data) ? "On" : "-",  isSelected);
-         return renderer;
-      }
-      else if (iCol == kMaterial )
-      { 
-         renderer->setData( gn.GetVolume()->GetMaterial()->GetName(),  isSelected);
-         return renderer;
-      }
-      else
-      {  renderer->setData("ERROR", false);
-         return renderer;
-      }
-
-   }
 }
 
 //______________________________________________________________________________
@@ -322,7 +221,6 @@ bool FWGeometryTableManagerBase::firstColumnClicked(int row, int xPos)
       return false;
    }
 
-   m_selectedIdx = idx;
    return true;
 }
 
@@ -354,10 +252,7 @@ void FWGeometryTableManagerBase::redrawTable(bool setExpand)
    //   std::cerr << "GeometryTableManagerBase::redrawTable ------------------------------------- \n";
    if (m_entries.empty()) return;
 
-   if (setExpand) checkExpandLevel();
-
-
-   changeSelection(0, 0);
+   //   if (setExpand) checkExpandLevel();
 
    recalculateVisibility();
 
@@ -366,15 +261,6 @@ void FWGeometryTableManagerBase::redrawTable(bool setExpand)
    visualPropertiesChanged();
 }
 
-//==============================================================================
-
-FWGeometryTableManagerBase::NodeInfo* FWGeometryTableManagerBase::getSelected()
-{
-   if (m_selectedIdx >= 0)
-      return &m_entries[m_selectedIdx];
-   else
-      return 0;
-}
 
 //______________________________________________________________________________
 
@@ -397,23 +283,10 @@ void FWGeometryTableManagerBase::getNodePath(int idx, std::string& path) const
    }
 }
 
-
-//______________________________________________________________________________
-
-void  FWGeometryTableManagerBase::topGeoNodeChanged(int idx)
-{
-   // cached 
-   if (idx >= 0)
-      m_levelOffset = m_entries[idx].m_level;
-   else
-      m_levelOffset = 0;
-
-}
-
 //______________________________________________________________________________
 
 void FWGeometryTableManagerBase::setDaughtersSelfVisibility(bool v)
-{
+{/*
    int dOff = 0;
    TGeoNode* parentNode = m_entries[m_selectedIdx].m_node;
    int nD = parentNode->GetNdaughters();
@@ -426,7 +299,7 @@ void FWGeometryTableManagerBase::setDaughtersSelfVisibility(bool v)
       setVisibilityChld(data, v);
 
       FWGeometryTableManagerBase::getNNodesTotal(parentNode->GetDaughter(n), dOff);
-   }
+      }*/
 }
 
 
@@ -453,19 +326,4 @@ bool  FWGeometryTableManagerBase::getVisibilityChld(const NodeInfo& data) const
 {
 
    return  data.testBit(kVisNodeChld);   
-}
-
-//______________________________________________________________________________
-
-void  FWGeometryTableManagerBase::checkExpandLevel()
-{
-   // check expand state
-   int ae = /*m_browser->getAutoExpand()*/ 1 +  m_levelOffset;
-   for (Entries_i i = m_entries.begin(); i != m_entries.end(); ++i)
-   {
-      if (i->m_level  < ae)
-         i->setBit(kExpanded);
-      else
-         i->resetBit(kExpanded);
-   } 
 }

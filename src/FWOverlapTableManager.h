@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.8 2012/02/12 02:01:42 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.9 2012/02/13 01:10:21 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -33,6 +33,11 @@ class TGeoIterator;
 class FWOverlapTableManager : public FWGeometryTableManagerBase
 {
 public:
+   enum OverlapBits
+   {
+      kVisMarker    =  BIT(5),
+      kOverlap      =  BIT(6)
+   };
    FWOverlapTableManager(FWOverlapTableView*);
    virtual ~FWOverlapTableManager();
 

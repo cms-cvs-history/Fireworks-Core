@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:22 CET 2012
-// $Id: FWGeometryTableManager.h,v 1.1.2.1 2012/01/06 00:27:33 amraktad Exp $
+// $Id: FWGeometryTableManager.h,v 1.1.2.2 2012/01/06 23:19:40 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -27,6 +27,15 @@ class FWGeometryTableView;
 class FWGeometryTableManager : public FWGeometryTableManagerBase
 {
 public:
+   enum GeometryBits
+   {
+      kMatches         =  BIT(5),
+      kChildMatches    =  BIT(6),
+      kFilterCached    =  BIT(7)
+   };
+
+   enum   ECol   { kNameColumn, kColorColumn,  kVisSelfColumn, kVisChildColumn, kMaterialColumn, kNumColumn };
+
    FWGeometryTableManager(FWGeometryTableView*);
    virtual ~FWGeometryTableManager();
 
@@ -51,10 +60,12 @@ public:
 
    void assertNodeFilterCache(NodeInfo& data);
  
+   virtual int numberOfColumns() const { return kNumColumn; }
+   virtual FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
-   virtual FWGeometryTableManagerBase::ESelectionState nodeSelectionState(int) const;
+   //   virtual FWGeometryTableManagerBase::ESelectionState nodeSelectionState(int) const;
    virtual const char* cellName(const NodeInfo& data) const;
 
 private:

@@ -31,7 +31,8 @@ class TGeoManager;
 class TEveWindowSlot;
 class TEveWindowFrame;
 class TEveElement;
-class  TEvePointSet;
+class TEvePointSet;
+class TEveScene;
 
 class FWTableWidget;
 class FWGeometryTableManagerBase;
@@ -40,6 +41,7 @@ class FWColorPopup;
 class FWColorManager;
 class FWGeoTopNode;
 class FWParameterBase;
+
 
 class FWGeometryTableViewBase
 #ifndef __CINT__
@@ -74,7 +76,6 @@ public:
   
    // void chosenItemFrom3DView(int);
    void selectView(int);
-   virtual void popupMenu(int, int) {}
  
    bool getEnableHighlight() { return m_enableHighlight.value(); } 
    virtual  FWGeometryTableManagerBase*  getTableManager() { return 0; }
@@ -90,10 +91,10 @@ public:
    void populate3DViewsFromConfig();
    virtual void refreshTable3D();
 
+
+   //   FWGeometryTableManagerBase::NodeInfo* getSelected();
+
 protected:
-   virtual TEveElement* getEveGeoElement() const { return 0;}
-   virtual void assertEveGeoElement() {}
-   virtual TEvePointSet* getEveMarker() const { return 0;}
 
 #ifndef __CINT__      
    FWBoolParameter         m_enableHighlight; 
@@ -116,6 +117,10 @@ protected:
 
   
   bool m_enableRedraw;
+
+   TEvePointSet* m_marker;
+   FWGeoTopNode* m_eveTopNode;
+   TEveScene*    m_eveScene;
 
 #ifndef __CINT__
    // std::vector<boost::shared_ptr<FWParameterSetterBase> > m_setters;

@@ -1,12 +1,11 @@
 #include <iostream>
 
-#include "Fireworks/Core/src/GeometryTableUtils.cc"
-
 #include <boost/bind.hpp>
 #include <boost/regex.hpp>
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
+#include "Fireworks/Core/interface/fwLog.h"
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
 #include "Fireworks/TableWidget/interface/FWTableWidget.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
@@ -14,7 +13,7 @@
 #include "Fireworks/Core/interface/FWParameterSetterBase.h"
 #include "Fireworks/Core/src/FWColorSelect.h"
 #include "Fireworks/Core/src/FWPopupMenu.cc"
-
+#include "Fireworks/Core/src/FWGeoTopNodeScene.h"
 
 #include "TGFileDialog.h"
 #include "TGeoNode.h"
@@ -121,7 +120,10 @@ FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewT
      m_frame(0),
      m_viewBox(0),
      m_viewersConfig(0),
-     m_enableRedraw(true)
+     m_enableRedraw(true),
+     m_marker(0),
+     m_eveTopNode(0),
+     m_eveScene(0)
 {
    m_eveWindow = iParent->MakeFrame(0);
    TGCompositeFrame* xf = m_eveWindow->GetGUICompositeFrame();
@@ -199,16 +201,10 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
                fwLog(fwlog::kError)  << "FWGeometryTableViewBase::populate3DViewsFromConfig no viewer found\n";
                return;
             }
-            TEveScene* s = new PipiScene(this, Form("%s %s", typeName().c_str(), v->GetElementName()));
-            gEve->AddElement(s, gEve->GetScenes());
-            v->AddScene(s);  
-            assertEveGeoElement();
-            m_viewBox->setElement(getEveGeoElement());
+            v->AddScene(m_eveScene);  
+            m_viewBox->setElement(m_eveTopNode);
+            if (m_marker) getMarkerScene(v)->AddElement(m_marker);
 
-            s->AddElement(getEveGeoElement());
-            if (getEveMarker()) {
-               getMarkerScene(v)->AddElement(getEveMarker());
-            }
             gEve->FullRedraw3D(false, true);
          }   
       }
@@ -221,8 +217,7 @@ FWGeometryTableViewBase::selectView(int idx)
 {
    // callback from sleclect view popup menu
 
-   assertEveGeoElement();
-   m_viewBox->setElement(getEveGeoElement());
+   m_viewBox->setElement(m_eveTopNode);
 
    TEveElement::List_i it = gEve->GetViewers()->BeginChildren();
    std::advance(it, idx);
@@ -231,26 +226,26 @@ FWGeometryTableViewBase::selectView(int idx)
    TEveScene* s = 0;         
    for (TEveElement::List_i eit = v->BeginChildren(); eit != v->EndChildren(); ++eit ){
       TEveScene* ts = ((TEveSceneInfo*)*eit)->GetScene();
-      if (getEveGeoElement() && ts->HasChildren() && (*ts->BeginChildren()) == getEveGeoElement()) {
+      if (m_eveTopNode && ts->HasChildren() && (*ts->BeginChildren()) == m_eveTopNode) {
          s = ts;
          break;
       }
    }
 
    if (s == 0) {
-      s = new PipiScene(this, Form("%s %s", typeName().c_str(), v->GetElementName()));
+      s = new TEveScene(Form("%s %s", typeName().c_str(), v->GetElementName()));
       gEve->AddElement(s, gEve->GetScenes());
-      s->AddElement(getEveGeoElement());
-      if (getEveMarker()) getMarkerScene(v)->AddElement(getEveMarker());
+      s->AddElement(m_eveTopNode);
+      if (m_marker) getMarkerScene(v)->AddElement(m_marker);
       v->AddScene(s);
    }
    else
    {
-      s->RemoveElement(getEveGeoElement());
-      if (getEveMarker()) getMarkerScene(v)->RemoveElement(getEveMarker());
+      s->RemoveElement(m_eveTopNode);
+      if (m_marker) getMarkerScene(v)->RemoveElement(m_marker);
    }
 
-   getEveGeoElement()->ElementChanged();
+   m_eveTopNode->ElementChanged();
    gEve->Redraw3D();
 }
 
@@ -265,7 +260,7 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
 
    if (iButton == kButton1) 
    {
-      if (iColumn == FWGeometryTableManagerBase::kName)
+      if (iColumn == 0)
       {
          Window_t wdummy;
          Int_t xLoc,yLoc;
@@ -276,29 +271,11 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
 
          if (sel) {
             int idx =getTableManager()->rowToIndex()[iRow];
-            TEveElementList* views = gEve->GetViewers();
-            for (TEveElement::List_i it = views->BeginChildren(); it != views->EndChildren(); ++it)
-            { 
-               TEveViewer* v = ((TEveViewer*)(*it));
-               for (TEveElement::List_i si = v->BeginChildren(); si != v->EndChildren(); ++si )
-               {
-                  TEveSceneInfo* xs = dynamic_cast<TEveSceneInfo*>(*si);
-                  if (xs->GetScene()->GetUseEveSelection() == kFALSE)
-                  {
-                    
-                     {
-                        xs->GetScene()->ClickedPhysical(idx+1, 1, 1);
-                     }
-                  }
-               }
-            }
-         }
-         if ( getEveGeoElement()) {
-            getEveGeoElement()->ElementChanged();
-            gEve->Redraw3D();
-         }
+	    printf("cell clicled top node %p\n", (void*)m_eveTopNode);
+	    m_eveTopNode->selectPhysicalFromTable(idx);
+	 }
       }
-      else if (iColumn == FWGeometryTableManagerBase::kColor)
+      else if (iColumn == 1)
       { 
          std::vector<Color_t> colors;
          m_colorManager->fillLimitedColors(colors);
@@ -316,23 +293,13 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
       }
       else
       {
-         //         printf("set visibility %s \n", ni.name()); 
-
          bool elementChanged = false;
-         if (iColumn ==  FWGeometryTableManagerBase::kVisSelf)
+         if (iColumn ==  2)
          {
-            if (iRow == 0 &&  typeId() == FWViewType::kGeometryTable)
-            {
-               fwLog(fwlog::kInfo) << "Top node self-visibility disabled. Change setting in the view controller! \n";
-               return;
-            }
-            else
-            {
-               getTableManager()->setVisibility(ni, !getTableManager()->getVisibility(ni));
-               elementChanged = true;
-            }
+            getTableManager()->setVisibility(ni, !getTableManager()->getVisibility(ni));
+            elementChanged = true;
          }
-         if (iColumn ==  FWGeometryTableManagerBase::kVisChild)
+         if (iColumn ==  3)
          { 
             getTableManager()->setVisibilityChld(ni, !getTableManager()->getVisibilityChld(ni));; 
             elementChanged = true;
@@ -342,14 +309,12 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
          if (iColumn ==  5)
          {
             // used in overlaps for RnrMarker column
-            ni.switchBit(FWGeometryTableManagerBase::kFlag1);
+            ni.switchBit(BIT(5));
             elementChanged = true;
          }
 
          if (elementChanged)
          {
-            //getEveGeoElement()->ElementChanged();
-            //gEve->RegisterRedraw3D();
             refreshTable3D();
          }
       }
@@ -358,20 +323,11 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
       getTableManager()->dataChanged();
 
    }
-   else if  (iColumn == FWGeometryTableManagerBase::kName)
+   else if  (iColumn == 0)
    {
-      popupMenu(x, y);
+      m_eveTopNode->popupMenu(x, y);
    }
 }
-
-
-/*
-
-void FWGeometryTableViewBase::chosenItemFrom3DView(int x)
-{
-  assert(x >=0);
-  chosenItem(x);
-  }*/
 
 
 void FWGeometryTableViewBase::setBackgroundColor()
@@ -411,11 +367,11 @@ void FWGeometryTableViewBase::refreshTable3D()
    if (!m_enableRedraw) return;
 
    getTableManager()->redrawTable();
-   if (getEveGeoElement())  getEveGeoElement()->ElementChanged();
-   gEve->FullRedraw3D(false, true);
+
+   m_eveTopNode->fSceneJebo->PadPaint( m_eveTopNode->fSceneJebo->GetPad());
+   gEve->Redraw3D();
 }
  
-
 //______________________________________________________________________________
 
 void FWGeometryTableViewBase::addTo(FWConfiguration& iTo) const
@@ -423,8 +379,8 @@ void FWGeometryTableViewBase::addTo(FWConfiguration& iTo) const
    FWConfigurableParameterizable::addTo(iTo);
 
    FWConfiguration viewers(1);
-   if (getEveGeoElement()) {
-      for (TEveElement::List_i it = getEveGeoElement()->BeginParents(); it != getEveGeoElement()->EndParents(); ++it )
+   if (m_eveTopNode) {
+      for (TEveElement::List_i it = m_eveTopNode->BeginParents(); it != m_eveTopNode->EndParents(); ++it )
       {
          FWConfiguration tempArea;
          TEveScene* scene = dynamic_cast<TEveScene*>(*it);
