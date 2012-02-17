@@ -16,7 +16,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.9.2.6 2012/02/16 04:50:38 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9.2.7 2012/02/17 01:13:11 amraktad Exp $
 //
 
 #ifndef __CINT__
@@ -54,17 +54,18 @@ public:
    std::set<TGLPhysicalShape*> fSted;
 
    int getFirstSelectedTableIndex();
-   void selectPhysicalFromTable(int);
+   bool selectPhysicalFromTable(int);
    void clearSelection() {fHted.clear(); fSted.clear();}
 
    void printSelected();
 
-   virtual void UnSelected(); //{ ClearSet(fSted); }
-   virtual void UnHighlighted();// { ClearSet(fHted); }
+   virtual void UnSelected();
+   virtual void UnHighlighted();
    virtual void popupMenu(int x, int y){}
+
 protected:
-   static UInt_t phyID(int tableIdx)  ;// { return UInt_t(tableIdx + 2);}
-   static int tableIdx(TGLPhysicalShape* ps);// { return ps->ID() - 2; }
+   static UInt_t phyID(int tableIdx);
+   static int tableIdx(TGLPhysicalShape* ps);
 
    void ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalShape*>& sset, TGLPhysicalShape* id);
 
