@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.11 2012/01/20 02:43:14 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.12 2012/02/16 04:50:21 amraktad Exp $
 //
 
 // system include files
@@ -18,8 +18,8 @@
 #include "Fireworks/Core/src/FWOverlapTableView.h"
 #include "Fireworks/Core/src/FWGeoTopNodeScene.h"
 #include "Fireworks/Core/src/FWOverlapTableManager.h"
+#include "Fireworks/Core/src/FWEveOverlap.h"
 #include "Fireworks/Core/interface/FWGeometryTableViewManager.h"
-#include "Fireworks/Core/interface/FWGeoTopNode.h"
 #include "Fireworks/Core/interface/CmsShowViewPopup.h"
 #include "Fireworks/Core/src/FWPopupMenu.cc"
 #include "Fireworks/Core/interface/fwLog.h"

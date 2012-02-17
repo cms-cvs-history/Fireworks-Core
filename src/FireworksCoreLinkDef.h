@@ -29,7 +29,10 @@
 #include "Fireworks/Core/interface/FWTextProjected.h"
 
 #include "Fireworks/Core/interface/FWGeoTopNode.h"
+#include "Fireworks/Core/src/FWEveOverlap.h"
+#include "Fireworks/Core/src/FWEveDetectorGeo.h"
 #include "Fireworks/Core/src/FWGeoTopNodeGL.h"
+
 
 
 #ifdef __CINT__
@@ -80,6 +83,7 @@
 #pragma link C++ class FWOverlapTableView;
 
 #pragma link C++ class FWGeoTopNode;
-#pragma link C++ class FWGeoTopNodeGL;
+#pragma link C++ class FWEveOverlap;
 #pragma link C++ class FWEveDetectorGeo;
+#pragma link C++ class FWGeoTopNodeGL;
 #endif

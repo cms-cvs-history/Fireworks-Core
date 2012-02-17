@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.15 2012/01/20 03:09:54 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.16 2012/02/16 04:50:21 amraktad Exp $
 //
 
 // system include files
@@ -27,7 +27,7 @@
 #include "Fireworks/Core/src/FWGUIValidatingTextEntry.h"
 #include "Fireworks/Core/interface/FWGUIManager.h"
 #include "Fireworks/Core/src/FWValidatorBase.h"
-#include "Fireworks/Core/interface/FWGeoTopNode.h"
+#include "Fireworks/Core/src/FWEveDetectorGeo.h"
 
 #include "KeySymbols.h"
 #include "TGButton.h"

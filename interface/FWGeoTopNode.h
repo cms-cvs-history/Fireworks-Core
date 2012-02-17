@@ -16,7 +16,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel
 //         Created:  Thu Jun 23 01:25:00 CEST 2011
-// $Id: FWGeoTopNode.h,v 1.9.2.5 2012/01/06 23:19:39 amraktad Exp $
+// $Id: FWGeoTopNode.h,v 1.9.2.6 2012/02/16 04:50:38 amraktad Exp $
 //
 
 #ifndef __CINT__
@@ -63,6 +63,8 @@ public:
    virtual void UnHighlighted();// { ClearSet(fHted); }
    virtual void popupMenu(int x, int y){}
 protected:
+   static UInt_t phyID(int tableIdx)  ;// { return UInt_t(tableIdx + 2);}
+   static int tableIdx(TGLPhysicalShape* ps);// { return ps->ID() - 2; }
 
    void ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalShape*>& sset, TGLPhysicalShape* id);
 
@@ -84,76 +86,6 @@ private:
 
    ClassDef(FWGeoTopNode, 0);
 };
-
-
-
-//==============================================================================
-//==============================================================================
-//==============================================================================
-class FWEveDetectorGeo : public FWGeoTopNode
-{
-public:
-
-   enum MenuOptions {
-      kGeoSetTopNode,
-      kGeoSetTopNodeCam,
-      kGeoVisOn,
-      kGeoVisOff,
-      kGeoInspectMaterial,
-      kGeoInspectShape,
-      kGeoCamera
-   };
-
-   FWEveDetectorGeo(FWGeometryTableView* v); 
-   virtual ~FWEveDetectorGeo() {}
-
-   virtual void Paint(Option_t* option="");
-
-   virtual TString     GetHighlightTooltip();
-
-   virtual FWGeometryTableManagerBase* tableManager();
-   virtual void popupMenu(int x, int y);
-private:
-#ifndef __CINT__
-   void paintChildNodesRecurse(FWGeometryTableManagerBase::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
-#endif
-   FWGeometryTableView       *m_browser;
-   int m_maxLevel;
-   bool m_filterOff;
-   ClassDef(FWEveDetectorGeo, 0);
-
-};
-//==============================================================================
-//==============================================================================
-
-
-class FWEveOverlap : public FWGeoTopNode
-{
-public:
-
-   enum MenuOptions {
-      kOvlVisOff,
-      kOvlVisOnOvl,
-      kOvlVisOnAllMother,
-      kOvlVisMother,
-      kOvlSwitchVis,
-      kOvlCamera,
-      kOvlPrintOvl,
-      kOvlPrintPath
-   };
-
-   FWEveOverlap(FWOverlapTableView* v);
-   virtual ~FWEveOverlap(){}
-
-   virtual void Paint(Option_t* option="");
-   virtual TString     GetHighlightTooltip();
-
-   virtual FWGeometryTableManagerBase* tableManager();
-   virtual void popupMenu(int x, int y);
-private:
-   FWOverlapTableView       *m_browser;
-};
-
 
 
 #endif
