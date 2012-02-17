@@ -198,7 +198,7 @@ FWGeometryTableViewBase::populate3DViewsFromConfig()
             TEveViewer* v = dynamic_cast<TEveViewer*>(viewers->FindChild(sname.Data()));
             if (!v)
             {
-               fwLog(fwlog::kError)  << "FWGeometryTableViewBase::populate3DViewsFromConfig no viewer found\n";
+               fwLog(fwlog::kError)  << "FWGeometryTableViewBase::populate3DViewsFromConfig no viewer found " << it->first << std::endl;
                return;
             }
             v->AddScene(m_eveScene);  
@@ -379,17 +379,21 @@ void FWGeometryTableViewBase::addTo(FWConfiguration& iTo) const
    FWConfigurableParameterizable::addTo(iTo);
 
    FWConfiguration viewers(1);
-   if (m_eveTopNode) {
-      for (TEveElement::List_i it = m_eveTopNode->BeginParents(); it != m_eveTopNode->EndParents(); ++it )
+   FWConfiguration tempArea;
+
+   for(TEveElement::List_i k = gEve->GetViewers()->BeginChildren(); k!= gEve->GetViewers()->EndChildren(); ++k)
+   {
+      for (TEveElement::List_i eit = (*k)->BeginChildren(); eit != (*k)->EndChildren(); ++eit )
       {
-         FWConfiguration tempArea;
-         TEveScene* scene = dynamic_cast<TEveScene*>(*it);
-         const char*  n= scene->GetElementName();
-         int tsize = typeName().size() + 1;
-         printf("add to %s -> [%s] \n", scene->GetElementName(), &n[tsize]);
-         viewers.addKeyValue( &n[tsize], tempArea);
+         TEveScene* s = ((TEveSceneInfo*)*eit)->GetScene();
+         if (s->GetGLScene() == m_eveTopNode->fSceneJebo)
+         {
+            viewers.addKeyValue( (*k)->GetElementName(), tempArea);
+            break;
+         }
       }
    }
+
    iTo.addKeyValue("Viewers", viewers, true);
 }
   
