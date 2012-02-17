@@ -35,6 +35,7 @@
 #include "TEveViewer.h"
 #include "TGLViewer.h"
 #include "TGLCamera.h"
+#include "TEveSelection.h"
 #ifdef PERFTOOL_BROWSER 
 #include <google/profiler.h>
 #endif
@@ -364,12 +365,17 @@ void FWGeometryTableViewBase::nodeColorChangeRequested(Color_t col)
 
 void FWGeometryTableViewBase::refreshTable3D()
 {
-   if (!m_enableRedraw) return;
+   if (gEve->GetSelection()->HasChild( m_eveTopNode))
+      gEve->GetSelection()->RemoveElement( m_eveTopNode);
 
-   getTableManager()->redrawTable();
+   if (gEve->GetHighlight()->HasChild( m_eveTopNode))
+      gEve->GetHighlight()->RemoveElement( m_eveTopNode);
+
 
    m_eveTopNode->fSceneJebo->PadPaint( m_eveTopNode->fSceneJebo->GetPad());
-   gEve->Redraw3D();
+   gEve->Redraw3D(); 
+
+   getTableManager()->redrawTable();
 }
  
 //______________________________________________________________________________

@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.15 2012/02/16 04:50:20 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.16 2012/02/17 01:13:10 amraktad Exp $
 //
 
 // system include files
@@ -76,19 +76,31 @@ void FWGeoTopNode::ClearSet(std::set<TGLPhysicalShape*>& sset)
 //______________________________________________________________________________
 void FWGeoTopNode::SetStateOf(TGLPhysicalShape* id)
 {
+   FWGeometryTableManagerBase::NodeInfo& data =  tableManager()->refEntries().at(tableIdx(id));
+
    if (fSted.find(id) != fSted.end())
+   {
       id->Select(1);
+      data.setBit(FWGeometryTableManagerBase::kSelected);
+   }
    else if (fHted.find(id) != fHted.end())
+   {
       id->Select(3);
+      data.setBit(FWGeometryTableManagerBase::kHighlighted);
+   }
    else
+   {
       id->Select(0);
+      data.resetBit(FWGeometryTableManagerBase::kHighlighted);
+      data.resetBit(FWGeometryTableManagerBase::kSelected);
+   }
 
 }
 
 //______________________________________________________________________________
 void FWGeoTopNode::ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalShape*>& sset, TGLPhysicalShape* id)
 {
-   printf("FWGeoTopNode::ProcessSelection ===============================\n");
+   // printf("FWGeoTopNode::ProcessSelection ===============================\n");
 
    fSceneJebo->BeginUpdate();
 
@@ -150,24 +162,6 @@ void FWGeoTopNode::ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalSh
       fSceneJebo->EndUpdate(kTRUE, kFALSE, kTRUE);
       gEve->Redraw3D();
 
-
-      for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
-      {
-         i->resetBit(FWGeometryTableManagerBase::kHighlighted);
-         i->resetBit(FWGeometryTableManagerBase::kSelected);
-      }
-
-      for (std::set<TGLPhysicalShape*>::iterator it = fHted.begin(); it != fHted.end(); ++it)
-      {
-         //  printf("set HIGH \n");
-         tableManager()->refEntries().at(tableIdx(*it)).setBit(FWGeometryTableManagerBase::kHighlighted);
-      }
-      for (std::set<TGLPhysicalShape*>::iterator it = fSted.begin(); it != fSted.end(); ++it)
-      {
-         //  printf("SET TABLE selected BIT \n");
-         tableManager()->refEntries().at(tableIdx(*it)).setBit(FWGeometryTableManagerBase::kSelected);
-      }
-
       tableManager()->dataChanged();
    }
    else
@@ -177,31 +171,23 @@ void FWGeoTopNode::ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalSh
 }
 
 //______________________________________________________________________________
-void FWGeoTopNode::selectPhysicalFromTable( int tableIndex)
+bool FWGeoTopNode::selectPhysicalFromTable( int tableIndex)
 {
    //   printf("FWGeoTopNode::selectPhysicalFromTable \n");
 
    ClearSet(fSted);
 
-   for (FWGeometryTableManagerBase::Entries_i i = tableManager()->refEntries().begin(); i != tableManager()->refEntries().end(); ++i)
-   {
-      i->resetBit(FWGeometryTableManagerBase::kHighlighted);
-      i->resetBit(FWGeometryTableManagerBase::kSelected);
-   }
-   tableManager()->refEntries().at(tableIndex).setBit(FWGeometryTableManagerBase::kSelected);
-   tableManager()->dataChanged(); 
-
    TGLPhysicalShape* ps = fSceneJebo->FindPhysical(phyID(tableIndex));
    if (ps) {
-      fSceneJebo->BeginUpdate();
       fSted.insert(ps);
       ps->Select(1);
-      fSceneJebo->EndUpdate(kTRUE, kFALSE, kTRUE);
-      gEve->Redraw3D();
+      // printf("selectPhysicalFromTable found physical \n");
+      return true;
    }
    else if ( tableManager()->refEntries().at(tableIndex).testBit(FWGeometryTableManagerBase::kVisNodeSelf));
    {
-      fwLog(fwlog::kInfo) << "Object not drawn in GL viewer. \n" ;
+      fwLog(fwlog::kInfo) << "Selected entry not drawn in GL viewer. \n" ;
+      return false;
    }
 }
 
