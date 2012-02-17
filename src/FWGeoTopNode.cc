@@ -8,7 +8,7 @@
 //
 // Original Author:  Matevz Tadel, Alja Mrak Tadel  
 //         Created:  Thu Jun 23 01:24:51 CEST 2011
-// $Id: FWGeoTopNode.cc,v 1.19.2.16 2012/02/17 01:13:10 amraktad Exp $
+// $Id: FWGeoTopNode.cc,v 1.19.2.17 2012/02/17 03:56:54 amraktad Exp $
 //
 
 // system include files
@@ -173,9 +173,7 @@ void FWGeoTopNode::ProcessSelection(TGLSelectRecord& rec, std::set<TGLPhysicalSh
 //______________________________________________________________________________
 bool FWGeoTopNode::selectPhysicalFromTable( int tableIndex)
 {
-   //   printf("FWGeoTopNode::selectPhysicalFromTable \n");
-
-   ClearSet(fSted);
+   //   printf("FWGeoTopNode::selectPhysicalFromTable 
 
    TGLPhysicalShape* ps = fSceneJebo->FindPhysical(phyID(tableIndex));
    if (ps) {
