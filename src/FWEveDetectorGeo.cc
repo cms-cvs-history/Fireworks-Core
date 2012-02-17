@@ -30,7 +30,7 @@ void FWEveDetectorGeo::Paint(Option_t* opt)
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
-   m_maxLevel = m_browser->getVisLevel() + m_browser->getTableManager()->getLevelOffset() -1;
+   m_maxLevel = m_browser->getVisLevel() + m_browser->getTableManager()->getLevelOffset();
    m_filterOff = m_browser->getFilter().empty();
 
    Int_t topIdx = m_browser->getTopNodeIdx();
