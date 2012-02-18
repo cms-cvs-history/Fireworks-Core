@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.6 2012/01/20 03:09:54 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.7 2012/02/16 04:50:21 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -41,9 +41,9 @@ public:
 
    bool getVolumeMode()      const { return m_mode.value() == kVolume; }
    std::string getFilter ()  const { return m_filter.value(); }
-   int getAutoExpand()       const { return m_autoExpand.value(); }
-   int getVisLevel()         const  {return m_visLevel.value(); }
-   bool getIgnoreVisLevelWhenFilter() const  {return m_visLevelFilter.value(); }
+   int  getAutoExpand()      const { return m_autoExpand.value(); }
+   int  getVisLevel()        const { return m_visLevel.value(); }
+   bool getIgnoreVisLevelWhenFilter() const  { return m_visLevelFilter.value(); }
 
    bool drawTopNode() const { return !m_disableTopNode.value(); }
    void autoExpandCallback();
@@ -61,6 +61,7 @@ public:
 
    void chosenItem(int);
    void updateVisibilityTopNode();
+
 protected:
    // virtual void initGeometry(TGeoNode* iGeoTopNode, TObjArray* iVolumes);
 

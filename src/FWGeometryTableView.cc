@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.16 2012/02/16 04:50:21 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.17 2012/02/17 01:13:10 amraktad Exp $
 //
 
 // system include files
@@ -216,8 +216,7 @@ FWGeometryTableView::~FWGeometryTableView()
 {
 }
 
-
-//______________________________________________________________________________
+//------------------------------------------------------------------------------
 
 void  FWGeometryTableView::checkExpandLevel()
 {
@@ -322,16 +321,15 @@ void FWGeometryTableView::populateController(ViewerParameterGUI& gui) const
       // addParam(&m_enableHighlight);
 }
 
-void
-FWGeometryTableView::printTable()
+void FWGeometryTableView::printTable()
 {
    // print all entries
-   //getTableManager()->printChildren(-1);
+
+   // getTableManager()->printChildren(-1);
    std::cout << "TODO .... \n";
 }
 
-//______________________________________________________________________________
-
+//------------------------------------------------------------------------------
 
 void FWGeometryTableView::cdNode(int idx)
 {
@@ -349,23 +347,14 @@ void FWGeometryTableView::cdTop()
 
 void FWGeometryTableView::cdUp()
 {   
-   if ( getTopNodeIdx() != -1)
+   if (getTopNodeIdx() != -1)
    {
-      int pIdx   = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
+      int pIdx = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
       std::string p;
       getTableManager()->getNodePath(pIdx, p);
       setPath(pIdx, p);
    }
 }
-
-//______________________________________________________________________________
-
-void FWGeometryTableView::updateVisibilityTopNode()
-{
-   getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
-   refreshTable3D();
-}
-//______________________________________________________________________________
 
 void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 {
@@ -381,18 +370,15 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
    FWGUIManager::getGUIManager()->updateStatus(path.c_str());
 }
 
-//______________________________________________________________________________
+//------------------------------------------------------------------------------
 
 void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
 { 
    m_enableRedraw = false;
-   for(const_iterator it =begin(), itEnd = end();
-       it != itEnd;
-       ++it) {
-
+   for (const_iterator it =begin(), itEnd = end(); it != itEnd; ++it)
+   {
       //      printf("set from %s \n",(*it)->name().c_str() );
       (*it)->setFrom(iFrom);
-
    }  
    m_viewersConfig = iFrom.valueForKey("Viewers");
 
@@ -408,24 +394,25 @@ void FWGeometryTableView::setFrom(const FWConfiguration& iFrom)
    */
 }
 
-
-//______________________________________________________________________________
+//------------------------------------------------------------------------------
 
 void FWGeometryTableView::chosenItem(int x)
 {
    FWGeometryTableManagerBase::NodeInfo& ni = getTableManager()->refEntries().at(m_eveTopNode->getFirstSelectedTableIndex());
    // printf("chosen item %s \n", ni.name());
 
-   TGeoVolume* gv = ni.m_node->GetVolume();
-   bool visible = true;
+   TGeoVolume *gv = ni.m_node->GetVolume();
    bool resetHome = false;
    if (gv)
    {
-      switch (x) {
+      switch (x)
+      {
          case FWEveDetectorGeo::kGeoVisOff:
-            visible = false;
+            getTableManager()->setDaughtersSelfVisibility(false);
+            refreshTable3D();
+            break;
          case FWEveDetectorGeo::kGeoVisOn:
-            getTableManager()->setDaughtersSelfVisibility(visible);
+            getTableManager()->setDaughtersSelfVisibility(true);
             refreshTable3D();
             break;
 
@@ -447,7 +434,7 @@ void FWGeometryTableView::chosenItem(int x)
          case FWEveDetectorGeo::kGeoCamera:
          {
             TGeoHMatrix mtx;
-            getTableManager()->getNodeMatrix( ni, mtx);
+            getTableManager()->getNodeMatrix(ni, mtx);
 
             static double pnt[3];
             TGeoBBox* bb = static_cast<TGeoBBox*>( ni.m_node->GetVolume()->GetShape());
@@ -474,4 +461,10 @@ void FWGeometryTableView::chosenItem(int x)
             fwLog(fwlog::kError) << "Entry not handled \n";
       }
    }
+}
+
+void FWGeometryTableView::updateVisibilityTopNode()
+{
+   getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
+   refreshTable3D();
 }
