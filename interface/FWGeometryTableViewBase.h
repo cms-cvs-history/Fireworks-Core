@@ -70,9 +70,9 @@ public:
    FWGeometryTableViewBase(TEveWindowSlot*, FWViewType::EType, FWColorManager*);
    virtual ~FWGeometryTableViewBase();
   
-  virtual  void cellClicked(Int_t iRow, Int_t iColumn, 
-                    Int_t iButton, Int_t iKeyMod, 
-                    Int_t iGlobalX, Int_t iGlobalY);
+   virtual  void cellClicked(Int_t iRow, Int_t iColumn, 
+                             Int_t iButton, Int_t iKeyMod, 
+                             Int_t iGlobalX, Int_t iGlobalY);
   
    // void chosenItemFrom3DView(int);
    void selectView(int);
@@ -92,18 +92,27 @@ public:
    virtual void refreshTable3D();
 
 
-   //   FWGeometryTableManagerBase::NodeInfo* getSelected();
+   void cdNode(int);
+   void cdTop();
+   void cdUp();
+   virtual void setPath(int, std::string&);
+
+   void checkExpandLevel();
+
+   int getTopNodeIdx() const { return TMath::Max((int)m_topNodeIdx.value(), 0); }
 
 protected:
 
 #ifndef __CINT__      
+   FWLongParameter         m_topNodeIdx; 
+   FWLongParameter         m_autoExpand;
    FWBoolParameter         m_enableHighlight; 
 #endif
 
    FWColorManager         *m_colorManager;
    FWTableWidget          *m_tableWidget;
 
- //  TGCompositeFrame       *m_settersFrame;
+   //  TGCompositeFrame       *m_settersFrame;
 
    FWColorPopup           *m_colorPopup;
 
@@ -116,7 +125,7 @@ protected:
    const FWConfiguration*  m_viewersConfig;
 
   
-  bool m_enableRedraw;
+   bool m_enableRedraw;
 
    TEvePointSet* m_marker;
    FWGeoTopNode* m_eveTopNode;

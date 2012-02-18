@@ -18,6 +18,7 @@ public:
       kOvlVisMother,
       kOvlSwitchVis,
       kOvlCamera,
+      kOvlSetTopNode,
       kOvlPrintOvl,
       kOvlPrintPath
    };
@@ -33,6 +34,9 @@ public:
 private:
    FWOverlapTableView       *m_browser;
 
+#ifndef __CINT__
+   void paintChildNodesRecurse(FWGeometryTableManagerBase::Entries_i pIt, Int_t idx,  const TGeoHMatrix& mtx);
+#endif
    ClassDef(FWEveOverlap, 0);
 };
 

@@ -20,47 +20,96 @@ FWGeometryTableManagerBase* FWEveOverlap::tableManager()
 
 void FWEveOverlap::Paint(Option_t*)
 {
+
+   if (m_browser->getTableManager()->refEntries().empty()) return; 
+
    FWGeoTopNode::Paint();
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
-   FWGeometryTableManagerBase::Entries_i parentIt = m_browser->getTableManager()->refEntries().begin();
-   bool visChld = false;
-   int cnt = 0;
 
-   for (FWGeometryTableManagerBase::Entries_i it = parentIt;
-        it != m_browser->getTableManager()->refEntries().end(); ++it, ++cnt)
+   FWGeometryTableManagerBase::Entries_i sit = m_browser->getTableManager()->refEntries().begin(); 
+   int topNodeIdx =  m_browser->getTopNodeIdx();
+   std::advance(sit,topNodeIdx );
+   TGeoHMatrix mtx;
+
+   paintChildNodesRecurse( sit, topNodeIdx, mtx);
+
+
+   /*
+     FWGeometryTableManagerBase::Entries_i parentIt = m_browser->getTableManager()->refEntries().begin();
+     bool visChld = false;
+     int cnt = 0;
+
+     for (FWGeometryTableManagerBase::Entries_i it = parentIt;
+     it != m_browser->getTableManager()->refEntries().end(); ++it, ++cnt)
+     {
+     if (it->m_parent == -1)
+     { 
+     if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
+     paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
+     }
+     else if (it->m_parent == 0)
+     {      
+     if ((m_browser->m_rnrOverlap.value() && it->testBit(FWOverlapTableManager::kOverlap)) ||
+     (m_browser->m_rnrExtrusion.value() && !it->testBit(FWOverlapTableManager::kOverlap)) )
+     {          
+     if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
+     {
+     paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
+     }
+     visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
+     }
+     else {
+     visChld = false;
+     }
+
+     parentIt = it;
+     }
+     else if (visChld && it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
+     {  
+     TGeoHMatrix nm = *(parentIt->m_node->GetMatrix());
+     nm.Multiply(it->m_node->GetMatrix());
+     paintShape(*it, cnt , nm, false);
+     }
+     }*/
+}
+
+
+// ______________________________________________________________________
+void FWEveOverlap::paintChildNodesRecurse (FWGeometryTableManagerBase::Entries_i pIt, Int_t cnt, const TGeoHMatrix& parentMtx)
+{ 
+   TGeoNode* parentNode =  pIt->m_node;
+   int nD = parentNode->GetNdaughters();
+
+   int dOff=0;
+
+   pIt++;
+   int pcnt = cnt+1;
+
+   FWGeometryTableManagerBase::Entries_i it;
+   for (int n = 0; n != nD; ++n)
    {
-      if (it->m_parent == -1)
-      { 
-         if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-            paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-      }
-      else if (it->m_parent == 0)
-      {      
-         if ((m_browser->m_rnrOverlap.value() && it->testBit(FWOverlapTableManager::kOverlap)) ||
-             (m_browser->m_rnrExtrusion.value() && !it->testBit(FWOverlapTableManager::kOverlap)) )
-         {          
-            if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-            {
-               paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-            }
-            visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
-         }
-         else {
-            visChld = false;
-         }
+      it =  pIt;
+      std::advance(it,n + dOff);
+      cnt = pcnt + n+dOff;
 
-         parentIt = it;
-      }
-      else if (visChld && it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-      {  
-         TGeoHMatrix nm = *(parentIt->m_node->GetMatrix());
-         nm.Multiply(it->m_node->GetMatrix());
+      TGeoHMatrix nm = parentMtx;
+      nm.Multiply(it->m_node->GetMatrix());
+
+      if (it->testBit(FWOverlapTableManager::kOverlap))
          paintShape(*it, cnt , nm, false);
-      }
+
+         paintChildNodesRecurse(it,cnt , nm);
+
+
+
+      FWGeometryTableManagerBase::getNNodesTotal(parentNode->GetDaughter(n), dOff);  
    }
 }
+
+
+
 //______________________________________________________________________________
 
 void FWEveOverlap::popupMenu(int x, int y)
@@ -82,6 +131,7 @@ void FWEveOverlap::popupMenu(int x, int y)
    nodePopup->AddEntry("Print Overlap Info", kOvlPrintOvl);
    nodePopup->AddEntry("Print Path ", kOvlPrintPath);
    nodePopup->AddSeparator();
+   nodePopup->AddEntry("Set As Top Node", kOvlSetTopNode);
    nodePopup->AddEntry("Set Camera Center", kOvlCamera);
    /*
    nodePopup->AddSeparator();
@@ -102,35 +152,41 @@ void FWEveOverlap::popupMenu(int x, int y)
 TString  FWEveOverlap::GetHighlightTooltip()
 {
    //   printf("highlight tooltio \n");
+     std::set<TGLPhysicalShape*>::iterator it = fHted.begin();
+     int idx = tableIdx(*it);
+     if ( idx < 0) 
+     {
+     return Form("TopNode ");
+     }
+    
+ 
 
-   std::set<TGLPhysicalShape*>::iterator it = fHted.begin();
-   int idx = tableIdx(*it);
-   if ( idx < 0) 
-   {
-      return Form("TopNode ");
-   }
-  
-   FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
-   if (data.m_parent <= 0)
-   {
+      FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
+
+
       return data.name();
-   }
-   else {
-      TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
-      TString text;
-      const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(idx);
-      text =  data.name();
-      text += Form("\noverlap = %g cm", ovl->GetOverlap());
+     /*
+     if (data.m_parent <= 0)
+     {
+     return data.name();
+     }
+     else {
+     TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
+     TString text;
+     const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(idx);
+     text =  data.name();
+     text += Form("\noverlap = %g cm", ovl->GetOverlap());
 
-      if (ovl->IsOverlap()) 
-      {
-         int nidx = (idx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
-         text += Form("\nsister = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
-      }
-      else
-      {  
-         text += Form("\nmother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
-      }
-      return text.Data();
-   }
+     if (ovl->IsOverlap()) 
+     {
+     int nidx = (idx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
+     text += Form("\nsister = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
+     }
+     else
+     {  
+     text += Form("\nmother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
+     }
+     return text.Data();
+     }
+   */
 }

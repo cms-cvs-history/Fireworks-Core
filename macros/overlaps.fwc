@@ -278,8 +278,8 @@
     </config>
    </config>
    <config name="Overlap Table" version="1">
-    <config name="Path:" version="0">
-      <string>/cms:World_1/cms:CMSE_1/muonBase:MUON_1/muonBase:MB_1/muonBase:MBWheel_1N_2</string>
+    <config name="TopNodeIndex" version="0">
+      <string>1791211</string>
     </config>
     <config name="Precision" version="0">
       <string>1</string>

@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:34 CET 2012
-// $Id: FWGeometryTableView.cc,v 1.22.2.17 2012/02/17 01:13:10 amraktad Exp $
+// $Id: FWGeometryTableView.cc,v 1.22.2.18 2012/02/18 01:58:27 matevz Exp $
 //
 
 // system include files
@@ -135,11 +135,9 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
      m_tableManager(0),
      m_filterEntry(0),
      m_filterValidator(0),
-     m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
      m_mode(this, "Mode:", 0l, 0l, 1l),
      m_filter(this,"Materials:",std::string()),
      m_disableTopNode(this,"HideTopNode", true),
-     m_autoExpand(this,"ExpandList:", 1l, 0l, 100l),
      m_visLevel(this,"VisLevel:", 3l, 1l, 100l),
      m_visLevelFilter(this,"IgnoreVisLevelOnFilter", true)
 {
@@ -163,12 +161,12 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
    {
       TGTextButton* rb = new TGTextButton (hp, "CdTop");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0) );
-      rb->Connect("Clicked()","FWGeometryTableView",this,"cdTop()");
+      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdTop()");
    } 
    {
       TGTextButton* rb = new TGTextButton (hp, "CdUp");
       hp->AddFrame(rb, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
-      rb->Connect("Clicked()","FWGeometryTableView",this,"cdUp()");
+      rb->Connect("Clicked()","FWGeometryTableViewBase",this,"cdUp()");
    }
   
    {
@@ -213,27 +211,22 @@ FWGeometryTableView::FWGeometryTableView(TEveWindowSlot* iParent, FWColorManager
 
 
 FWGeometryTableView::~FWGeometryTableView()
-{
+{ 
 }
 
-//------------------------------------------------------------------------------
-
-void  FWGeometryTableView::checkExpandLevel()
+void FWGeometryTableView::setPath(int parentIdx, std::string&)
 {
-   // check expand state
-   int ae = m_autoExpand.value();
-   if ( m_topNodeIdx.value() > 0) 
-      ae += getTableManager()->refEntries().at(m_topNodeIdx.value()).m_level;
+   m_eveTopNode->clearSelection();
 
-   for (FWGeometryTableManagerBase::Entries_i i = getTableManager()->refEntries().begin(); i !=  getTableManager()->refEntries().end(); ++i)
-   {
-      if (i->m_level  < ae)
-         i->setBit(FWGeometryTableManagerBase::kExpanded);
-      else
-         i->resetBit(FWGeometryTableManagerBase::kExpanded);
-   } 
+   m_topNodeIdx.set(parentIdx);
+   getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
+   getTableManager()->setLevelOffset(getTableManager()->refEntries().at(getTopNodeIdx()).m_level);
+ 
+
+   checkExpandLevel();
+   refreshTable3D(); 
+ 
 }
-
 //______________________________________________________________________________
 
 
@@ -331,31 +324,7 @@ void FWGeometryTableView::printTable()
 
 //------------------------------------------------------------------------------
 
-void FWGeometryTableView::cdNode(int idx)
-{
-   std::string p;
-   getTableManager()->getNodePath(idx, p);
-   setPath(idx, p);
-}
-
-void FWGeometryTableView::cdTop()
-{
-   std::string path = "/" ;
-   path += getTableManager()->refEntries().at(0).name();
-   setPath(-1, path ); 
-}
-
-void FWGeometryTableView::cdUp()
-{   
-   if (getTopNodeIdx() != -1)
-   {
-      int pIdx = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
-      std::string p;
-      getTableManager()->getNodePath(pIdx, p);
-      setPath(pIdx, p);
-   }
-}
-
+/*
 void FWGeometryTableView::setPath(int parentIdx, std::string& path)
 {
    //   printf("Set Path to [%s], current node \n", path.c_str());
@@ -368,7 +337,7 @@ void FWGeometryTableView::setPath(int parentIdx, std::string& path)
    checkExpandLevel();
    refreshTable3D(); 
    FWGUIManager::getGUIManager()->updateStatus(path.c_str());
-}
+   }*/
 
 //------------------------------------------------------------------------------
 

@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:05:38 CET 2012
-// $Id: FWGeometryTableView.h,v 1.1.2.7 2012/02/16 04:50:21 amraktad Exp $
+// $Id: FWGeometryTableView.h,v 1.1.2.8 2012/02/18 01:58:27 matevz Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -47,15 +47,10 @@ public:
 
    bool drawTopNode() const { return !m_disableTopNode.value(); }
    void autoExpandCallback();
-   void cdNode(int);
-   void cdTop();
-   void cdUp();
-   void setPath(int, std::string&);
-   void checkExpandLevel();
+   virtual void setPath(int, std::string&);
    void printTable();
 
-   int getTopNodeIdx() const { return TMath::Max((int)m_topNodeIdx.value(), 0); }
-
+   
    virtual void setFrom(const FWConfiguration&);
 
 
@@ -75,12 +70,10 @@ private:
    FWGUIValidatingTextEntry* m_filterEntry;
    FWGeoMaterialValidator*   m_filterValidator;
 
-#ifndef __CINT__
-   FWLongParameter         m_topNodeIdx;  
+#ifndef __CINT__ 
    FWEnumParameter         m_mode;
    FWStringParameter       m_filter; 
    FWBoolParameter         m_disableTopNode;
-   FWLongParameter         m_autoExpand;
    FWLongParameter         m_visLevel;
    FWBoolParameter         m_visLevelFilter; 
 #endif  

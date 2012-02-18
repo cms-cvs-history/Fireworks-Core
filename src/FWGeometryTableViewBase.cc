@@ -114,6 +114,8 @@ Bool_t  FWGeometryTableViewBase::FWViewCombo::HandleButton(Event_t* event)
 
 FWGeometryTableViewBase::FWGeometryTableViewBase(TEveWindowSlot* iParent,FWViewType::EType type, FWColorManager* colMng )
    : FWViewBase(type),
+     m_topNodeIdx(this, "TopNodeIndex", -1l, 0, 1e7),
+     m_autoExpand(this,"ExpandList:", 1l, 0l, 100l),
      m_enableHighlight(this,"EnableHighlight", true),
      m_colorManager(colMng),
      m_colorPopup(0),
@@ -182,6 +184,65 @@ TEveScene* getMarkerScene(TEveViewer* v)
 }
 //==============================================================================
 
+
+void FWGeometryTableViewBase::cdNode(int idx)
+{
+   std::string p;
+   getTableManager()->getNodePath(idx, p);
+   setPath(idx, p);
+}
+
+void FWGeometryTableViewBase::cdTop()
+{
+   std::string path = "/" ;
+   path += getTableManager()->refEntries().at(0).name();
+   setPath(-1, path ); 
+}
+
+void FWGeometryTableViewBase::cdUp()
+{   
+   if (getTopNodeIdx() != -1)
+   {
+      int pIdx = getTableManager()->refEntries()[getTopNodeIdx()].m_parent;
+      std::string p;
+      getTableManager()->getNodePath(pIdx, p);
+      setPath(pIdx, p);
+   }
+}
+
+void FWGeometryTableViewBase::setPath(int parentIdx, std::string&)
+{
+   m_eveTopNode->clearSelection();
+
+   printf("set path %d \n", parentIdx);
+   m_topNodeIdx.set(parentIdx);
+   // getTableManager()->refEntries().at(getTopNodeIdx()).setBitVal(FWGeometryTableManagerBase::kVisNodeSelf,!m_disableTopNode.value() );
+   getTableManager()->setLevelOffset(getTableManager()->refEntries().at(getTopNodeIdx()).m_level);
+ 
+
+   checkExpandLevel();
+   refreshTable3D(); 
+}
+
+//------------------------------------------------------------------------------
+
+void  FWGeometryTableViewBase::checkExpandLevel()
+{
+   // check expand state
+   int ae = m_autoExpand.value();
+   if ( m_topNodeIdx.value() > 0) 
+      ae += getTableManager()->refEntries().at(m_topNodeIdx.value()).m_level;
+
+   for (FWGeometryTableManagerBase::Entries_i i = getTableManager()->refEntries().begin(); i !=  getTableManager()->refEntries().end(); ++i)
+   {
+      if (i->m_level  < ae)
+         i->setBit(FWGeometryTableManagerBase::kExpanded);
+      else
+         i->resetBit(FWGeometryTableManagerBase::kExpanded);
+   } 
+}
+
+//==============================================================================
 
 void
 FWGeometryTableViewBase::populate3DViewsFromConfig()

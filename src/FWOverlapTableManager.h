@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.9 2012/02/13 01:10:21 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.10 2012/02/16 04:50:21 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
@@ -36,12 +36,14 @@ public:
    enum OverlapBits
    {
       kVisMarker    =  BIT(5),
-      kOverlap      =  BIT(6)
+      kOverlap      =  BIT(6),
+      kOverlapChild      =  BIT(7)
    };
    FWOverlapTableManager(FWOverlapTableView*);
    virtual ~FWOverlapTableManager();
 
   virtual void recalculateVisibility();
+  virtual void recalculateVisibilityNodeRec(int);
   void importOverlaps(std::string path, double precision);
    virtual int numberOfColumns() const {return 6;}
 
@@ -53,13 +55,13 @@ public:
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
-   virtual  const char* cellName(const NodeInfo& data) const;
+   //   virtual  const char* cellName(const NodeInfo& data) const;
 
 private:
    FWOverlapTableManager(const FWOverlapTableManager&); // stop default
    const FWOverlapTableManager& operator=(const FWOverlapTableManager&); // stop default
 
-  void addOverlapEntry(TGeoOverlap* ovl, TGeoHMatrix* motherm, TGeoNode* mothern, TGeoIterator& );
+   void addOverlapEntry(TGeoOverlap*, int, int , TGeoHMatrix*);
    FWOverlapTableView* m_browser;
 };
 
