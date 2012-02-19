@@ -33,46 +33,12 @@ void FWEveOverlap::Paint(Option_t*)
    std::advance(sit,topNodeIdx );
    TGeoHMatrix mtx;
 
+  if (sit->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
+    paintShape(*sit,  topNodeIdx,mtx, false );
+  
+  
+  if ( m_browser->getTableManager()->getVisibilityChld(*sit))
    paintChildNodesRecurse( sit, topNodeIdx, mtx);
-
-
-   /*
-     FWGeometryTableManagerBase::Entries_i parentIt = m_browser->getTableManager()->refEntries().begin();
-     bool visChld = false;
-     int cnt = 0;
-
-     for (FWGeometryTableManagerBase::Entries_i it = parentIt;
-     it != m_browser->getTableManager()->refEntries().end(); ++it, ++cnt)
-     {
-     if (it->m_parent == -1)
-     { 
-     if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-     paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-     }
-     else if (it->m_parent == 0)
-     {      
-     if ((m_browser->m_rnrOverlap.value() && it->testBit(FWOverlapTableManager::kOverlap)) ||
-     (m_browser->m_rnrExtrusion.value() && !it->testBit(FWOverlapTableManager::kOverlap)) )
-     {          
-     if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-     {
-     paintShape(*it, cnt, *(it->m_node->GetMatrix()), false);
-     }
-     visChld = it->testBit(FWGeometryTableManagerBase::kVisNodeChld);
-     }
-     else {
-     visChld = false;
-     }
-
-     parentIt = it;
-     }
-     else if (visChld && it->testBit(FWGeometryTableManagerBase::kVisNodeSelf) )
-     {  
-     TGeoHMatrix nm = *(parentIt->m_node->GetMatrix());
-     nm.Multiply(it->m_node->GetMatrix());
-     paintShape(*it, cnt , nm, false);
-     }
-     }*/
 }
 
 
@@ -97,9 +63,10 @@ void FWEveOverlap::paintChildNodesRecurse (FWGeometryTableManagerBase::Entries_i
       TGeoHMatrix nm = parentMtx;
       nm.Multiply(it->m_node->GetMatrix());
 
-      if (it->testBit(FWOverlapTableManager::kOverlap))
+      if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
          paintShape(*it, cnt , nm, false);
 
+     if ( it->testBit(FWGeometryTableManagerBase::kVisNodeChld) && it->testBit(FWOverlapTableManager::kOverlapChild))
          paintChildNodesRecurse(it,cnt , nm);
 
 

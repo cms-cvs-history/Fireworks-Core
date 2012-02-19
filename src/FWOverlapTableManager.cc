@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.18 2012/02/17 00:14:40 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.19 2012/02/18 04:39:17 amraktad Exp $
 //
 
 // system include files
@@ -84,43 +84,6 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    m_entries.resize(gGeoManager->GetNNodes());
    m_entries[0] = topNodeInfo;
 
-   /*
-
-     if (0) {
-
- 
-     //   importChildren(0);
-     TGeoNode* node;
-     TGeoIterator git(topNodeInfo.m_node->GetVolume());
-     Entries_i eit = m_entries.begin();
-     eit++;
-
-     int currentIdx = 1;
-
-     while ((node=git())) {
-     eit->m_node = node;
-     eit->m_color = node->GetVolume()->GetLineColor();
-     eit->m_level = git.GetLevel();
-     eit->m_parent = currentIdx;
-     Entries_i pit = eit;
-     do 
-     {
-     --pit;
-     --eit->m_parent;
-     if (pit->m_level <  eit->m_level) 
-     break;
-
-     } while (pit !=  m_entries.begin());
-
-     eit++;
-     currentIdx++;
-     }
-     }
-
-     if (1)
-   */
-
-
    m_entries.resize( gGeoManager->GetNNodes());
   
    TGeoVolume* topVol =  topNodeInfo.m_node->GetVolume();
@@ -157,6 +120,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    int topNodeIdx =  m_browser->getTopNodeIdx();
 
    while ((node=git())) {
+      if (!eit->testBit(kOverlap)) eit->resetBit(kVisNodeSelf);
       eit->m_node = node;
       eit->m_color = node->GetVolume()->GetLineColor();
       eit->m_level = git.GetLevel();
@@ -254,7 +218,8 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
          {
             // std::string x = re[0].Data();
             //if (x.find(n->GetName()) == std::string::npos) printf("ERROT \n");
-            m_entries[cnt].setBit(kOverlap);
+           m_entries[cnt].setBit(kOverlap);
+           m_entries[cnt].setBit(kVisNodeSelf);
 
             n->SetOverlaps(0, 0);
             int* ovlRef = new int[1];
@@ -270,7 +235,8 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
          // std::string x = re[2].Data();
          // if (x.find(n->GetName()) == std::string::npos) printf("ERROT \n");
 
-         m_entries[cnt].setBit(kOverlap);
+        m_entries[cnt].setBit(kOverlap);
+        m_entries[cnt].setBit(kVisNodeSelf);
 
 
          n->SetOverlaps(0, 0);
@@ -300,6 +266,7 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
    int aIdx = parentIdx;
    int aLev = m_entries[aIdx].m_level;
    m_entries[aIdx].setBit(kOverlapChild);
+  m_entries[aIdx].setBit(kVisNodeChld);
    int topNodeIdx =  m_browser->getTopNodeIdx();
 
    while(aIdx > topNodeIdx)
@@ -307,7 +274,8 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
       aIdx--;
       if (m_entries[aIdx].m_level < aLev)
       {
-         m_entries[aIdx].setBit(kOverlapChild);
+        m_entries[aIdx].setBit(kOverlapChild);
+        m_entries[aIdx].setBit(kVisNodeChld);
          //  printf("stamp %s \n", m_entries[aIdx].name());
          aLev--;
       }
@@ -320,8 +288,6 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
 void FWOverlapTableManager::recalculateVisibility( )
 {
    m_row_to_index.clear();
-   m_levelOffset = 3;
-
    int i = m_browser->getTopNodeIdx();
    m_row_to_index.push_back(i);
 
@@ -353,7 +319,7 @@ void FWOverlapTableManager::recalculateVisibilityNodeRec( int pIdx)
 
 bool  FWOverlapTableManager::nodeIsParent(const NodeInfo& data) const
 {
-   return   (data.m_node->GetNdaughters() != 0) ;
+   return   data.testBit(kOverlapChild) ;
 }
 
 //______________________________________________________________________________
@@ -420,12 +386,30 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
    {
       m_highlightContext->SetBackground(0xdddddd);
       }*/
-
-   if (iCol == 0)
-   {
+  
+  if (iCol == 0)
+  {
+    if (unsortedRow == m_browser->getTopNodeIdx())
+    {
+      int no = 0, ne =0;
+      TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+      TIter next_ovl(gGeoManager->GetListOfOverlaps());
+      const TGeoOverlap* ovl;
+      while((ovl = (TGeoOverlap*)next_ovl())) 
+        ovl->IsOverlap() ? no++ : ne++;
+      
+      m_renderer.setData(Form("%s Ovl[%d] Ext[%d]", data.m_node->GetName(), no, ne), isSelected);
+    }
+    else if (!data.testBit(kOverlap) ) 
+    {
       m_renderer.setData(data.name(), isSelected); 
-
-      m_renderer.setIsParent(nodeIsParent(data));
+    }
+    else
+    {
+      const TGeoOverlap* o = referenceOverlap(unsortedRow);
+      m_renderer.setData(Form("%s %s", o->IsOverlap() ? "Ovl:": "Extr:",data.name() ), isSelected);
+    }
+    m_renderer.setIsParent(nodeIsParent(data));
 
       m_renderer.setIsOpen( data.testBit(FWGeometryTableManagerBase::kExpanded));
 
@@ -437,20 +421,18 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
    }
    else
    {
-      // printf("title %s \n",data.m_node->GetTitle() );
       m_renderer.setIsParent(false);
       m_renderer.setIndentation(0);
 
       if (iCol == 4)
       {
-         if (0 && data.m_parent == 0 ) 
+         if (data.testBit(kOverlap) ) 
             m_renderer.setData(Form("%g ", referenceOverlap(unsortedRow)->GetOverlap() ),  isSelected);
          else
             m_renderer.setData("",  isSelected);
       }
       if (iCol == 1)
       {
-         // m_colorBoxRenderer.setData(data.m_node->GetVolume()->GetLineColor(), isSelected);
          m_colorBoxRenderer.setData(data.m_color, isSelected);
          return  &m_colorBoxRenderer;
       }

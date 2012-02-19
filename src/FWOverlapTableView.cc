@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.13 2012/02/17 01:13:10 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.14 2012/02/18 04:39:17 amraktad Exp $
 //
 
 // system include files
@@ -171,6 +171,8 @@ void FWOverlapTableView::recalculate()
    //  m_precision.set(m_numEntry->GetNumber());
    // std::cout << "                             $$$$ " << m_path.value() << std::endl;
    m_tableManager->importOverlaps(m_path.value(), m_precision.value());
+  checkExpandLevel();
+  getTableManager()->setLevelOffset(getTableManager()->refEntries().at(getTopNodeIdx()).m_level);
    refreshTable3D();
 }
 
@@ -178,8 +180,6 @@ void FWOverlapTableView::recalculate()
 //______________________________________________________________________________
 void FWOverlapTableView::setFrom(const FWConfiguration& iFrom)
 {
-   
-
   m_enableRedraw = false;
    for(const_iterator it =begin(), itEnd = end();
        it != itEnd;
@@ -188,10 +188,10 @@ void FWOverlapTableView::setFrom(const FWConfiguration& iFrom)
 
    }  
    m_viewersConfig = iFrom.valueForKey("Viewers");
-
-   //   m_pathEntry->SetText(m_path.value().c_str());
-   // m_pathEntry->SetCursorPosition(m_path.value().size());
    m_numEntry->SetNumber(m_precision.value());
+  
+  
+//  refreshTable3D();
    m_enableRedraw = true;
    recalculate();
 }
