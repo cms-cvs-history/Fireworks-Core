@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.22 2012/02/19 18:06:48 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.23 2012/02/19 20:55:13 amraktad Exp $
 //
 
 // system include files
@@ -213,7 +213,6 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
       re.Split(TString(ovl->GetTitle()));
       printf("add title %s \n", ovl->GetTitle());
    */
-
    int pcnt = parentIdx+1;
    int dOff =0;
    TGeoNode* mothern = m_entries[parentIdx].m_node;
@@ -229,9 +228,12 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
          {
             // std::string x = re[0].Data();
             //if (x.find(n->GetName()) == std::string::npos) printf("ERROT \n");
+
            m_entries[cnt].setBit(kOverlap);
            m_entries[cnt].setBit(kVisNodeSelf);
            m_mapNodeOverlaps.insert(std::pair<int, int>(cnt, ovlIdx));
+           int nno; n->GetOverlaps(nno); 
+           nno |= BIT(1); n->SetOverlaps(0, nno); 
          }
 
       }
@@ -245,7 +247,11 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
         m_entries[cnt].setBit(kOverlap);
         m_entries[cnt].setBit(kVisNodeSelf);
         
-        m_mapNodeOverlaps.insert(std::pair<int, int>(cnt, ovlIdx));
+        m_mapNodeOverlaps.insert(std::pair<int, int>(cnt, ovlIdx));        
+        int nno; n->GetOverlaps(nno); 
+        nno |= (ovl->IsOverlap()  ? BIT(1) : BIT(2)); 
+        n->SetOverlaps(0, nno); 
+        
       }
 
 

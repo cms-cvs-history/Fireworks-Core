@@ -46,34 +46,49 @@ void FWEveOverlap::Paint(Option_t*)
 // ______________________________________________________________________
 void FWEveOverlap::paintChildNodesRecurse (FWGeometryTableManagerBase::Entries_i pIt, Int_t cnt, const TGeoHMatrix& parentMtx)
 { 
-   TGeoNode* parentNode =  pIt->m_node;
-   int nD = parentNode->GetNdaughters();
+  TGeoNode* parentNode =  pIt->m_node;
+  int nD = parentNode->GetNdaughters();
+  
+  int dOff=0;
+  
+  pIt++;
+  int pcnt = cnt+1;
+  
+  FWGeometryTableManagerBase::Entries_i it;
+  for (int n = 0; n != nD; ++n)
+  {
+    it =  pIt;
+    std::advance(it,n + dOff);
+    cnt = pcnt + n+dOff;
+    
+    TGeoHMatrix nm = parentMtx;
+    nm.Multiply(it->m_node->GetMatrix());
+    
+    
+    if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
+    {
+      if (it->testBit(FWOverlapTableManager::kOverlap))
+      {
+        int nno;it->m_node->GetOverlaps(nno);
+        if ( (m_browser->m_rnrOverlap.value() && ((nno & BIT(1)) == BIT(1)) ) 
+            || (m_browser->m_rnrExtrusion.value() && ((nno & BIT(2)) == BIT(2)) ))
+        {
+          paintShape(*it, cnt , nm, false);
+        }
+        
+      }
+      else
+      {
+        paintShape(*it, cnt , nm, false);
+      }
+    }
+    if ( it->testBit(FWGeometryTableManagerBase::kVisNodeChld) && it->testBit(FWOverlapTableManager::kOverlapChild))
+      paintChildNodesRecurse(it,cnt , nm);
+    
 
-   int dOff=0;
-
-   pIt++;
-   int pcnt = cnt+1;
-
-   FWGeometryTableManagerBase::Entries_i it;
-   for (int n = 0; n != nD; ++n)
-   {
-      it =  pIt;
-      std::advance(it,n + dOff);
-      cnt = pcnt + n+dOff;
-
-      TGeoHMatrix nm = parentMtx;
-      nm.Multiply(it->m_node->GetMatrix());
-
-      if (it->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
-         paintShape(*it, cnt , nm, false);
-
-     if ( it->testBit(FWGeometryTableManagerBase::kVisNodeChld) && it->testBit(FWOverlapTableManager::kOverlapChild))
-         paintChildNodesRecurse(it,cnt , nm);
-
-
-
-      FWGeometryTableManagerBase::getNNodesTotal(parentNode->GetDaughter(n), dOff);  
-   }
+  
+  FWGeometryTableManagerBase::getNNodesTotal(parentNode->GetDaughter(n), dOff);  
+  }
 }
 
 
