@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.14 2012/02/18 04:39:17 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.15 2012/02/19 07:44:20 amraktad Exp $
 //
 
 // system include files
@@ -323,24 +323,25 @@ void FWOverlapTableView::chosenItem(int menuIdx)
 //______________________________________________________________________________
 void FWOverlapTableView::refreshTable3D()
 {
-   if (!m_enableRedraw) return;
-   FWGeometryTableViewBase::refreshTable3D();
+  using namespace TMath;
+  if (!m_enableRedraw) return;
+  FWGeometryTableViewBase::refreshTable3D();
   
-   std::vector<float> pnts;
-   int cnt = 0;
-
-   //   std::cout << "WOverlapTableView::refreshTable3D() "<< std::endl;
-   for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
-   {
-      FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(*i);
-      if ( //data.testBit(FWOverlapTableManager::kVisMarker)  && 
-	((data.testBit(FWOverlapTableManager::kOverlap) && m_rnrOverlap.value()) ||  (!data.testBit(FWOverlapTableManager::kOverlap) && m_rnrExtrusion.value() ))) 
-      {
-         pnts.push_back(m_markerVertices[cnt]);
-         pnts.push_back(m_markerVertices[cnt+1]);
-         pnts.push_back(m_markerVertices[cnt+2]);
-      }
-   } 
+  std::vector<float> pnts;
+  int cnt = 0;
+  
+  //   std::cout << "WOverlapTableView::refreshTable3D() "<< std::endl;
+  for (std::vector<int>::iterator i = m_markerIndices.begin(); i!=m_markerIndices.end(); i++, cnt+=3)
+  {
+    FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(Abs(*i));
+    if ( data.testBit(FWOverlapTableManager::kVisMarker)  && 
+        ( (( *i > 0 ) && m_rnrOverlap.value()) ||  (*i < 0) && m_rnrExtrusion.value()) ) 
+    {
+      pnts.push_back(m_markerVertices[cnt]);
+      pnts.push_back(m_markerVertices[cnt+1]);
+      pnts.push_back(m_markerVertices[cnt+2]);
+    }
+  } 
   
    m_marker->SetPolyMarker(int(pnts.size()/3), &pnts[0], 4);
    m_marker->ElementChanged();

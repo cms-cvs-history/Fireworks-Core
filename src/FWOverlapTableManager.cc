@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.20 2012/02/19 07:44:20 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.21 2012/02/19 17:22:45 amraktad Exp $
 //
 
 // system include files
@@ -126,7 +126,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       eit->m_parent = icheck;
      
      if ((topNodeIdx )== icheck || !topNodeIdx  ) { 
-       printf("start to check overlaps on topNodeIdx %s \n", eit->name());
+     //  printf("start to check overlaps on topNodeIdx %s \n", eit->name());
        checkingOverlaps=true;
      }
      else if (checkingOverlaps && ( eit->m_level <= m_entries[m_browser->getTopNodeIdx()].m_level)) 
@@ -152,7 +152,12 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
             node->GetVolume()->CheckOverlaps(iPrecision);
 
             if (oldS !=  gGeoManager->GetListOfOverlaps()->GetEntriesFast()) {
-               printf("mother %s overlaps \n", node->GetName());
+              // printf("mother %s overlaps \n", node->GetName());
+            
+              eit->setBit(kOverlapChild);
+              eit->setBit(kVisNodeChld);              
+              eit->setBit(kVisMarker);
+              
                TGeoHMatrix* motherm = new TGeoHMatrix(*geom->GetCurrentMatrix());        
                {
                   TGeoNode* ni = topNodeInfo.m_node;
@@ -261,7 +266,8 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
       double pg[3];
       pm->GetPoint(j, pl[0], pl[1], pl[2]);
       motherm->LocalToMaster(pl, pg);
-      m_browser->m_markerIndices.push_back(parentIdx);
+     m_browser->m_markerIndices.push_back(ovl->IsExtrusion() ? -parentIdx : parentIdx);
+     
       m_browser->m_markerVertices.push_back( pg[0]);
       m_browser->m_markerVertices.push_back( pg[1]);
       m_browser->m_markerVertices.push_back( pg[2]);
@@ -270,8 +276,6 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
 
    int aIdx = parentIdx;
    int aLev = m_entries[aIdx].m_level;
-   m_entries[aIdx].setBit(kOverlapChild);
-  m_entries[aIdx].setBit(kVisNodeChld);
    int topNodeIdx =  m_browser->getTopNodeIdx();
 
    while(aIdx > topNodeIdx)
@@ -292,7 +296,7 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
 
 void FWOverlapTableManager::recalculateVisibility( )
 {
-  printf("overlap recalcuate vis \n");
+ // printf("overlap recalcuate vis \n");
    m_row_to_index.clear();
    int i = m_browser->getTopNodeIdx();
    m_row_to_index.push_back(i);
@@ -454,10 +458,19 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
       }
       else if (iCol == 5)
       { 
-         if (data.m_parent == 0) 
-            m_renderer.setData(data.testBit(kVisMarker) ? "On" : "-" , isSelected);
-         else 
-            m_renderer.setData("", isSelected);
+        bool motherV = false;
+        if (data.testBit(kOverlapChild))
+        {
+          for (std::vector<int>::iterator i = m_browser->m_markerIndices.begin(); i!= m_browser->m_markerIndices.end(); i++)
+          {
+            if (TMath::Abs(*i) == unsortedRow) {
+              motherV = true;
+              break;
+            }
+          }
+        }
+
+        m_renderer.setData(motherV ? (data.testBit(kVisMarker) ? "On" : "-") : "", isSelected);         
       }
    }
    return &m_renderer;
