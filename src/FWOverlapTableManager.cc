@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.19 2012/02/18 04:39:17 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.20 2012/02/19 07:44:20 amraktad Exp $
 //
 
 // system include files
@@ -69,7 +69,6 @@ std::vector<std::string> FWOverlapTableManager::getTitles() const
 //---------------------------------------------------------------------------------
 void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
-
    m_entries.clear();
    m_browser->m_markerVertices.clear();
    m_browser->m_markerIndices.clear();
@@ -101,7 +100,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
    int oldS = 0;
    timer->Start();
    geom->GetGeomPainter()->OpProgress(topVol->GetName(),icheck,ncheck,timer,kFALSE);
-   topVol->CheckOverlaps(iPrecision);
+//   topVol->CheckOverlaps(iPrecision);
    icheck++;
    TGeoIterator git(topVol);
    Entries_i eit = m_entries.begin();
@@ -125,9 +124,15 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
       eit->m_color = node->GetVolume()->GetLineColor();
       eit->m_level = git.GetLevel();
       eit->m_parent = icheck;
-      if (topNodeIdx == icheck || !topNodeIdx  ) checkingOverlaps=true;
-
-      if (checkingOverlaps && ( eit->m_level < m_entries[m_browser->getTopNodeIdx()].m_level))  checkingOverlaps=false;
+     
+     if ((topNodeIdx )== icheck || !topNodeIdx  ) { 
+       printf("start to check overlaps on topNodeIdx %s \n", eit->name());
+       checkingOverlaps=true;
+     }
+     else if (checkingOverlaps && ( eit->m_level <= m_entries[m_browser->getTopNodeIdx()].m_level)) 
+     {
+       checkingOverlaps=false;
+     }
       // parent index
       Entries_i pit = eit;
       do 
@@ -147,7 +152,7 @@ void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
             node->GetVolume()->CheckOverlaps(iPrecision);
 
             if (oldS !=  gGeoManager->GetListOfOverlaps()->GetEntriesFast()) {
-
+               printf("mother %s overlaps \n", node->GetName());
                TGeoHMatrix* motherm = new TGeoHMatrix(*geom->GetCurrentMatrix());        
                {
                   TGeoNode* ni = topNodeInfo.m_node;
@@ -287,11 +292,12 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
 
 void FWOverlapTableManager::recalculateVisibility( )
 {
+  printf("overlap recalcuate vis \n");
    m_row_to_index.clear();
    int i = m_browser->getTopNodeIdx();
    m_row_to_index.push_back(i);
 
-   
+  if (m_entries[i].testBit(kExpanded)  )
    recalculateVisibilityNodeRec(i);
 
 }
