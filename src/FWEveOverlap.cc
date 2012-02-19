@@ -27,11 +27,12 @@ void FWEveOverlap::Paint(Option_t*)
 
    TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
 
+  
+  int topNodeIdx =  m_browser->getTopNodeIdx();
 
-   FWGeometryTableManagerBase::Entries_i sit = m_browser->getTableManager()->refEntries().begin(); 
-   int topNodeIdx =  m_browser->getTopNodeIdx();
-   std::advance(sit,topNodeIdx );
-   TGeoHMatrix mtx;
+  FWGeometryTableManagerBase::Entries_i sit = m_browser->getTableManager()->refEntries().begin();    std::advance(sit,topNodeIdx );
+  TGeoHMatrix mtx;
+    m_browser->getTableManager()->getNodeMatrix(*sit, mtx);
 
   if (sit->testBit(FWGeometryTableManagerBase::kVisNodeSelf))
     paintShape(*sit,  topNodeIdx,mtx, false );
