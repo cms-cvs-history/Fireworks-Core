@@ -16,14 +16,14 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:34:38 CET 2012
-// $Id: FWOverlapTableManager.h,v 1.1.2.10 2012/02/16 04:50:21 amraktad Exp $
+// $Id: FWOverlapTableManager.h,v 1.1.2.11 2012/02/18 04:39:17 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableManagerBase.h"
 #include "TGeoMatrix.h"
 #include "TGeoNode.h"
 #include "TGeoOverlap.h"
-
+#include <map>
 
 
 class FWOverlapTableView;
@@ -49,9 +49,10 @@ public:
 
    virtual std::vector<std::string> getTitles() const;
  
-   FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
-
-   const TGeoOverlap* referenceOverlap(int idx) const;
+  FWTableCellRendererBase* cellRenderer(int iSortedRowNumber, int iCol) const;
+  
+  void getOverlapTitles(int,TString&) const;
+  void printOverlaps(int) const;
 
 protected:
    virtual bool nodeIsParent(const NodeInfo&) const;
@@ -63,6 +64,8 @@ private:
 
    void addOverlapEntry(TGeoOverlap*, int, int , TGeoHMatrix*);
    FWOverlapTableView* m_browser;
+  
+  std::multimap<int, int> m_mapNodeOverlaps;
 };
 
 

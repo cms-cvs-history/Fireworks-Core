@@ -126,35 +126,14 @@ TString  FWEveOverlap::GetHighlightTooltip()
      {
      return Form("TopNode ");
      }
+  FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
     
- 
+      TString name = data.name();
+  if (data.testBit(FWOverlapTableManager::kOverlap)) {
 
-      FWGeometryTableManagerBase::NodeInfo& data = m_browser->getTableManager()->refEntries().at(idx);
-
+    ((FWOverlapTableManager*)m_browser->getTableManager())->getOverlapTitles(idx, name);
+    return name; 
+  }
 
       return data.name();
-     /*
-     if (data.m_parent <= 0)
-     {
-     return data.name();
-     }
-     else {
-     TString pname =  m_browser->getTableManager()->refEntries().at(data.m_parent).name();
-     TString text;
-     const TGeoOverlap* ovl =  ((FWOverlapTableManager*)m_browser->getTableManager())->referenceOverlap(idx);
-     text =  data.name();
-     text += Form("\noverlap = %g cm", ovl->GetOverlap());
-
-     if (ovl->IsOverlap()) 
-     {
-     int nidx = (idx == (data.m_parent + 1) ) ? (data.m_parent + 2) : (data.m_parent + 1);
-     text += Form("\nsister = %s", m_browser->getTableManager()->refEntries().at(nidx).name() );
-     }
-     else
-     {  
-     text += Form("\nmother = %s",m_browser->getTableManager()->refEntries().at(data.m_parent).m_node->GetVolume()->GetName());
-     }
-     return text.Data();
-     }
-   */
 }

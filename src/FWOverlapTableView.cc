@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.15 2012/02/19 07:44:20 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.16 2012/02/19 18:06:48 amraktad Exp $
 //
 
 // system include files
@@ -305,8 +305,7 @@ void FWOverlapTableView::chosenItem(int menuIdx)
          case FWEveOverlap::kOvlPrintOvl:
          {
             std::cout << "=============================================================================" <<  std::endl << std::endl;
-            const TGeoOverlap* o = m_tableManager->referenceOverlap(m_eveTopNode->getFirstSelectedTableIndex());
-            if (o) o->Print();
+           m_tableManager->printOverlaps(m_eveTopNode->getFirstSelectedTableIndex());
             break;
          }
          case FWEveOverlap::kOvlPrintPath:
@@ -335,7 +334,7 @@ void FWOverlapTableView::refreshTable3D()
   {
     FWGeometryTableManagerBase::NodeInfo& data = m_tableManager->refEntries().at(Abs(*i));
     if ( data.testBit(FWOverlapTableManager::kVisMarker)  && 
-        ( (( *i > 0 ) && m_rnrOverlap.value()) ||  (*i < 0) && m_rnrExtrusion.value()) ) 
+        ( (( *i > 0 ) && m_rnrOverlap.value()) ||  ((*i < 0) && m_rnrExtrusion.value()) )) 
     {
       pnts.push_back(m_markerVertices[cnt]);
       pnts.push_back(m_markerVertices[cnt+1]);

@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 20:31:32 CET 2012
-// $Id: FWOverlapTableManager.cc,v 1.1.2.21 2012/02/19 17:22:45 amraktad Exp $
+// $Id: FWOverlapTableManager.cc,v 1.1.2.22 2012/02/19 18:06:48 amraktad Exp $
 //
 
 // system include files
@@ -70,7 +70,8 @@ std::vector<std::string> FWOverlapTableManager::getTitles() const
 void FWOverlapTableManager::importOverlaps(std::string iPath, double iPrecision)
 {
    m_entries.clear();
-   m_browser->m_markerVertices.clear();
+  m_mapNodeOverlaps.clear();
+  m_browser->m_markerVertices.clear();
    m_browser->m_markerIndices.clear();
 
    TEveGeoManagerHolder mangeur( FWGeometryTableViewManager::getGeoMangeur());
@@ -230,11 +231,7 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
             //if (x.find(n->GetName()) == std::string::npos) printf("ERROT \n");
            m_entries[cnt].setBit(kOverlap);
            m_entries[cnt].setBit(kVisNodeSelf);
-
-            n->SetOverlaps(0, 0);
-            int* ovlRef = new int[1];
-            ovlRef[0]=ovlIdx;
-            n->SetOverlaps(&ovlRef[0],1);
+           m_mapNodeOverlaps.insert(std::pair<int, int>(cnt, ovlIdx));
          }
 
       }
@@ -247,12 +244,8 @@ void FWOverlapTableManager::addOverlapEntry(TGeoOverlap* ovl, int ovlIdx,  Int_t
 
         m_entries[cnt].setBit(kOverlap);
         m_entries[cnt].setBit(kVisNodeSelf);
-
-
-         n->SetOverlaps(0, 0);
-         int* ovlRef = new int[1];
-         ovlRef[0]=ovlIdx;
-         n->SetOverlaps(&ovlRef[0],1);
+        
+        m_mapNodeOverlaps.insert(std::pair<int, int>(cnt, ovlIdx));
       }
 
 
@@ -332,21 +325,32 @@ bool  FWOverlapTableManager::nodeIsParent(const NodeInfo& data) const
    return   data.testBit(kOverlapChild) ;
 }
 
-//______________________________________________________________________________
-
-const TGeoOverlap*  FWOverlapTableManager::referenceOverlap(int x) const 
+void FWOverlapTableManager::printOverlaps(int idx) const
 {
-   int no;
-   int* ii = m_entries[x].m_node->GetOverlaps(no);
-   //printf("Num overlaps %d \n", no);
-   TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
-   if (no)
-      return (TGeoOverlap*)gGeoManager->GetListOfOverlaps()->At(ii[0]);
-
-   return 0;
+  
+  TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+  std::pair<std::multimap<int, int>::const_iterator, std::multimap<int, int>::const_iterator> ppp;
+  ppp = m_mapNodeOverlaps.equal_range(idx);
+  for (std::multimap<int, int>::const_iterator it2 = ppp.first;it2 != ppp.second;++it2) {
+    const TGeoOverlap* ovl = (const TGeoOverlap*) gGeoManager->GetListOfOverlaps()->At((*it2).second);
+    if (ovl) ovl->Print();
+  }    
 }
-   
 
+void FWOverlapTableManager::getOverlapTitles(int idx, TString& txt) const
+{
+  
+  TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+  std::pair<std::multimap<int, int>::const_iterator, std::multimap<int, int>::const_iterator> ppp;
+  ppp = m_mapNodeOverlaps.equal_range(idx);
+  for (std::multimap<int, int>::const_iterator it2 = ppp.first;it2 != ppp.second;++it2) {
+    const TGeoOverlap* ovl = (const TGeoOverlap*) gGeoManager->GetListOfOverlaps()->At((*it2).second);
+    {
+      txt += "\n";
+
+    if (ovl) txt += ovl->GetTitle();    }
+  }    
+}
 //______________________________________________________________________________
 /*
 const char* FWOverlapTableManager::cellName(const NodeInfo& data) const
@@ -410,14 +414,8 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
       
       m_renderer.setData(Form("%s Ovl[%d] Ext[%d]", data.m_node->GetName(), no, ne), isSelected);
     }
-    else if (!data.testBit(kOverlap) ) 
-    {
-      m_renderer.setData(data.name(), isSelected); 
-    }
-    else
-    {
-      const TGeoOverlap* o = referenceOverlap(unsortedRow);
-      m_renderer.setData(Form("%s %s", o->IsOverlap() ? "Ovl:": "Extr:",data.name() ), isSelected);
+    else {
+    m_renderer.setData(data.name(), isSelected); 
     }
     m_renderer.setIsParent(nodeIsParent(data));
 
@@ -437,9 +435,27 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
       if (iCol == 4)
       {
          if (data.testBit(kOverlap) ) 
-            m_renderer.setData(Form("%g ", referenceOverlap(unsortedRow)->GetOverlap() ),  isSelected);
+         {
+           std::string x;
+           std::pair<std::multimap<int, int>::const_iterator, std::multimap<int, int>::const_iterator> ppp;
+          ppp = m_mapNodeOverlaps.equal_range(unsortedRow);
+
+           TEveGeoManagerHolder gmgr( FWGeometryTableViewManager::getGeoMangeur());
+           
+           for (std::multimap<int, int>::const_iterator it2 = ppp.first;it2 != ppp.second;++it2) {
+             const TGeoOverlap* ovl = (const TGeoOverlap*) gGeoManager->GetListOfOverlaps()->At((*it2).second);
+             if (ovl)
+               x +=  Form("%s: %g ", ovl->IsOverlap() ? "Ovl" : "Extr", ovl->GetOverlap());
+             else
+               x += "err";
+             
+           }
+           m_renderer.setData(x,  isSelected);
+         }
          else
+         {
             m_renderer.setData("",  isSelected);
+         }
       }
       if (iCol == 1)
       {
@@ -475,3 +491,6 @@ FWTableCellRendererBase* FWOverlapTableManager::cellRenderer(int iSortedRowNumbe
    }
    return &m_renderer;
 }
+
+
+
