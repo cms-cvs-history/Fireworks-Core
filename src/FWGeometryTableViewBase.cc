@@ -333,7 +333,7 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
 
          if (sel) {
             int idx =getTableManager()->rowToIndex()[iRow];
-	    printf("cell clicled top node %p\n", (void*)m_eveTopNode);
+	          // printf("cell clicled top node %p\n", (void*)m_eveTopNode);
             if (gEve->GetSelection()->HasChild( m_eveTopNode))
                gEve->GetSelection()->RemoveElement( m_eveTopNode);
 
@@ -342,10 +342,13 @@ FWGeometryTableViewBase::cellClicked(Int_t iRow, Int_t iColumn, Int_t iButton, I
 
             bool a = m_eveTopNode->selectPhysicalFromTable(idx);
             if (a)
+            {
                gEve->GetSelection()->AddElement( m_eveTopNode);
-  
-            gEve->Redraw3D();
-
+            }
+            else {
+              int si = m_eveTopNode->getFirstSelectedTableIndex();
+              if (si >= 0) getTableManager()->refEntries().at(si).resetBit(FWGeometryTableManagerBase::kSelected);
+            }
             ni.setBit(FWGeometryTableManagerBase::kSelected);
             getTableManager()->redrawTable();
 	 }
