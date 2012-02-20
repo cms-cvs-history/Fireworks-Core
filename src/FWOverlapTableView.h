@@ -16,7 +16,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:31 CET 2012
-// $Id: FWOverlapTableView.h,v 1.1.2.7 2012/02/16 04:50:21 amraktad Exp $
+// $Id: FWOverlapTableView.h,v 1.1.2.8 2012/02/18 04:39:17 amraktad Exp $
 //
 
 #include "Fireworks/Core/interface/FWGeometryTableViewBase.h"
@@ -38,13 +38,13 @@ public:
 
    virtual  FWGeometryTableManagerBase*  getTableManager(); 
    
-   void pathListCallback();
+
    void precisionCallback(Long_t);
    void recalculate();
 
    virtual void setFrom(const FWConfiguration&);
    virtual void populateController(ViewerParameterGUI&) const;
- 
+  virtual void setPath(int, std::string&); 
    void drawPoints();
    void pointSize();
 
