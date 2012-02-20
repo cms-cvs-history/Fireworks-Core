@@ -8,7 +8,7 @@
 //
 // Original Author:  
 //         Created:  Wed Jan  4 00:06:35 CET 2012
-// $Id: FWOverlapTableView.cc,v 1.1.2.17 2012/02/19 20:55:13 amraktad Exp $
+// $Id: FWOverlapTableView.cc,v 1.1.2.18 2012/02/20 01:36:10 amraktad Exp $
 //
 
 // system include files
@@ -222,6 +222,7 @@ void FWOverlapTableView::setPath(int i, std::string& s)
 {
   FWGeometryTableViewBase::setPath(i, s);
    std::cout << sUpdateMsg;
+ // recalculate();
 }
 //______________________________________________________________________________
 
