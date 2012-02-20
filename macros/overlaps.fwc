@@ -281,9 +281,6 @@
     <config name="TopNodeIndex" version="0">
       <string>1791211</string>
     </config>
-    <config name="Precision" version="0">
-      <string>1</string>
-    </config>
     <config name="Overlap" version="0">
       <string>1</string>
     </config>
