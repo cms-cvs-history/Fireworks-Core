@@ -16,7 +16,7 @@
 //
 // Original Author:  Alja Mrak-Tadel, Matevz Tadel
 //         Created:  Thu Jan 27 14:50:40 CET 2011
-// $Id: FWGeometryTableManagerBase.h,v 1.1.2.4 2012/01/19 00:07:25 amraktad Exp $
+// $Id: FWGeometryTableManagerBase.h,v 1.1.2.5 2012/02/16 04:50:38 amraktad Exp $
 //
 
 #include <sigc++/sigc++.h>
@@ -188,7 +188,8 @@ public:
 
    virtual void recalculateVisibility() = 0;
 
-
+  
+   virtual bool cellDataIsSortable() const { return false ; }
    // ---------- member data --------------------------------
    
    
