@@ -288,26 +288,17 @@ FWGeometryTableViewBase::selectView(int idx)
    TEveScene* s = 0;         
    for (TEveElement::List_i eit = v->BeginChildren(); eit != v->EndChildren(); ++eit ){
       TEveScene* ts = ((TEveSceneInfo*)*eit)->GetScene();
-      if (m_eveTopNode && ts->HasChildren() && (*ts->BeginChildren()) == m_eveTopNode) {
-         s = ts;
-         break;
+      if ((((TEveSceneInfo*)(*eit))->GetScene()) == m_eveScene) {
+        v->RemoveElement(*eit);
+        if (m_marker) getMarkerScene(v)->RemoveElement(m_marker);
+        gEve->Redraw3D();
+        return;
       }
    }
 
-   if (s == 0) {
-      s = new TEveScene(Form("%s %s", typeName().c_str(), v->GetElementName()));
-      gEve->AddElement(s, gEve->GetScenes());
-      s->AddElement(m_eveTopNode);
-      if (m_marker) getMarkerScene(v)->AddElement(m_marker);
-      v->AddScene(s);
-   }
-   else
-   {
-      s->RemoveElement(m_eveTopNode);
-      if (m_marker) getMarkerScene(v)->RemoveElement(m_marker);
-   }
-
-   m_eveTopNode->ElementChanged();
+  
+  if (m_marker) getMarkerScene(v)->AddElement(m_marker); 
+   v->AddScene(m_eveScene);
    gEve->Redraw3D();
 }
 
