@@ -1,2 +1,2 @@
-5.2-0
-DataFormats: CMSSW_5_2_0
+5.2-1
+DataFormats: CMSSW_5_2_5
