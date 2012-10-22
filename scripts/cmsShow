@@ -73,6 +73,7 @@ checkXConnection()
      fi
    fi
 
+
    # Require ZQuartz on 10.7 to avoid X11 freeze
    if [ f$osname = f"Darwin" ]; then
       osvt=`sw_vers -productVersion | awk '{if ( $1 >= 10.7 && $1 < 10.8 ) print $1;}'`
@@ -80,7 +81,9 @@ checkXConnection()
          # echo "check quatz"
          dispXOrg=`glxinfo | grep display | grep xquartz`
          if [ -z "$dispXOrg" ]; then
-            echo "WARNING: XQuartz installation is required on OSX 10.7."
+            echo "WARNING: XQuartz installation is required on OSX 10.7. More info:"
+            echo "         https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookFireworksHowToFix"
+            echo ""
          fi;
       fi;
    fi;
