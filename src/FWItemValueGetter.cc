@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Sun Nov 30 16:15:43 EST 2008
-// $Id: FWItemValueGetter.cc,v 1.8 2011/08/20 03:48:40 amraktad Exp $
+// $Id: FWItemValueGetter.cc,v 1.11 2012/12/02 09:49:59 amraktad Exp $
 //
 
 // system include files
@@ -59,7 +59,7 @@ FWItemValueGetter::FWItemValueGetter(const Reflex::Type& iType, const std::strin
       addEntry("pairMomentum().eta()", 2, "eta");
       addEntry("pairMomentum().phi()", 2, "phi");
    }
-   else if (strstr(iPurpose.c_str(), "Candidate") )
+   else if (strstr(iPurpose.c_str(), "Candidate") || strstr(iPurpose.c_str(), "GenParticle"))
    {
       addEntry("pdgId()", 0, "pdg");
       bool x = addEntry("pt", 1);
