@@ -8,7 +8,7 @@
 //
 // Original Author:  Chris Jones
 //         Created:  Thu Feb 21 11:22:41 EST 2008
-// $Id: FWTableView.cc,v 1.35 2013/04/03 20:17:18 amraktad Exp $
+// $Id: FWTableView.cc,v 1.36 2013/04/09 05:00:07 amraktad Exp $
 //
 
 // system include files
@@ -19,6 +19,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "TMath.h"
 #include "TClass.h"
 #include "TSystem.h"
 #include "TGComboBox.h"
@@ -446,6 +447,8 @@ FWTableView::saveImageTo(const std::string& /*iName*/) const
    FWTextTableCellRenderer* textRenderer;
 
    // calculate widths
+   int ndheader = TMath::Ceil(TMath::Log10(m_tableManager->numberOfRows()));
+  
    std::vector<size_t> widths(m_tableManager->numberOfColumns());
 
    for (int c = 0; c < m_tableManager->numberOfColumns(); ++c )
@@ -468,13 +471,20 @@ FWTableView::saveImageTo(const std::string& /*iName*/) const
    rlen++;
 
 
-
+   // header
    printf("\n"); 
+   TString headerFormat;
+   headerFormat.Form("%%%ds",ndheader +3);
+   data.Form(headerFormat, "  ");
+   printf("%s", data.Data());
+
    int lastCol = m_tableManager->numberOfColumns() -1;
+
    for (int c = 0; c < m_tableManager->numberOfColumns(); ++c )
    {
       format.Form("%%%ds", (int)widths[c]);
       data.Form(format, m_tableManager->m_tableFormats->at(c).name.c_str());
+
       if (c == lastCol) 
          printf("%s", data.Data());
       else
@@ -485,10 +495,16 @@ FWTableView::saveImageTo(const std::string& /*iName*/) const
    std::string splitter(rlen, '-');
    std::cout << splitter << std::endl;
 
+   // body
+   headerFormat.Form("[%%%dd] ",ndheader );
    for (int r = 0; r < m_tableManager->numberOfRows(); r++ )
    {
       for (int c = 0; c < m_tableManager->numberOfColumns(); ++c )
-      {
+	{
+	 if (!c) {
+            data.Form(headerFormat, m_tableManager->unsortedRowNumber(r));
+            printf("%s", data.Data());
+	 }
          format.Form("%%%ds", (int)widths[c]);
          textRenderer = (FWTextTableCellRenderer*) m_tableManager->cellRenderer(r, c); // setup cell renderer
          data.Form(format, textRenderer->data().c_str());
