@@ -71,12 +71,12 @@
 // const member functions
 //
 void
-FWModelExpressionSelector::select(FWEventItem* iItem, const std::string& iExpression) const
+FWModelExpressionSelector::select(FWEventItem* iItem, const std::string& iExpression, Color_t iColor) const
 {
    using namespace fireworks::expression;
 
-   Reflex::Type type= Reflex::Type::ByName(iItem->modelType()->GetName());
-   assert(type != Reflex::Type());
+   ROOT::Reflex::Type type= ROOT::Reflex::Type::ByName(iItem->modelType()->GetName());
+   assert(type != ROOT::Reflex::Type());
 
    //Backwards compatibility with old format
    std::string temp = oldToNewFormat(iExpression);
@@ -99,10 +99,16 @@ FWModelExpressionSelector::select(FWEventItem* iItem, const std::string& iExpres
 
    FWChangeSentry sentry(*(iItem->changeManager()));
    for( unsigned int index = 0; index < iItem->size(); ++index ) {
-      Reflex::Object o(type, const_cast<void *>(iItem->modelData(index)));
+      ROOT::Reflex::Object o(type, const_cast<void *>(iItem->modelData(index)));
 
       if((*selectorPtr)(o)) {
          iItem->select(index);
+
+	 if (iColor > 0) {
+            FWDisplayProperties props = iItem->modelInfo(index).displayProperties();
+            props.setColor(iColor);
+	    iItem->setDisplayProperties(index, props);
+	 }
       }
    }
 }

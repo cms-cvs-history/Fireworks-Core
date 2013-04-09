@@ -8,12 +8,13 @@
 //
 // Original Author:
 //         Created:  Wed Jun 25 15:15:04 EDT 2008
-// $Id: CmsShowViewPopup.cc,v 1.30.2.1 2012/02/18 01:58:26 matevz Exp $
+// $Id: CmsShowViewPopup.cc,v 1.33 2013/04/05 21:06:57 amraktad Exp $
 //
 
 // system include files
 #include <iostream>
 #include <boost/bind.hpp>
+#include <cassert>
 #include "TGLabel.h"
 #include "TGButton.h"
 #include "TG3DLine.h"
@@ -107,6 +108,11 @@ CmsShowViewPopup::reset(FWViewBase* vb, TEveWindow* ew)
    m_viewBase = vb;
    m_eveWindow = ew;
 
+
+     
+      //  m_saveImageButton->SetEnabled( m_viewBase && vb->typeId() <= FWViewType::kTable);
+
+
    m_paramGUI->reset();
 
    // fill content
@@ -133,6 +139,12 @@ CmsShowViewPopup::reset(FWViewBase* vb, TEveWindow* ew)
    {
       CenterOnParent(kTRUE, TGTransientFrame::kTopRight);
    }
+
+   if (vb->typeId() == FWViewType::kTable)
+      m_saveImageButton->SetText("Print Text To Terminal");
+   else
+      m_saveImageButton->SetText("Save Image ...");
+
 }
 
 void
