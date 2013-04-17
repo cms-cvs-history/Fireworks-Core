@@ -33,4 +33,5 @@
   <class name="FWGUIEventSelector"/>
   <class name="FWTEventList"/>
   <class name="FWTSelectorToEventList"/>
+  <class name="FWRootPromptUtil"/>
 </lcgdict>
