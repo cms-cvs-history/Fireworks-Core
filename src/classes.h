@@ -29,7 +29,6 @@
 #include "Fireworks/Core/interface/FWGUIEventSelector.h"
 #include "Fireworks/Core/interface/FWTEventList.h"
 #include "Fireworks/Core/interface/FWTSelectorToEventList.h"
-#include "Fireworks/Core/interface/FWRootPromptUtil.h"
 namespace {
    struct Fireworks_Core {
       //add 'dummy' Wrapper variable for each class type you put into the Event
